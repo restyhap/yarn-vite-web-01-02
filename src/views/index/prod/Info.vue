@@ -2,12 +2,13 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-01-15 11:34:14
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-02-19 12:05:50
+ * @LastEditTime: 2025-02-27 17:59:01
  * @FilePath: /yarn-vite-web-01-02/src/views/index/prod/Info.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
   <div class="info-container">
+    <h2>测试更改i</h2>
     <el-skeleton :loading="loading" animated>
       <template #template>
         <div style="padding: 20px">
