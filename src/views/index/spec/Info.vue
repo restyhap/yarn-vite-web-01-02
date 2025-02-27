@@ -118,11 +118,20 @@
               
               <!-- 缺陷记录列表 -->
               <div v-if="formData.defects && formData.defects.length > 0" class="defects-list">
-                <div v-for="(defect, index) in formData.defects" :key="defect.id" class="defect-card">
+                <div v-for="(defect, index) in formData.defects" :key="defect.id" class="defect-card" :class="{ 'editing': editingSections.includes(`defect-${index}`) }">
                   <div class="defect-header">
                     <div class="defect-title">
                       <span class="defect-number">缺陷 #{{ index + 1 }}</span>
-                      <h4>{{ defect.defectTitle || '缺陷记录' }}</h4>
+                      <template v-if="editingSections.includes(`defect-${index}`)">
+                        <el-input 
+                          v-model="tempFormData.defects[index].defectTitle" 
+                          placeholder="请输入缺陷标题"
+                          class="title-input"
+                        />
+                      </template>
+                      <template v-else>
+                        <h4>{{ defect.defectTitle || '缺陷记录' }}</h4>
+                      </template>
                     </div>
                     <div class="defect-actions">
                       <template v-if="editingSections.includes(`defect-${index}`)">
@@ -155,13 +164,14 @@
                         <div class="info-value">
                           <template v-if="editingSections.includes(`defect-${index}`)">
                             <el-input 
-                              v-model="tempFormData.value.defects[index].defectDescription" 
+                              v-model="tempFormData.defects[index].defectDescription" 
                               type="textarea" 
                               :rows="3"
+                              placeholder="请输入问题描述"
                             />
                           </template>
                           <template v-else>
-                            {{ defect.defectDescription || '无' }}
+                            <div class="text-content">{{ defect.defectDescription || '无' }}</div>
                           </template>
                         </div>
                       </div>
@@ -171,13 +181,14 @@
                         <div class="info-value">
                           <template v-if="editingSections.includes(`defect-${index}`)">
                             <el-input 
-                              v-model="tempFormData.value.defects[index].improvementSuggestion" 
+                              v-model="tempFormData.defects[index].improvementSuggestion" 
                               type="textarea" 
                               :rows="3"
+                              placeholder="请输入改进建议"
                             />
                           </template>
                           <template v-else>
-                            {{ defect.improvementSuggestion || '无' }}
+                            <div class="text-content">{{ defect.improvementSuggestion || '无' }}</div>
                           </template>
                         </div>
                       </div>
@@ -186,10 +197,13 @@
                         <div class="info-label">检查员:</div>
                         <div class="info-value">
                           <template v-if="editingSections.includes(`defect-${index}`)">
-                            <el-input v-model="tempFormData.value.defects[index].inspector" />
+                            <el-input 
+                              v-model="tempFormData.defects[index].inspector" 
+                              placeholder="请输入检查员姓名"
+                            />
                           </template>
                           <template v-else>
-                            {{ defect.inspector || '无' }}
+                            <div class="text-content">{{ defect.inspector || '无' }}</div>
                           </template>
                         </div>
                       </div>
@@ -213,7 +227,7 @@
                         <div v-if="editingSections.includes(`defect-${index}`) && (!defect.images || defect.images.length < 2)" 
                              class="defect-image-item">
                           <ImageHandler
-                            :model-value="null"
+                            :model-value="''"
                             alt="添加图片"
                             :editable="true"
                             width="100%"
@@ -291,7 +305,7 @@
             <div v-if="newDefectForm.defectImages.length < 2" 
                  class="defect-image-item">
               <ImageHandler
-                :model-value="null"
+                :model-value="''"
                 alt="添加图片"
                 :editable="true"
                 @update:model-value="handleNewDefectImageAdd"
@@ -315,22 +329,21 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Document, Edit, Check, Close, Delete, Plus, Back, ZoomIn } from '@element-plus/icons-vue'
+import { Document, Edit, Check, Close, Delete, Plus, Back } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { UploadFile } from 'element-plus'
 import { exportQCReport } from '@/utils/exportQCReport'
 import type { QCReportData } from '@/utils/exportQCReport'
 import { saveAs } from 'file-saver'
 import type { 
-  IQcReport,
-  IQcReportsDTO, 
-  IDefect, 
-  IDefectImage 
+  QcReport as IQcReport,
+  QcReportsDTO as IQcReportsDTO, 
+  Defect as IDefect, 
+  DefectImage as IDefectImage 
 } from '@/api/specification'
 import { 
   updateSpecification, 
   getQcReportsDtoById, 
-  getSpecificationDetail, 
   removeFile,
   upload,
   saveDefectImages,
@@ -356,63 +369,6 @@ interface IDefectsDTO {
   defectImages: IDefectImage[]
 }
 
-interface IFormData extends IQcReport {
-  [key: string]: any;
-  id: string;
-  modelCode: string;
-  factoryCode: string;
-  supplier: string;
-  customer: string;
-  poNumber: string;
-  inspectionDate: string;
-  orderQty: number;
-  reportDate: string;
-  inspectQty: number;
-  qcOfficer: string;
-  passFail: 'Pass' | 'Fail';
-  secondQcDate: string;
-  comments: string;
-  stocksInWarehouse: string;
-  samplingOfProductsQuantity: string;
-  shippingMarks: string;
-  barcode: string;
-  packingOutside: string;
-  packingInside: string;
-  chairComponentsPacked: string;
-  chairComponentsUnpacked: string;
-  fittingPackPacked: string;
-  fittingPackUnpacked: string;
-  productionLabel: string;
-  assemblyInstructions: string;
-  imageOfComponentsSeat: string;
-  imageOfComponentsBack: string;
-  imageOfComponentsBase: string;
-  imageOfComponentsCastors: string;
-  imageOfComponentsGasLiftCover: string;
-  imageOfComponentsGasLiftStamp: string;
-  imageOfComponentsArmrest: string;
-  imageOfComponentMechanism: string;
-  imageOfComponentsHeadrest: string;
-  imageOfProductBuiltFront: string;
-  imageOfProductBuiltSide: string;
-  imageOfProductBuiltBack: string;
-  imageOfProductBuilt45Degree: string;
-  frontImageOfProductBuiltCompare1: string;
-  frontImageOfProductBuiltCompare2: string;
-  functionCheckSeatHeightExtension: string;
-  functionCheckMechanismAdjustment: string;
-  functionCheckArmrestAdjustment: string;
-  functionCheckHeadrestAdjustment: string;
-  functionCheckOther1: string;
-  functionCheckOther2: string;
-  createdAt: string;
-  updatedAt: string;
-  defects: IDefect[];
-  frontImgPath: string;
-  sideImgPath: string;
-  backImgPath: string;
-}
-
 const route = useRoute()
 const router = useRouter()
 const loading = ref(false)
@@ -423,7 +379,7 @@ const dialogVisible = ref(false)
 // 添加调试模式开关
 const showDebugInfo = ref(false)  // 可以根据需要设置为true或false
 
-const formData = ref<IFormData | any>({
+const formData = ref<IQcReport | any>({
   id: '',
   modelCode: '',
   factoryCode: '',
@@ -590,7 +546,7 @@ const getData = async () => {
       console.log('defectsDTO from API:', defectsDTO) // 检查缺陷数据
       
       // 将defectsDTO数据整合到对应的defect中
-      const defectsWithImages = defectsDTO?.map(dto => {
+      const defectsWithImages = defectsDTO?.map((dto: any) => {
         console.log('Processing defect DTO:', dto) // 检查每条缺陷记录的处理
         return {
           id: dto.defects.id,
@@ -601,7 +557,7 @@ const getData = async () => {
           inspector: dto.defects.inspector,
           createdAt: dto.defects.createdAt,
           updatedAt: dto.defects.updatedAt,
-          images: dto.defectImages.map(img => ({
+          images: dto.defectImages.map((img: any) => ({
             id: img.id,
             defectId: img.defectId,
             imagePath: img.imagePath,
@@ -621,6 +577,7 @@ const getData = async () => {
         frontImgPath: qcReports.frontImgPath || '',
         sideImgPath: qcReports.sideImgPath || '',
         backImgPath: qcReports.backImgPath || '',
+        defects: defectsWithImages // 添加这一行，确保缺陷记录被正确赋值
       }
       
       console.log('Final formData:', formData.value) // 检查最终的表单数据
@@ -633,24 +590,41 @@ const getData = async () => {
   }
 }
 
-// 添加一个计算属性，用于编辑状态下的数据绑定
+// 修改 editingData 计算属性，确保正确绑定数据
 const editingData = computed({
   get() {
+    // 确保返回的是一个对象，而不是 null 或 undefined
     return tempFormData.value || formData.value || {};
   },
-  set(newValue) {
+  set(newValue: any) {
+    // 如果 tempFormData 不存在，先初始化它
+    if (!tempFormData.value) {
+      tempFormData.value = JSON.parse(JSON.stringify(formData.value || {}));
+    }
+    // 然后设置新值
     tempFormData.value = newValue;
+    
+    // 添加日志，查看设置后的值
+    console.log('设置新的编辑数据:', JSON.stringify(tempFormData.value));
   }
 });
 
 // 切换编辑状态
 const handleEdit = (section: string) => {
+  // 输出点击编辑前的数据
+  console.log('点击编辑前的数据:', JSON.stringify(formData.value));
+  
   // 创建当前数据的深拷贝作为临时数据
   if (formData.value) {
     try {
       // 使用深拷贝创建临时数据
       tempFormData.value = JSON.parse(JSON.stringify(formData.value));
-      console.log('临时数据已创建:', tempFormData.value); // 添加调试日志
+      console.log('临时数据已创建:', JSON.stringify(tempFormData.value));
+      
+      // 检查几个关键字段
+      debugField('modelCode');
+      debugField('supplier');
+      debugField('poNumber');
     } catch (error) {
       console.error('创建临时数据失败:', error);
       tempFormData.value = { ...formData.value }; // 使用浅拷贝作为备选
@@ -658,12 +632,15 @@ const handleEdit = (section: string) => {
   } else {
     // 如果 formData.value 不存在，创建一个空对象
     tempFormData.value = {};
-    console.warn('formData.value 不存在，创建了空对象'); // 添加调试日志
+    console.warn('formData.value 不存在，创建了空对象');
   }
   
   // 添加到编辑区域列表
   editingSections.value.push(section);
-}
+  
+  // 输出点击编辑后的数据
+  console.log('点击编辑后的数据:', JSON.stringify(tempFormData.value));
+};
 
 // 处理保存按钮点击
 const handleSave = async () => {
@@ -723,12 +700,12 @@ const handleExport = async () => {
   exporting.value = true
   try {
     // 准备缺陷数据
-    const defectsData = formData.value.defects?.map(defect => ({
+    const defectsData = formData.value.defects?.map((defect: IDefect) => ({
       defectTitle: '缺陷记录',
       defectDescription: defect.defectDescription || '',
       improvementSuggestion: defect.improvementSuggestion || '',
       inspector: formData.value.qcOfficer || '',
-      images: defect.images.map(img => img.imagePath)
+      images: defect.images.map((img: IDefectImage) => img.imagePath)
     }))
 
     // 准备质检报告数据
@@ -886,27 +863,37 @@ const handleImageRemove = (key: keyof FormData) => {
   tempFormData.value[key] = ''
 }
 
-// 处理编辑缺陷记录
+// 修改 handleEditDefect 函数
 const handleEditDefect = (index: number) => {
-  if (formData.value && formData.value.defects) {
-    // 确保 tempFormData 已初始化
-    if (!tempFormData.value) {
-      tempFormData.value = JSON.parse(JSON.stringify(formData.value));
-    }
-    
-    // 添加到编辑区域
-    editingSections.value.push(`defect-${index}`);
-    console.log(`开始编辑缺陷记录 #${index + 1}`);
+  // 创建一个新的临时数据对象
+  tempFormData.value = {
+    ...tempFormData.value,
+    defects: [...(formData.value.defects || [])]
   }
-};
 
-// 处理保存缺陷记录
+  // 确保当前编辑的缺陷记录存在
+  if (formData.value && formData.value.defects && formData.value.defects[index]) {
+    // 深拷贝当前缺陷记录
+    tempFormData.value.defects[index] = JSON.parse(JSON.stringify(formData.value.defects[index]))
+  }
+
+  // 添加到编辑区域
+  editingSections.value.push(`defect-${index}`)
+  console.log(`开始编辑缺陷记录 #${index + 1}`, tempFormData.value.defects[index])
+}
+
+// 修复 handleSaveDefect 函数，确保正确保存数据
 const handleSaveDefect = async (index: number) => {
-  if (!tempFormData.value || !tempFormData.value.defects) return;
+  if (!tempFormData.value || !tempFormData.value.defects || !tempFormData.value.defects[index]) {
+    ElMessage.error('没有要保存的数据');
+    return;
+  }
   
   try {
     loading.value = true;
     const defect = tempFormData.value.defects[index];
+    
+    console.log('保存缺陷记录:', defect);
     
     // 更新缺陷记录
     const response = await updateDefects(defect);
@@ -917,7 +904,12 @@ const handleSaveDefect = async (index: number) => {
       ElMessage.success('保存成功');
       
       // 退出编辑模式
-      editingSections.value = editingSections.value.filter(section => section !== `defect-${index}`);
+      editingSections.value = editingSections.value.filter((section: string) => section !== `defect-${index}`);
+      
+      // 如果没有其他正在编辑的项，清空临时数据
+      if (editingSections.value.length === 0) {
+        tempFormData.value = null;
+      }
     } else {
       ElMessage.error('保存失败：' + (response?.message || '未知错误'));
     }
@@ -929,15 +921,19 @@ const handleSaveDefect = async (index: number) => {
   }
 };
 
-// 处理取消编辑缺陷记录
+// 修复 handleCancelDefect 函数，确保正确取消编辑
 const handleCancelDefect = (index: number) => {
-  // 如果有临时数据，恢复原始数据
-  if (tempFormData.value && tempFormData.value.defects) {
+  // 直接退出编辑模式，不保存任何更改
+  editingSections.value = editingSections.value.filter((section: string) => section !== `defect-${index}`);
+  
+  // 如果只编辑了这一个缺陷记录，可以清空临时数据
+  if (editingSections.value.length === 0) {
+    tempFormData.value = null;
+  } else if (tempFormData.value && tempFormData.value.defects) {
+    // 否则，恢复这个缺陷记录的原始数据
     tempFormData.value.defects[index] = JSON.parse(JSON.stringify(formData.value.defects[index]));
   }
   
-  // 退出编辑模式
-  editingSections.value = editingSections.value.filter(section => section !== `defect-${index}`);
   ElMessage.info('已取消编辑');
 };
 
@@ -966,13 +962,13 @@ const handleDeleteDefect = async (index: number) => {
       
     try {
       // 1. 先删除所有图片文件
-      const deleteFilePromises = defect.images.map(image => 
+      const deleteFilePromises = defect.images.map((image: any) => 
         removeFile(image.imagePath)
       )
       await Promise.all(deleteFilePromises)
       
       // 2. 删除数据库中的图片记录
-      const deleteImageRecordPromises = defect.images.map(image =>
+      const deleteImageRecordPromises = defect.images.map((image: any) =>
         removeDefectImages(image.id)
       )
       await Promise.all(deleteImageRecordPromises)
@@ -985,7 +981,7 @@ const handleDeleteDefect = async (index: number) => {
         formData.value.defects.splice(index, 1)
         ElMessage.success('删除成功')
         editingSections.value = editingSections.value.filter(
-          section => section !== `defect-${index}`
+          (section: string) => section !== `defect-${index}`
         )
         // 重新获取最新数据
         await getData()
@@ -1004,12 +1000,57 @@ const handleDeleteDefect = async (index: number) => {
 
 // 处理缺陷图片更新
 const handleDefectImageUpdate = (val: string, defectIndex: number, imageIndex: number) => {
-  if (!tempFormData.value || !tempFormData.value.defects) return;
+  // 确保 tempFormData 已初始化
+  if (!tempFormData.value) {
+    tempFormData.value = JSON.parse(JSON.stringify(formData.value));
+  }
   
-  const defect = tempFormData.value.defects[defectIndex];
-  if (!defect.images) defect.images = [];
+  // 确保 defects 数组存在
+  if (!tempFormData.value.defects) {
+    tempFormData.value.defects = [];
+  }
   
-  defect.images[imageIndex].imagePath = val;
+  // 确保特定索引的缺陷记录存在
+  if (!tempFormData.value.defects[defectIndex]) {
+    if (formData.value && formData.value.defects && formData.value.defects[defectIndex]) {
+      tempFormData.value.defects[defectIndex] = JSON.parse(JSON.stringify(formData.value.defects[defectIndex]));
+    } else {
+      // 如果原始数据中也不存在，创建一个新的空对象
+      tempFormData.value.defects[defectIndex] = {
+        id: getId(),
+        reportId: formData.value.id,
+        defectTitle: '',
+        defectDescription: '',
+        improvementSuggestion: '',
+        inspector: '',
+        images: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+    }
+  }
+  
+  // 确保 images 数组存在
+  if (!tempFormData.value.defects[defectIndex].images) {
+    tempFormData.value.defects[defectIndex].images = [];
+  }
+  
+  // 更新或添加图片
+  if (imageIndex >= tempFormData.value.defects[defectIndex].images.length) {
+    // 添加新图片
+    const newImage = {
+      id: getId(),
+      defectId: tempFormData.value.defects[defectIndex].id,
+      imagePath: val,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    tempFormData.value.defects[defectIndex].images.push(newImage);
+  } else {
+    // 更新现有图片
+    tempFormData.value.defects[defectIndex].images[imageIndex].imagePath = val;
+  }
+  
   console.log(`更新缺陷 #${defectIndex + 1} 的图片 #${imageIndex + 1}:`, val);
 };
 
@@ -1340,19 +1381,19 @@ const handleCancel = () => {
 const handleNewDefectImageUpdate = async (newPath: string, imageId: string) => {
   if (!newPath) {
     // 删除图片
-    const imageToDelete = newDefectForm.value.defectImages.find(img => img.id === imageId);
+    const imageToDelete = newDefectForm.value.defectImages.find((img: IDefectImage) => img.id === imageId);
     if (imageToDelete) {
       await removeFile(imageToDelete.imagePath);
-      newDefectForm.value.defectImages = newDefectForm.value.defectImages.filter(img => img.id !== imageId);
-      newUploadedImages.value = newUploadedImages.value.filter(img => img.id !== imageId);
+      newDefectForm.value.defectImages = newDefectForm.value.defectImages.filter((img: IDefectImage) => img.id !== imageId);
+      newUploadedImages.value = newUploadedImages.value.filter((img: IDefectImage) => img.id !== imageId);
     }
   } else {
     // 更新图片路径
-    const imageIndex = newDefectForm.value.defectImages.findIndex(img => img.id === imageId);
+    const imageIndex = newDefectForm.value.defectImages.findIndex((img: IDefectImage) => img.id === imageId);
     if (imageIndex > -1) {
       newDefectForm.value.defectImages[imageIndex].imagePath = newPath;
       // 同时更新 newUploadedImages
-      const uploadedImageIndex = newUploadedImages.value.findIndex(img => img.id === imageId);
+      const uploadedImageIndex = newUploadedImages.value.findIndex((img: IDefectImage) => img.id === imageId);
       if (uploadedImageIndex > -1) {
         newUploadedImages.value[uploadedImageIndex].imagePath = newPath;
       }
@@ -1395,6 +1436,58 @@ const updateTempFormData = (key: string, value: any) => {
   
   tempFormData.value[key] = value;
   console.log('更新后的临时数据:', tempFormData.value); // 添加调试日志
+};
+
+// 添加一个辅助方法来初始化临时表单数据
+const initTempFormDataForDefect = (index: number, field: string, value: any) => {
+  console.log(`初始化缺陷记录 #${index} 的 ${field} 字段:`, value);
+  
+  // 确保 tempFormData 已初始化
+  if (!tempFormData.value) {
+    tempFormData.value = JSON.parse(JSON.stringify(formData.value || {}));
+    console.log('初始化临时表单数据:', JSON.stringify(tempFormData.value));
+  }
+  
+  // 确保 defects 数组存在
+  if (!tempFormData.value.defects) {
+    tempFormData.value.defects = [];
+    console.log('初始化缺陷数组');
+  }
+  
+  // 确保特定索引的缺陷记录存在
+  if (!tempFormData.value.defects[index]) {
+    if (formData.value && formData.value.defects && formData.value.defects[index]) {
+      tempFormData.value.defects[index] = JSON.parse(JSON.stringify(formData.value.defects[index]));
+      console.log(`从原始数据复制缺陷记录 #${index}:`, JSON.stringify(tempFormData.value.defects[index]));
+    } else {
+      // 如果原始数据中也不存在，创建一个新的空对象
+      tempFormData.value.defects[index] = {
+        id: getId(),
+        reportId: formData.value?.id || '',
+        defectTitle: '',
+        defectDescription: '',
+        improvementSuggestion: '',
+        inspector: '',
+        images: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      console.log(`创建新的缺陷记录 #${index}:`, JSON.stringify(tempFormData.value.defects[index]));
+    }
+  }
+  
+  // 设置字段值
+  tempFormData.value.defects[index][field] = value;
+  console.log(`更新后的缺陷记录 #${index}:`, JSON.stringify(tempFormData.value.defects[index]));
+};
+
+// 添加一个调试函数，用于检查特定字段的值
+const debugField = (key: string) => {
+  console.log(`字段 ${key} 的值:`, 
+    tempFormData.value ? tempFormData.value[key] : '临时数据不存在', 
+    formData.value ? formData.value[key] : '表单数据不存在'
+  );
+  return tempFormData.value ? tempFormData.value[key] : (formData.value ? formData.value[key] : '');
 };
 </script>
 
@@ -1469,7 +1562,7 @@ const updateTempFormData = (key: string, value: any) => {
   align-items: center;
   margin-bottom: 20px;
   width: 100%;
-  background: var(--section-background);
+  background: white;
   padding: 12px 16px;
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
@@ -2105,11 +2198,36 @@ pre {
 .defect-title {
   flex: 1;
   min-width: 0;
-  padding: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.defect-title .title-input {
+.defect-number {
+  background-color: #409eff;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.defect-title h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #303133;
+}
+
+/* 标题输入框样式 */
+.title-input {
   width: 100%;
+  max-width: 300px;
+}
+
+.title-input :deep(.el-input__inner) {
+  font-weight: 500;
+  font-size: 16px;
+  height: 32px;
 }
 
 /* 确保标题输入框的样式不被覆盖 */
@@ -2399,16 +2517,31 @@ pre {
 
 .info-item {
   display: flex;
-  align-items: center;
+  flex-direction: column;  /* 改回垂直布局 */
+  align-items: center;  /* 居中对齐 */
+  margin-bottom: 16px;
+  width: 100%;
 }
 
 .info-label {
-  width: 100px;
   font-weight: 500;
+  color: #606266;
+  background-color: #f8f9fb;
+  padding: 0 16px;
+  height: 32px;
+  line-height: 32px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  width: 80%;  /* 设置为父容器的 80% */
+  text-align: center;
+  margin-bottom: 8px;
 }
 
 .info-value {
-  flex: 1;
+  width: 80%;  /* 设置为父容器的 80% */
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
 }
 
 .images-label {
@@ -2451,24 +2584,10 @@ pre {
 }
 
 .defect-title {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.defect-number {
-  background-color: #409eff;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.defect-title h4 {
-  margin: 0;
-  font-size: 16px;
-  color: #303133;
 }
 
 .defect-actions {
@@ -2491,50 +2610,179 @@ pre {
 
 .info-item {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-direction: column;  /* 改回垂直布局 */
+  align-items: center;  /* 居中对齐 */
+  margin-bottom: 16px;
+  width: 100%;
 }
 
 .info-label {
-  font-weight: bold;
+  font-weight: 500;
   color: #606266;
-  font-size: 14px;
+  background-color: #f8f9fb;
+  padding: 0 16px;
+  height: 32px;
+  line-height: 32px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  width: 80%;  /* 设置为父容器的 80% */
+  text-align: center;
+  margin-bottom: 8px;
 }
 
 .info-value {
-  color: #303133;
+  width: 80%;  /* 设置为父容器的 80% */
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.images-label {
+  font-weight: 500;
+}
+
+.images-container {
+  display: flex;
+  gap: 16px;
+}
+
+.empty-defects {
+  padding: 40px;
+  text-align: center;
+}
+
+/* 添加到 <style> 部分 */
+.text-content {
+  padding: 8px 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  min-height: 40px;
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-all;
 }
 
-.defect-images {
-  margin-top: 12px;
+.info-item {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.images-label {
-  font-weight: bold;
+.info-label {
+  font-weight: 500;
   color: #606266;
-  font-size: 14px;
   margin-bottom: 8px;
 }
 
-.images-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+.info-value {
+  width: 80%;
 }
 
-.defect-image-item {
-  border: 1px solid #ebeef5;
+/* 修改文本域输入框样式 */
+:deep(.el-textarea__inner) {
+  border: 1px solid #dcdfe6;
   border-radius: 4px;
-  overflow: hidden;
-  height: 150px;
+  padding: 8px 12px;
+  min-height: 80px;
+  width: 100%;
+  resize: vertical;
 }
 
-.empty-defects {
-  padding: 32px;
-  display: flex;
-  justify-content: center;
+:deep(.el-textarea__inner:hover) {
+  border-color: #c0c4cc;
 }
+
+:deep(.el-textarea__inner:focus) {
+  border-color: #409eff;
+  outline: none;
+}
+
+/* 非编辑状态下的文本内容样式 */
+.text-content {
+  padding: 8px 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  min-height: 40px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 修改缺陷卡片在编辑状态下的样式 */
+.defect-card.editing {
+  background-color: var(--section-editing-background, #fafcff);
+  border: 2px solid #409eff;
+  box-shadow: 0 0 10px rgba(64, 158, 255, 0.1);
+}
+
+/* 编辑状态下的头部样式 */
+.defect-card.editing .defect-header {
+  background-color: #ecf5ff;
+  margin: -16px -16px 16px -16px;
+  padding: 16px;
+  border-bottom-color: #409eff;
+}
+
+.defect-card.editing .defect-title h4 {
+  color: #409eff;
+}
+
+/* 编辑状态下的表单项样式 */
+.defect-card.editing .info-label {
+  background-color: #f0f7ff;
+  border-color: #a3d0ff;
+  color: #409eff;
+  font-weight: 600;
+}
+
+.defect-card.editing .info-value {
+  border: 1px solid #a3d0ff !important;
+  background-color: #fff !important;
+  border-radius: 4px;
+  padding: 0;
+}
+
+/* 编辑状态下的输入框样式 */
+.defect-card.editing :deep(.el-input__wrapper) {
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0;
+}
+
+.defect-card.editing :deep(.el-input__wrapper:hover) {
+  background-color: #f5f7fa;
+}
+
+.defect-card.editing :deep(.el-input__inner) {
+  height: 32px;
+  line-height: 32px;
+}
+
+/* 编辑状态下的文本域样式 */
+.defect-card.editing :deep(.el-textarea__inner) {
+  border: none;
+  padding: 8px 12px;
+  background-color: #fff;
+}
+
+/* 编辑状态下的表单项获得焦点时的样式 */
+.defect-card.editing .info-value:has(:deep(.el-input__wrapper:focus-within)),
+.defect-card.editing .info-value:has(:deep(.el-textarea__inner:focus)) {
+  border-color: #409eff !important;
+  box-shadow: 0 0 0 1px #409eff;
+}
+
+/* 缺陷图片区域在编辑状态下的样式 */
+.defect-card.editing .defect-images {
+  background-color: #f0f7ff;
+  border: 1px solid #a3d0ff;
+  border-radius: 4px;
+}
+
+.defect-card.editing .images-label {
+  color: #409eff;
+  font-weight: 600;
+}
+
 </style>

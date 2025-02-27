@@ -8,7 +8,6 @@
 -->
 <template>
   <div class="info-container">
-    <h2>测试更改i</h2>
     <el-skeleton :loading="loading" animated>
       <template #template>
         <div style="padding: 20px">
@@ -1416,7 +1415,7 @@ const handleImageUpload = async (sectionKey: string, imageKey: string, file: Fil
   align-items: center;
   margin-bottom: 20px;
   width: 100%;
-  background: var(--section-background);
+  background: white;
   padding: 12px 16px;
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
