@@ -83,7 +83,7 @@
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="55" fixed="left" />
-          <el-table-column prop="id" label="ID" width="160" fixed="left" />
+          <el-table-column prop="id" label="ID" width="170" fixed="left" />
           <el-table-column prop="tccode" label="产品代码" min-width="120" show-overflow-tooltip />
           <el-table-column prop="supplier" label="供应商" min-width="120" show-overflow-tooltip />
           <el-table-column prop="supplierCode" label="供应商代码" min-width="120" show-overflow-tooltip />
@@ -165,6 +165,7 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 import type { Product, ProductParams } from '@/api/product.d'
 import { getProductPage, removeProductDto } from '@/api/product'
+import ImageHandler from '@/components/ImageHandler.vue'
 
 const router = useRouter()
 const searchQuery = ref('')

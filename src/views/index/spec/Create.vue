@@ -14,6 +14,7 @@
             <el-icon><Back /></el-icon>
             返回
           </el-button>
+          
         </div>
       </div>
 
@@ -103,7 +104,7 @@
             <div class="images-grid">
               <template v-for="(field, key) in basicFields" :key="key">
                 <template v-if="isImageField(key)">
-                  <ImageUploader
+                  <ImageHandler
                     v-model="formData.qcReports[key]"
                     :label="field"
                     :field-key="key"
@@ -187,13 +188,27 @@
             <div class="defect-field">
               <div class="defect-label">缺陷图片</div>
               <div class="defect-content">
-                <ImageUploader
-                  :model-value="getDefectImagePaths(defect.defectImages)"
-                  :field-key="`defect-${index}`"
-                  :limit="2"
-                  @preview="handlePictureCardPreview"
-                  @update:modelValue="val => handleDefectImageChange(val, index)"
-                />
+                <div class="image-grid">
+                  <div v-for="(image, imgIndex) in defect.defectImages"
+                       :key="imgIndex"
+                       class="image-item">
+                    <ImageHandler
+                      v-model="image.imagePath"
+                      :label="`缺陷图片 ${imgIndex + 1}`"
+                      :limit="1"
+                      @preview="handlePictureCardPreview"
+                    />
+                  </div>
+                  <!-- 添加图片按钮 -->
+                  <div v-if="defect.defectImages.length < 2" class="image-item">
+                    <ImageHandler
+                      v-model="newDefectImage"
+                      label="添加图片"
+                      :limit="1"
+                      @update:model-value="(val) => handleAddDefectImage(index, val)"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -230,16 +245,17 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Check, Back, Delete, Plus } from '@element-plus/icons-vue'
+import { Check, Back, Delete, Plus, Document } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { QcReportsDTO, DefectsDTO, DefectImages } from '@/types/qcReport'
-import ImageUploader from '@/components/ImageUploader.vue'
+import ImageHandler from '@/components/ImageHandler.vue'
 import { getId } from '@/utils/idUtils'
 import { saveQcReportsDTO } from '@/api/specification'
 
 const router = useRouter()
 const dialogImageUrl = ref('')
 const dialogVisible = ref(false)
+const mockLoading = ref(false)
 
 const formData = ref<QcReportsDTO>({
   qcReports: {
@@ -658,6 +674,8 @@ const fillTestData = () => {
 
   ElMessage.success(`测试数据填充成功: ${defectCount}个缺陷记录`)
 }
+
+
 </script>
 
 <style scoped>

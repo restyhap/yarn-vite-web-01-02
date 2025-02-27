@@ -83,22 +83,12 @@
             <div class="image-section">
               <el-form-item label="产品图片">
                 <div class="image-container">
-                  <el-upload
-                    action="#"
-                    list-type="picture-card"
-                    :auto-upload="false"
-                    :on-change="handleImageChange"
-                    :on-remove="handleRemove"
-                    :on-preview="handlePictureCardPreview"
+                  <ImageHandler
+                    v-model="formData.image"
+                    :label="'产品图片'"
                     :limit="1"
-                    :show-file-list="true"
-                    :file-list="formData.image ? [{
-                      name: '产品图片',
-                      url: formData.image
-                    }] : []"
-                  >
-                    <el-icon><Plus /></el-icon>
-                  </el-upload>
+                    @preview="handlePreview"
+                  />
                 </div>
               </el-form-item>
             </div>
@@ -133,6 +123,7 @@ import type { UploadFile } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { addQuotation } from '@/api'
 import { upload } from '@/api'
+import ImageHandler from '@/components/ImageHandler.vue'
 
 const router = useRouter()
 const dialogVisible = ref(false)
@@ -305,20 +296,9 @@ const handleImageChange = async (uploadFile: UploadFile) => {
 }
 
 // 处理图片预览
-const handlePictureCardPreview = (uploadFile: UploadFile) => {
-  // 使用formData中的image URL进行预览
-  dialogImageUrl.value = formData.value.image
+const handlePreview = (imageUrl: string) => {
+  dialogImageUrl.value = imageUrl
   dialogVisible.value = true
-}
-
-// 处理图片删除
-const handleRemove = () => {
-  formData.value.image = ''
-  // 手动显示上传按钮
-  const uploadBtn = document.querySelector('.el-upload--picture-card')
-  if (uploadBtn) {
-    (uploadBtn as HTMLElement).style.display = 'inline-flex'
-  }
 }
 
 // 处理提交

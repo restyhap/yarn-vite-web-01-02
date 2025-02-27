@@ -1,3 +1,11 @@
+/*
+ * @Author: resty restyhap@hotmail.com
+ * @Date: 2024-11-03 11:49:09
+ * @LastEditors: resty restyhap@hotmail.com
+ * @LastEditTime: 2025-02-27 12:04:04
+ * @FilePath: /yarn-vite-web-01-02/src/main.js
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 import { createApp } from 'vue'
 
 import App from './App.vue'
@@ -10,7 +18,7 @@ import 'element-plus/dist/index.css'
 import ElementPlus from 'element-plus'
 // 引入element-plus图标
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-import router from './router'
+import router from './router/index.js'
 // 添加 pinia 依赖
 import { createPinia } from 'pinia'
 // 实例化 pinia 插件

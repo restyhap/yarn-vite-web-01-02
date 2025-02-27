@@ -20,7 +20,7 @@
         :default-active="activeMenu"
         @select="handleSelect"
         :router="true"
-        unique-opened="true"
+        :unique-opened="true"
     >
       <el-sub-menu v-for="menu in menuItems" :key="menu.index" :index="menu.index">
         <template #title>
@@ -51,21 +51,33 @@
 </template>
 
 <script lang="ts" setup>
-import {ref} from 'vue';
-import {useRouter} from 'vue-router';
-import {Document, Setting, User, Lock, View, Plus, SwitchButton} from '@element-plus/icons-vue';
-import {ElMessageBox} from 'element-plus';
+import { ref, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { Document, Setting, User, Lock, View, Plus, SwitchButton, Money } from '@element-plus/icons-vue';
+import { ElMessageBox } from 'element-plus';
+import { useUserStore } from '@/pinia/user';
+import { storeToRefs } from 'pinia';
 
 const router = useRouter();
-const activeMenu = ref('/prod/list');
+const route = useRoute();
+const userStore = useUserStore();
+const { userInfo } = storeToRefs(userStore);
 
 // 用户信息
-const userName = ref('王经理');
-const userRole = ref('系统管理员');
+const userName = userInfo.value?.username;
+const userRole = userInfo.value?.roleType === 0 ? '系统管理员' : 
+                userInfo.value?.roleType === 1 ? '供应商' : '员工';
+
+// 当前激活的菜单项，使用 route.path
+const activeMenu = ref(route.path);
+
+// 监听路由变化
+watch(() => route.path, (newPath) => {
+  activeMenu.value = newPath;
+});
 
 // 菜单配置数据
 const menuItems = [
-
   {
     index: '/prod',
     title: '规格表管理',
@@ -117,9 +129,6 @@ const menuItems = [
       }
     ]
   },
-
-
-
   {
     index: '/settings',
     title: '系统设置',
@@ -139,8 +148,8 @@ const menuItems = [
   }
 ];
 
-const handleSelect = (index: string) => {
-  console.log('导航到:', index);
+const handleSelect = (key: string) => {
+  router.push(key);
 };
 
 const handleLogout = () => {
@@ -153,7 +162,7 @@ const handleLogout = () => {
         type: 'warning',
       }
   ).then(() => {
-    router.push('/login');
+    router.push('/');
   }).catch(() => {
   });
 };

@@ -89,7 +89,7 @@
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="55" fixed="left" />
-          <el-table-column prop="id" label="ID" width="155" fixed="left" />
+          <el-table-column prop="id" label="ID" width="170" fixed="left" />
           <el-table-column prop="modelCode" label="型号代码" min-width="150" show-overflow-tooltip />
           <el-table-column prop="factoryCode" label="工厂代码" min-width="120" show-overflow-tooltip />
           <el-table-column prop="supplier" label="供应商" min-width="120" show-overflow-tooltip />
@@ -191,6 +191,7 @@ import { saveAs } from 'file-saver'
 //@ts-ignore
 import { getSpecificationPage, searchSpecification , deleteSpecification} from '@/api'
 import type { IQCReport } from '@/api/specification.d'
+import ImageHandler from '@/components/ImageHandler.vue'
 
 const router = useRouter()
 const searchQuery = ref('')
@@ -298,7 +299,7 @@ const handleEdit = (row: IQCReport) => {
   }
   router.push({
     path: `/spec/info/${row.id}`,
-    query: { edit: 'true' }  // 添加编辑状态标记
+    query: { edit: 'true' }  // 添加编辑状态查询参数
   })
 }
 

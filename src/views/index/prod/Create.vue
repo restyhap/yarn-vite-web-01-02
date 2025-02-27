@@ -438,29 +438,12 @@
             <div class="upload-item">
               <div class="upload-label">正视图</div>
               <div class="upload-preview-container">
-                <el-upload
-                  class="upload-component"
-                  action="#"
-                  :show-file-list="false"
-                  :before-upload="beforeUpload"
-                  :on-success="createHandleSuccess('frontImgPath')"
-                  :on-error="handleError"
-                >
-                  <template v-if="productImagesForm.frontImgPath">
-                    <div class="image-preview">
-                      <img :src="productImagesForm.frontImgPath" alt="正视图" />
-                      <div class="image-actions">
-                        <el-button type="danger" @click.stop="handleRemove('frontImgPath')">删除</el-button>
-                      </div>
-                    </div>
-                  </template>
-                  <template v-else>
-                    <div class="upload-placeholder">
-                      <el-icon><Plus /></el-icon>
-                      <span>点击上传正视图</span>
-                    </div>
-                  </template>
-                </el-upload>
+                <ImageHandler
+                  v-model="productImagesForm.frontImgPath"
+                  :label="'正视图'"
+                  :limit="1"
+                  @preview="handlePreview"
+                />
               </div>
             </div>
 
@@ -468,58 +451,24 @@
             <div class="upload-item">
               <div class="upload-label">侧视图</div>
               <div class="upload-preview-container">
-                <el-upload
-                  class="upload-component"
-                  action="#"
-                  :show-file-list="false"
-                  :before-upload="beforeUpload"
-                  :on-success="createHandleSuccess('sideImgPath')"
-                  :on-error="handleError"
-                >
-                  <template v-if="productImagesForm.sideImgPath">
-                    <div class="image-preview">
-                      <img :src="productImagesForm.sideImgPath" alt="侧视图" />
-                      <div class="image-actions">
-                        <el-button type="danger" @click.stop="handleRemove('sideImgPath')">删除</el-button>
-                      </div>
-                    </div>
-                  </template>
-                  <template v-else>
-                    <div class="upload-placeholder">
-                      <el-icon><Plus /></el-icon>
-                      <span>点击上传侧视图</span>
-                    </div>
-                  </template>
-                </el-upload>
+                <ImageHandler
+                  v-model="productImagesForm.sideImgPath"
+                  :label="'侧视图'"
+                  :limit="1"
+                  @preview="handlePreview"
+                />
               </div>
             </div>
             <!-- 背视图上传 -->
             <div class="upload-item">
               <div class="upload-label">背视图</div>
               <div class="upload-preview-container">
-                <el-upload
-                  class="upload-component"
-                  action="#"
-                  :show-file-list="false"
-                  :before-upload="beforeUpload"
-                  :on-success="createHandleSuccess('backImgPath')"
-                  :on-error="handleError"
-                >
-                  <template v-if="productImagesForm.backImgPath">
-                    <div class="image-preview">
-                      <img :src="productImagesForm.backImgPath" alt="背视图" />
-                      <div class="image-actions">
-                        <el-button type="danger" @click.stop="handleRemove('backImgPath')">删除</el-button>
-                      </div>
-                    </div>
-                  </template>
-                  <template v-else>
-                    <div class="upload-placeholder">
-                      <el-icon><Plus /></el-icon>
-                      <span>点击上传背视图</span>
-                    </div>
-                  </template>
-                </el-upload>
+                <ImageHandler
+                  v-model="productImagesForm.backImgPath"
+                  :label="'背视图'"
+                  :limit="1"
+                  @preview="handlePreview"
+                />
               </div>
             </div>
 
@@ -527,29 +476,12 @@
             <div class="upload-item">
               <div class="upload-label">角视图</div>
               <div class="upload-preview-container">
-                <el-upload
-                  class="upload-component"
-                  action="#"
-                  :show-file-list="false"
-                  :before-upload="beforeUpload"
-                  :on-success="createHandleSuccess('angleImgPath')"
-                  :on-error="handleError"
-                >
-                  <template v-if="productImagesForm.angleImgPath">
-                    <div class="image-preview">
-                      <img :src="productImagesForm.angleImgPath" alt="角视图" />
-                      <div class="image-actions">
-                        <el-button type="danger" @click.stop="handleRemove('angleImgPath')">删除</el-button>
-                      </div>
-                    </div>
-                  </template>
-                  <template v-else>
-                    <div class="upload-placeholder">
-                      <el-icon><Plus /></el-icon>
-                      <span>点击上传角视图</span>
-                    </div>
-                  </template>
-                </el-upload>
+                <ImageHandler
+                  v-model="productImagesForm.angleImgPath"
+                  :label="'角视图'"
+                  :limit="1"
+                  @preview="handlePreview"
+                />
               </div>
             </div>
           </div>
@@ -581,6 +513,7 @@ import type { Product, Upholstery, CartonDetail, ProductionLogistics, ProductDim
 import { getId } from '@/utils/idUtils'
 import { saveProductDTO } from '@/api/product'
 import { useRouter } from 'vue-router'
+import ImageHandler from '@/components/ImageHandler.vue'
 
 const activeStep = ref(0)
 
@@ -1173,6 +1106,12 @@ const generateMockData = () => {
 
   // 提示用户数据已生成
   ElMessage.success('模拟数据已生成，请检查后提交')
+}
+
+// 添加新的 handlePreview 函数
+const handlePreview = (imageUrl: string) => {
+  // 处理图片预览逻辑
+  console.log('预览图片:', imageUrl)
 }
 </script>
 

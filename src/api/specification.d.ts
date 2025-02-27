@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-02-14 16:44:05
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-02-18 10:22:38
+ * @LastEditTime: 2025-02-26 10:37:38
  * @FilePath: /yarn-vite-web-01-02/src/api/specification.d.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -26,7 +26,7 @@ export function searchSpecification(params: SpecificationSearchParams): Promise<
 export function getSpecificationPage(params: SpecificationSearchParams): Promise<SpecificationResponse>
 export function deleteSpecification(id: string): Promise<any>
 
-export interface IQCReport {
+export interface IQcReport {
   id: string
   modelCode: string
   factoryCode: string
@@ -102,4 +102,12 @@ export interface IDefectImage {
   imagePath: string
   createdAt: string
   updatedAt: string
+}
+
+export interface IQcReportsDTO {
+  qcReports: IQcReport
+  defectsDTO: {
+    defects: IDefect
+    defectImages: IDefectImage[]
+  }[]
 } 

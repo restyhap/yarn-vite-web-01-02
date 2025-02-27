@@ -50,47 +50,52 @@
             <!-- 基本信息 -->
             <div class="table-section" :class="{ 'editing': editingSections.includes('basic') }">
               <div class="section-header">
-                <h3 class="text-lg font-medium">基本信息</h3>
+                <h3>质检信息</h3>
               </div>
-              
-              <el-form :model="editingSections.includes('basic') ? tempFormData : formData" label-width="120px">
-                <div class="form-grid">
-                  <el-form-item v-for="(field, key) in basicFields"
-                                :key="key"
-                                :label="field">
-                        <template v-if="editingSections.includes('basic')">
-                          <el-input v-model="tempFormData[key]" />
-                        </template>
-                        <template v-else>
-                          {{ formData[key] || '-' }}
-                        </template>
-                  </el-form-item>
-                </div>
-              </el-form>
-                </div>
-
-            <!-- 产品图片 -->
-            <div class="table-section">
-              <div class="section-header">
-                <h3 class="text-lg font-medium">产品图片</h3>
-              </div>
-              <div class="images-grid">
-                <div v-for="(label, key) in productImages" :key="key" class="image-item">
-                  <div class="image-label">{{ label }}</div>
-                  <div class="image-container">
-                    <ImageHandler
-                      :model-value="getImageValue(key)"
-                      @update:model-value="(val) => updateImageValue(key, val)"
-                      :alt="label"
-                      :editable="editingSections.includes('basic')"
-                      @temp-file="handleTempFile"
-                    />
+              <div class="form-content">
+                <el-form :model="formData" label-width="120px">
+                  <div class="form-grid">
+                    <el-form-item v-for="(field, key) in basicFields"
+                      :key="key"
+                      :label="field">
+                      <template v-if="editingSections.includes('basic')">
+                        <el-input 
+                          v-model="editingData[key]"
+                        />
+                      </template>
+                      <template v-else>
+                        {{ formData[key] || '-' }}
+                      </template>
+                    </el-form-item>
                   </div>
-                </div>
+                </el-form>
               </div>
             </div>
 
-            
+            <!-- 产品图片部分 -->
+            <div class="table-section" :class="{ 'editing': editingSections.includes('basic') }">
+              <div class="section-header">
+                <h3>产品图片</h3>
+              </div>
+              <div class="images-grid">
+                <template v-for="(label, key) in productImages" :key="key">
+                  <div class="image-item">
+                    <div class="image-label" :class="{ 'editing': editingSections.includes('basic') }">
+                      {{ label }}
+                    </div>
+                    <div class="image-container">
+                      <ImageHandler
+                        v-model="formData[key]"
+                        :editable="editingSections.includes('basic')"
+                        width="100%"
+                        height="200px"
+                        @temp-file="handleTempFile"
+                      />
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
 
             <!-- 缺陷记录 -->
             <div class="table-section" :class="{ 'editing': editingSections.includes('defects') }">
@@ -110,175 +115,120 @@
 
               <!-- 添加调试信息 -->
               <pre v-if="showDebugInfo">{{ JSON.stringify(formData.defects, null, 2) }}</pre>
-
-              <div v-if="formData.defects && formData.defects.length > 0">
-                <div v-for="(defect, index) in formData.defects" 
-                     :key="defect.id" 
-                     class="defect-item"
-                     :class="{ 'editing': editingSections.includes(`defect-${index}`) }">
+              
+              <!-- 缺陷记录列表 -->
+              <div v-if="formData.defects && formData.defects.length > 0" class="defects-list">
+                <div v-for="(defect, index) in formData.defects" :key="defect.id" class="defect-card">
                   <div class="defect-header">
                     <div class="defect-title">
-                      <template v-if="editingSections.includes(`defect-${index}`)">
-                        <el-input
-                          v-model="tempFormData.defects[index].defectTitle"
-                          placeholder="请输入问题标题"
-                          class="title-input"
-                        />
-                      </template>
-                      <template v-else>
-                        <h4 class="text-base font-medium">
-                          {{ defect.defectTitle || `质量问题记录 #${index + 1}` }}
-                        </h4>
-                      </template>
+                      <span class="defect-number">缺陷 #{{ index + 1 }}</span>
+                      <h4>{{ defect.defectTitle || '缺陷记录' }}</h4>
                     </div>
-                    <div class="actions">
+                    <div class="defect-actions">
                       <template v-if="editingSections.includes(`defect-${index}`)">
-                        <el-button type="success" @click="handleSaveDefect(index)">
+                        <el-button type="success" size="small" @click="handleSaveDefect(index)">
                           <el-icon><Check /></el-icon>
                           保存
                         </el-button>
-                        <el-button type="danger" @click="handleCancelDefect(index)">
+                        <el-button type="danger" size="small" @click="handleCancelDefect(index)">
                           <el-icon><Close /></el-icon>
                           取消
                         </el-button>
-                        <el-button 
-                          type="danger" 
-                          link
-                          @click="handleDeleteDefect(index)"
-                        >
+                      </template>
+                      <template v-else>
+                        <el-button type="primary" size="small" @click="handleEditDefect(index)">
+                          <el-icon><Edit /></el-icon>
+                          编辑
+                        </el-button>
+                        <el-button type="danger" size="small" @click="handleDeleteDefect(index)">
                           <el-icon><Delete /></el-icon>
                           删除
                         </el-button>
                       </template>
-                      <template v-else>
-                        <el-button type="primary" @click="handleEditDefect(index)">
-                          <el-icon><Edit /></el-icon>
-                          编辑
-                        </el-button>
-                      </template>
                     </div>
                   </div>
-
-                  <!-- 图片区域 -->
+                  
                   <div class="defect-content">
-                    <div class="defect-images">
-                      <template v-if="editingSections.includes(`defect-${index}`)">
-                        <div class="defect-image-grid">
-                          <div v-for="(image, imgIndex) in tempFormData?.defects[index].images" 
-                               :key="image.id" 
-                               class="defect-image-item">
-                            <el-image
-                              :src="image.imagePath"
-                              fit="contain"
-                              class="defect-preview-image"
+                    <div class="defect-info">
+                      <div class="info-item">
+                        <div class="info-label">问题描述:</div>
+                        <div class="info-value">
+                          <template v-if="editingSections.includes(`defect-${index}`)">
+                            <el-input 
+                              v-model="tempFormData.value.defects[index].defectDescription" 
+                              type="textarea" 
+                              :rows="3"
                             />
-                            <div class="image-actions">
-                              <el-button type="primary" link @click="handlePictureCardPreview({
-                                url: image.imagePath,
-                                name: 'preview.jpg',
-                                status: 'success',
-                                uid: image.id
-                              })">
-                                <el-icon><ZoomIn /></el-icon>
-                              </el-button>
-                              <el-button type="danger" link @click="() => handleDefectImageRemove({
-                                url: image.imagePath,
-                                name: 'preview.jpg',
-                                status: 'success',
-                                uid: image.id
-                              }, index)">
-                                <el-icon><Delete /></el-icon>
-                              </el-button>
-                            </div>
-                          </div>
-                          <el-upload
-                            v-if="tempFormData?.defects[index].images.length < 2"
-                            class="defect-image-uploader"
-                            action="#"
-                            :show-file-list="false"
-                            :auto-upload="true"
-                            :limit="2"
-                            :http-request="(params) => handleDefectCustomUpload(params, index)"
-                            :before-upload="beforeUpload"
-                          >
-                            <el-icon><Plus /></el-icon>
-                          </el-upload>
+                          </template>
+                          <template v-else>
+                            {{ defect.defectDescription || '无' }}
+                          </template>
                         </div>
-                      </template>
-                      <template v-else>
-                        <div class="defect-image-grid">
-                          <div v-for="image in defect.images" 
-                               :key="image.id"
-                               class="defect-image-item">
-                            <el-image
-                              :src="image.imagePath"
-                              fit="contain"
-                              class="defect-preview-image"
+                      </div>
+                      
+                      <div class="info-item">
+                        <div class="info-label">改进建议:</div>
+                        <div class="info-value">
+                          <template v-if="editingSections.includes(`defect-${index}`)">
+                            <el-input 
+                              v-model="tempFormData.value.defects[index].improvementSuggestion" 
+                              type="textarea" 
+                              :rows="3"
                             />
-                            <div class="image-actions">
-                              <el-button type="primary" link @click="handlePictureCardPreview({
-                                url: image.imagePath,
-                                name: 'preview.jpg',
-                                status: 'success',
-                                uid: image.id
-                              })">
-                                <el-icon><ZoomIn /></el-icon>
-                              </el-button>
-                            </div>
-                          </div>
+                          </template>
+                          <template v-else>
+                            {{ defect.improvementSuggestion || '无' }}
+                          </template>
                         </div>
-                      </template>
+                      </div>
+                      
+                      <div class="info-item">
+                        <div class="info-label">检查员:</div>
+                        <div class="info-value">
+                          <template v-if="editingSections.includes(`defect-${index}`)">
+                            <el-input v-model="tempFormData.value.defects[index].inspector" />
+                          </template>
+                          <template v-else>
+                            {{ defect.inspector || '无' }}
+                          </template>
+                        </div>
+                      </div>
                     </div>
-
-                    <!-- 描述区域 -->
-                    <div class="defect-description">
-                      <el-form 
-                        :model="editingSections.includes(`defect-${index}`) ? tempFormData.defects[index] : defect"
-                        :disabled="!editingSections.includes(`defect-${index}`)"
-                        label-position="top"
-                      >
-                        <el-form-item label="缺陷描述">
-                          <template v-if="editingSections.includes(`defect-${index}`)">
-                            <el-input 
-                              v-model="tempFormData.defects[index].defectDescription"
-                              type="textarea"
-                              :rows="3"
-                              placeholder="请输入缺陷描述"
+                    
+                    <div class="defect-images">
+                      <div class="images-label">缺陷图片:</div>
+                      <div class="images-container">
+                        <template v-if="defect.images && defect.images.length > 0">
+                          <div v-for="(image, imgIndex) in defect.images" :key="image.id" class="defect-image-item">
+                            <ImageHandler
+                              :model-value="image.imagePath"
+                              :editable="editingSections.includes(`defect-${index}`)"
+                              width="100%"
+                              height="150px"
+                              @update:model-value="(val) => handleDefectImageUpdate(val, index, imgIndex)"
                             />
-                          </template>
-                          <template v-else>
-                            <el-input 
-                              v-model="defect.defectDescription"
-                              type="textarea"
-                              :rows="3"
-                              placeholder="请输入缺陷描述"
-                              disabled
-                            />
-                          </template>
-                        </el-form-item>
-                        <el-form-item label="改进建议">
-                          <template v-if="editingSections.includes(`defect-${index}`)">
-                            <el-input 
-                              v-model="tempFormData.defects[index].improvementSuggestion"
-                              type="textarea"
-                              :rows="3"
-                              placeholder="请输入改进建议"
-                            />
-                          </template>
-                          <template v-else>
-                            <el-input 
-                              v-model="defect.improvementSuggestion"
-                              type="textarea"
-                              :rows="3"
-                              placeholder="请输入改进建议"
-                              disabled
-                            />
-                          </template>
-                        </el-form-item>
-                      </el-form>
+                          </div>
+                        </template>
+                        
+                        <div v-if="editingSections.includes(`defect-${index}`) && (!defect.images || defect.images.length < 2)" 
+                             class="defect-image-item">
+                          <ImageHandler
+                            :model-value="null"
+                            alt="添加图片"
+                            :editable="true"
+                            width="100%"
+                            height="150px"
+                            @update:model-value="(val) => handleDefectImageAdd(val, index)"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
+              </div>
+              
+              <div v-else class="empty-defects">
+                <el-empty description="暂无缺陷记录" />
               </div>
             </div>
           </div>
@@ -294,12 +244,15 @@
     <!-- 添加缺陷记录对话框 -->
     <el-dialog
       v-model="addDefectDialogVisible"
-      title="添加质量问题记录"
-      width="1000px"
-      custom-class="defect-dialog"
+      title="新建缺陷记录"
+      class="defect-dialog"
+      width="800px"
+      :close-on-click-modal="false"
+      :before-close="handleCloseDialog"
     >
-      <el-form 
-        :model="newDefectForm" 
+      <el-form
+        ref="defectFormRef"
+        :model="newDefectForm.defects"
         label-position="top"
         class="defect-form"
       >
@@ -322,38 +275,35 @@
             placeholder="请输入改进建议"
           />
         </el-form-item>
-        <el-form-item label="图片">
-          <div class="upload-container">
-            <div class="image-list">
-              <div v-for="image in newDefectForm.defectImages" 
-                   :key="image.id" 
-                   class="defect-image-item">
-                <el-image :src="image.imagePath" fit="contain" />
-                <div class="image-actions">
-                  <el-button type="danger" link @click="() => handleNewDefectImageRemove(image)">
-                    <el-icon><Delete /></el-icon>
-                  </el-button>
-                </div>
-              </div>
-              <el-upload
-                v-if="newDefectForm.defectImages.length < 2"
-                class="defect-image-uploader"
-                action="#"
-                :show-file-list="false"
-                :auto-upload="true"
-                :limit="2"
-                :http-request="handleNewDefectImageUpload"
-                :before-upload="beforeUpload"
-              >
-                <el-icon><Plus /></el-icon>
-              </el-upload>
+        <el-form-item label="缺陷图片">
+          <div class="defect-image-grid">
+            <div v-for="(image, imgIndex) in newDefectForm.defectImages" 
+                 :key="image.id" 
+                 class="defect-image-item">
+              <ImageHandler
+                :model-value="image.imagePath"
+                :alt="`缺陷图片${imgIndex + 1}`"
+                :editable="true"
+                @update:model-value="(val) => handleNewDefectImageUpdate(val, image.id)"
+              />
+            </div>
+            <!-- 如果图片数量小于2，显示上传按钮 -->
+            <div v-if="newDefectForm.defectImages.length < 2" 
+                 class="defect-image-item">
+              <ImageHandler
+                :model-value="null"
+                alt="添加图片"
+                :editable="true"
+                @update:model-value="handleNewDefectImageAdd"
+              />
             </div>
           </div>
         </el-form-item>
       </el-form>
+
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCancelNewDefect">取消</el-button>
+          <el-button @click="handleCloseDialog">取消</el-button>
           <el-button type="primary" @click="handleSaveNewDefect">保存</el-button>
         </div>
       </template>
@@ -363,7 +313,7 @@
 
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Document, Edit, Check, Close, Delete, Plus, Back, ZoomIn } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -372,10 +322,11 @@ import { exportQCReport } from '@/utils/exportQCReport'
 import type { QCReportData } from '@/utils/exportQCReport'
 import { saveAs } from 'file-saver'
 import type { 
-  IQCReport, 
+  IQcReport,
+  IQcReportsDTO, 
   IDefect, 
   IDefectImage 
-} from '@/types/specification'
+} from '@/api/specification'
 import { 
   updateSpecification, 
   getQcReportsDtoById, 
@@ -405,37 +356,20 @@ interface IDefectsDTO {
   defectImages: IDefectImage[]
 }
 
-interface IQcReportsDTO {
-  qcReports: IQCReport
-  defectsDTO: IDefectsDTO[]
-}
-
-interface IDefectWithImages extends IDefect {
-  id: string;
-  reportId: string;
-  defectTitle: string;
-  defectDescription: string;
-  improvementSuggestion: string;
-  inspector: string;
-  createdAt: string;
-  updatedAt: string;
-  images: IDefectImage[];
-}
-
-interface IFormData extends IQCReport {
+interface IFormData extends IQcReport {
   [key: string]: any;
   id: string;
   modelCode: string;
   factoryCode: string;
   supplier: string;
-  client: string;
+  customer: string;
   poNumber: string;
   inspectionDate: string;
   orderQty: number;
   reportDate: string;
   inspectQty: number;
   qcOfficer: string;
-  passFail: string;
+  passFail: 'Pass' | 'Fail';
   secondQcDate: string;
   comments: string;
   stocksInWarehouse: string;
@@ -473,7 +407,10 @@ interface IFormData extends IQCReport {
   functionCheckOther2: string;
   createdAt: string;
   updatedAt: string;
-  defects: IDefectWithImages[];
+  defects: IDefect[];
+  frontImgPath: string;
+  sideImgPath: string;
+  backImgPath: string;
 }
 
 const route = useRoute()
@@ -486,12 +423,12 @@ const dialogVisible = ref(false)
 // 添加调试模式开关
 const showDebugInfo = ref(false)  // 可以根据需要设置为true或false
 
-const formData = ref<IFormData>({
+const formData = ref<IFormData | any>({
   id: '',
   modelCode: '',
   factoryCode: '',
   supplier: '',
-  client: '',
+  customer: '',
   poNumber: '',
   inspectionDate: '',
   orderQty: 0,
@@ -543,10 +480,13 @@ const formData = ref<IFormData>({
   functionCheckOther1: '',
   functionCheckOther2: '',
   createdAt: '',
-  updatedAt: ''
+  updatedAt: '',
+  frontImgPath: '',
+  sideImgPath: '',
+  backImgPath: ''
 })
 
-const tempFormData = ref<IFormData | null>(null)
+const tempFormData = ref<any>(null)
 const tempFiles = ref<string[]>([])
 
 // 添加待删除图片的存储
@@ -575,37 +515,50 @@ const basicFields = {
 
 // 产品图片字段
 const productImages = {
+  // 产品外观图片
   stocksInWarehouse: '仓库库存',
   samplingOfProductsQuantity: '产品抽样数量',
   shippingMarks: '运输标记',
   barcode: '条形码',
   packingOutside: '外包装',
   packingInside: '内包装',
-  chairComponentsPacked: '椅子组件（已包装）',
-  chairComponentsUnpacked: '椅子组件（未包装）',
-  fittingPackPacked: '配件包（已包装）',
-  fittingPackUnpacked: '配件包（未包装）',
+  
+  // 椅子组件图片
+  chairComponentsPacked: '椅子组件-已包装',
+  chairComponentsUnpacked: '椅子组件-未包装',
+  
+  // 配件包图片
+  fittingPackPacked: '配件包-已包装',
+  fittingPackUnpacked: '配件包-未包装',
+  
+  // 标签和说明图片
   productionLabel: '生产标签',
   assemblyInstructions: '组装说明',
+  
+  // 组件图片
   imageOfComponentsSeat: '座椅组件',
   imageOfComponentsBack: '靠背组件',
   imageOfComponentsBase: '底座组件',
   imageOfComponentsCastors: '脚轮组件',
-  imageOfComponentsGasLiftCover: '气压棒护罩',
-  imageOfComponentsGasLiftStamp: '气压棒印记',
+  imageOfComponentsGasLiftCover: '气压棒外罩',
+  imageOfComponentsGasLiftStamp: '气压棒标记',
   imageOfComponentsArmrest: '扶手组件',
   imageOfComponentMechanism: '机构组件',
   imageOfComponentsHeadrest: '头枕组件',
-  imageOfProductBuiltFront: '成品正面',
-  imageOfProductBuiltSide: '成品侧面',
-  imageOfProductBuiltBack: '成品背面',
-  imageOfProductBuilt45Degree: '成品45度角',
-  frontImageOfProductBuiltCompare1: '成品对比1',
-  frontImageOfProductBuiltCompare2: '成品对比2',
-  functionCheckSeatHeightExtension: '座高调节功能检查',
-  functionCheckMechanismAdjustment: '机构调节功能检查',
-  functionCheckArmrestAdjustment: '扶手调节功能检查',
-  functionCheckHeadrestAdjustment: '头枕调节功能检查',
+  
+  // 成品图片
+  imageOfProductBuiltFront: '成品正视图',
+  imageOfProductBuiltSide: '成品侧视图',
+  imageOfProductBuiltBack: '成品背视图',
+  imageOfProductBuilt45Degree: '成品45度视图',
+  frontImageOfProductBuiltCompare1: '成品对比图1',
+  frontImageOfProductBuiltCompare2: '成品对比图2',
+  
+  // 功能检查图片
+  functionCheckSeatHeightExtension: '座椅高度调节',
+  functionCheckMechanismAdjustment: '机构调节',
+  functionCheckArmrestAdjustment: '扶手调节',
+  functionCheckHeadrestAdjustment: '头枕调节',
   functionCheckOther1: '其他功能检查1',
   functionCheckOther2: '其他功能检查2'
 }
@@ -630,18 +583,15 @@ const getData = async () => {
   loading.value = true
   try {
     const response = await getQcReportsDtoById(id)
+    console.log('API Response:', response) // 检查整个响应
+    
     if (response?.data) {
-      console.log('API Response:', response.data)
-      
       const { qcReports, defectsDTO } = response.data as IQcReportsDTO
-      
-      // 添加调试日志
-      console.log('qcReports:', qcReports)
-      console.log('defectsDTO:', defectsDTO)
+      console.log('defectsDTO from API:', defectsDTO) // 检查缺陷数据
       
       // 将defectsDTO数据整合到对应的defect中
       const defectsWithImages = defectsDTO?.map(dto => {
-        console.log('Processing DTO:', dto)
+        console.log('Processing defect DTO:', dto) // 检查每条缺陷记录的处理
         return {
           id: dto.defects.id,
           reportId: dto.defects.reportId,
@@ -660,77 +610,110 @@ const getData = async () => {
           }))
         }
       }) || []
+      
+      console.log('Processed defects:', defectsWithImages) // 检查处理后的数据
 
       // 更新formData
       formData.value = {
+        ...formData.value,
         ...qcReports,
-        defects: defectsWithImages
+        // 确保图片字段有初始值
+        frontImgPath: qcReports.frontImgPath || '',
+        sideImgPath: qcReports.sideImgPath || '',
+        backImgPath: qcReports.backImgPath || '',
       }
-
-      // 如果是编辑模式，初始化 tempFormData
-      if (route.query.edit === 'true') {
-        tempFormData.value = JSON.parse(JSON.stringify(formData.value))
-        editingSections.value = ['basic']
-      }
-    } else {
-      ElMessage.error('获取数据失败')
-      router.back()
+      
+      console.log('Final formData:', formData.value) // 检查最终的表单数据
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('获取数据失败:', error)
-    ElMessage.error(`获取数据失败: ${error.message || '未知错误'}`)
-    router.back()
+    ElMessage.error('获取数据失败')
   } finally {
     loading.value = false
   }
 }
 
+// 添加一个计算属性，用于编辑状态下的数据绑定
+const editingData = computed({
+  get() {
+    return tempFormData.value || formData.value || {};
+  },
+  set(newValue) {
+    tempFormData.value = newValue;
+  }
+});
+
 // 切换编辑状态
 const handleEdit = (section: string) => {
-  const index = editingSections.value.indexOf(section)
-  if (index > -1) {
-    editingSections.value.splice(index, 1)
-    tempFormData.value = null
+  // 创建当前数据的深拷贝作为临时数据
+  if (formData.value) {
+    try {
+      // 使用深拷贝创建临时数据
+      tempFormData.value = JSON.parse(JSON.stringify(formData.value));
+      console.log('临时数据已创建:', tempFormData.value); // 添加调试日志
+    } catch (error) {
+      console.error('创建临时数据失败:', error);
+      tempFormData.value = { ...formData.value }; // 使用浅拷贝作为备选
+    }
   } else {
-    editingSections.value.push(section)
-    // 确保创建完整的数据副本
-    tempFormData.value = JSON.parse(JSON.stringify(formData.value))
+    // 如果 formData.value 不存在，创建一个空对象
+    tempFormData.value = {};
+    console.warn('formData.value 不存在，创建了空对象'); // 添加调试日志
   }
+  
+  // 添加到编辑区域列表
+  editingSections.value.push(section);
 }
 
 // 处理保存按钮点击
 const handleSave = async () => {
-  try {
-    loading.value = true
-    
-    // 处理需要删除的旧图片
-    for (const key in productImages) {
-      const currentPath = (formData.value as Record<string, any>)[key]
-      const backupPath = tempFormData.value?.[key]
-      
-      if (backupPath && !currentPath) {
-        try {
-          await removeFile(backupPath)
-        } catch (error) {
-          console.error('删除服务器图片失败:', error)
-        }
-      }
-    }
-
-    // 调用更新接口
-    await updateSpecification(formData.value)
-    
-    // 更新备份数据
-    tempFormData.value = JSON.parse(JSON.stringify(formData.value))
-    editingSections.value = []
-    ElMessage.success('保存成功')
-  } catch (error) {
-    console.error('保存失败:', error)
-    ElMessage.error('保存失败')
-  } finally {
-    loading.value = false
+  // 确保 tempFormData.value 存在
+  if (!tempFormData.value) {
+    ElMessage.error('没有要保存的数据');
+    return;
   }
-}
+  
+  try {
+    loading.value = true;
+    
+    // 1. 处理待删除的图片
+    if (pendingDeleteImages.value.length > 0) {
+      // 删除服务器上的文件
+      const deletePromises = pendingDeleteImages.value.map(imagePath => 
+        removeFile(imagePath)
+      );
+      await Promise.all(deletePromises);
+      pendingDeleteImages.value = []; // 清空待删除列表
+    }
+    
+    // 2. 准备更新的数据
+    const updateData = {
+      ...tempFormData.value
+    };
+    
+    // 3. 发送更新请求
+    const response = await updateSpecification(updateData);
+    
+    if (response?.code === '200') {
+      // 4. 更新成功，刷新页面数据
+      // 先更新本地数据，避免等待网络请求的延迟
+      formData.value = JSON.parse(JSON.stringify(tempFormData.value));
+      ElMessage.success('保存成功');
+      
+      // 5. 退出编辑模式
+      editingSections.value = [];
+      // 清空临时数据
+      tempFormData.value = null;
+    } else {
+      ElMessage.error('保存失败：' + (response?.message || '未知错误'));
+    }
+  } catch (error) {
+    console.error('保存失败:', error);
+    ElMessage.error('保存失败，请稍后重试');
+  } finally {
+    loading.value = false;
+  }
+};
 
 // 添加导出状态
 const exporting = ref(false)
@@ -905,152 +888,161 @@ const handleImageRemove = (key: keyof FormData) => {
 
 // 处理编辑缺陷记录
 const handleEditDefect = (index: number) => {
-  try {
-    // 确保 tempFormData 存在且包含完整的数据
+  if (formData.value && formData.value.defects) {
+    // 确保 tempFormData 已初始化
     if (!tempFormData.value) {
-      tempFormData.value = JSON.parse(JSON.stringify(formData.value))
-    } else {
-      // 如果 tempFormData 已存在，确保它包含最新的数据
-      tempFormData.value.defects = JSON.parse(JSON.stringify(formData.value.defects))
+      tempFormData.value = JSON.parse(JSON.stringify(formData.value));
     }
     
-    // 添加编辑标记
-    editingSections.value.push(`defect-${index}`)
-    
-    // 初始化该记录的上传图片列表
-    const existingIndex = editingUploadedImages.value.findIndex(item => item.index === index)
-    if (existingIndex === -1) {
-      editingUploadedImages.value.push({
-        index,
-        images: []
-      })
-    }
-  } catch (error) {
-    console.error('初始化编辑状态失败:', error)
-    ElMessage.error('初始化编辑状态失败')
+    // 添加到编辑区域
+    editingSections.value.push(`defect-${index}`);
+    console.log(`开始编辑缺陷记录 #${index + 1}`);
   }
-}
+};
 
 // 处理保存缺陷记录
 const handleSaveDefect = async (index: number) => {
+  if (!tempFormData.value || !tempFormData.value.defects) return;
+  
   try {
-    loading.value = true
-    if (tempFormData.value) {
-      // 如果有待删除的图片，先处理删除操作
-      if (pendingDeleteDefectImages.value.length > 0) {
-        try {
-          // 删除服务器上的文件
-          const deleteFilePromises = pendingDeleteDefectImages.value.map(img => 
-            removeFile(img.imagePath)
-          )
-          await Promise.all(deleteFilePromises)
-          
-          // 删除数据库中的记录
-          const deleteDbPromises = pendingDeleteDefectImages.value.map(img =>
-            removeDefectImages(img.id)
-          )
-          await Promise.all(deleteDbPromises)
-        } catch (error) {
-          console.error('删除图片失败:', error)
-          ElMessage.warning('部分图片删除失败')
-        }
-      }
-
-      // 准备要保存的缺陷数据
-      const defectData: IDefect = {
-        id: tempFormData.value.defects[index].id,
-        reportId: tempFormData.value.defects[index].reportId,
-        defectTitle: tempFormData.value.defects[index].defectTitle,
-        defectDescription: tempFormData.value.defects[index].defectDescription,
-        improvementSuggestion: tempFormData.value.defects[index].improvementSuggestion,
-        inspector: tempFormData.value.defects[index].inspector,
-        createdAt: tempFormData.value.defects[index].createdAt,
-        updatedAt: new Date().toISOString()
-      }
-
-      try {
-        // 1. 保存缺陷记录
-        const response = await updateDefects(defectData)
-        
-        if (response?.data) {
-          // 2. 保存新上传的图片记录
-          const uploadedImagesForDefect = editingUploadedImages.value.find(item => item.index === index)
-          if (uploadedImagesForDefect && uploadedImagesForDefect.images.length > 0) {
-            const saveImagePromises = uploadedImagesForDefect.images.map(image => 
-              saveDefectImages(image)
-            )
-            await Promise.all(saveImagePromises)
-          }
-
-          // 更新本地数据
-          formData.value.defects[index] = JSON.parse(JSON.stringify(tempFormData.value.defects[index]))
-          ElMessage.success('保存成功')
-          editingSections.value = editingSections.value.filter(section => section !== `defect-${index}`)
-          
-          // 清空待删除图片列表
-          pendingDeleteDefectImages.value = []
-          // 清空该记录的新上传图片记录
-          editingUploadedImages.value = editingUploadedImages.value.filter(item => item.index !== index)
-        } else {
-          ElMessage.error('保存失败：未收到服务器响应')
-          // 保存失败时删除新上传的图片
-          const uploadedImagesForDefect = editingUploadedImages.value.find(item => item.index === index)
-          if (uploadedImagesForDefect) {
-            const deletePromises = uploadedImagesForDefect.images.map(image => 
-              removeFile(image.imagePath)
-            )
-            await Promise.all(deletePromises)
-          }
-        }
-      } catch (error) {
-        console.error('保存失败:', error)
-        ElMessage.error('保存失败')
-        // 保存失败时删除新上传的图片
-        const uploadedImagesForDefect = editingUploadedImages.value.find(item => item.index === index)
-        if (uploadedImagesForDefect) {
-          const deletePromises = uploadedImagesForDefect.images.map(image => 
-            removeFile(image.imagePath)
-          )
-          await Promise.all(deletePromises)
-        }
-      }
+    loading.value = true;
+    const defect = tempFormData.value.defects[index];
+    
+    // 更新缺陷记录
+    const response = await updateDefects(defect);
+    
+    if (response?.code === '200') {
+      // 更新本地数据
+      formData.value.defects[index] = JSON.parse(JSON.stringify(defect));
+      ElMessage.success('保存成功');
+      
+      // 退出编辑模式
+      editingSections.value = editingSections.value.filter(section => section !== `defect-${index}`);
+    } else {
+      ElMessage.error('保存失败：' + (response?.message || '未知错误'));
     }
   } catch (error) {
-    console.error('保存失败:', error)
-    ElMessage.error('保存失败')
+    console.error('保存缺陷记录失败:', error);
+    ElMessage.error('保存失败，请稍后重试');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 // 处理取消编辑缺陷记录
-const handleCancelDefect = async (index: number) => {
+const handleCancelDefect = (index: number) => {
+  // 如果有临时数据，恢复原始数据
+  if (tempFormData.value && tempFormData.value.defects) {
+    tempFormData.value.defects[index] = JSON.parse(JSON.stringify(formData.value.defects[index]));
+  }
+  
+  // 退出编辑模式
+  editingSections.value = editingSections.value.filter(section => section !== `defect-${index}`);
+  ElMessage.info('已取消编辑');
+};
+
+// 处理删除缺陷记录
+const handleDeleteDefect = async (index: number) => {
   try {
-    // 删除编辑过程中新上传的图片
-    const uploadedImagesForDefect = editingUploadedImages.value.find(item => item.index === index)
-    if (uploadedImagesForDefect) {
-      const deletePromises = uploadedImagesForDefect.images.map(image => 
+    // 确认删除
+    await ElMessageBox.confirm(
+      '确定要删除该缺陷记录吗？此操作不可逆。',
+      '警告',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+
+    const defect = formData.value.defects[index]
+    
+    // 如果没有ID，说明是新添加的未保存记录，直接从列表中移除
+    if (!defect.id) {
+      formData.value.defects.splice(index, 1)
+      ElMessage.success('删除成功')
+      return
+    }
+      
+    try {
+      // 1. 先删除所有图片文件
+      const deleteFilePromises = defect.images.map(image => 
         removeFile(image.imagePath)
       )
-      await Promise.all(deletePromises)
+      await Promise.all(deleteFilePromises)
       
-      // 从列表中移除该缺陷记录的上传记录
-      editingUploadedImages.value = editingUploadedImages.value.filter(item => item.index !== index)
+      // 2. 删除数据库中的图片记录
+      const deleteImageRecordPromises = defect.images.map(image =>
+        removeDefectImages(image.id)
+      )
+      await Promise.all(deleteImageRecordPromises)
+      
+      // 3. 删除缺陷记录
+      const response = await deleteDefects(defect.id)
+        
+      if (response?.code === '200') {
+        // 从列表中移除
+        formData.value.defects.splice(index, 1)
+        ElMessage.success('删除成功')
+        editingSections.value = editingSections.value.filter(
+          section => section !== `defect-${index}`
+        )
+        // 重新获取最新数据
+        await getData()
+      } else {
+        ElMessage.error('删除失败: ' + (response?.message || '未知错误'))
+      }
+    } catch (error) {
+      console.error('删除缺陷记录失败:', error)
+      ElMessage.error('删除失败，请稍后重试')
     }
-
-    // 恢复原始数据
-    editingSections.value = editingSections.value.filter(section => section !== `defect-${index}`)
-    if (tempFormData.value) {
-      tempFormData.value.defects[index] = JSON.parse(JSON.stringify(formData.value.defects[index]))
-    }
-    
-    // 清空待删除图片列表
-    pendingDeleteDefectImages.value = []
   } catch (error) {
-    console.error('删除新上传图片失败:', error)
-    ElMessage.warning('部分新上传图片删除失败')
+    // 用户取消删除
+    console.log('用户取消删除')
   }
 }
+
+// 处理缺陷图片更新
+const handleDefectImageUpdate = (val: string, defectIndex: number, imageIndex: number) => {
+  if (!tempFormData.value || !tempFormData.value.defects) return;
+  
+  const defect = tempFormData.value.defects[defectIndex];
+  if (!defect.images) defect.images = [];
+  
+  defect.images[imageIndex].imagePath = val;
+  console.log(`更新缺陷 #${defectIndex + 1} 的图片 #${imageIndex + 1}:`, val);
+};
+
+// 处理添加缺陷图片
+const handleDefectImageAdd = async (val: string, defectIndex: number) => {
+  if (!tempFormData.value || !tempFormData.value.defects) return;
+  
+  const defect = tempFormData.value.defects[defectIndex];
+  if (!defect.images) defect.images = [];
+  
+  // 创建新的图片对象
+  const newImage = {
+    id: getId(),
+    defectId: defect.id,
+    imagePath: val,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  
+  defect.images.push(newImage);
+  console.log(`添加缺陷 #${defectIndex + 1} 的新图片:`, val);
+  
+  // 可选：立即保存图片到服务器
+  try {
+    await saveDefectImages(newImage);
+    ElMessage.success('图片上传成功');
+  } catch (error) {
+    console.error('保存缺陷图片失败:', error);
+    ElMessage.error('图片上传失败');
+    // 移除失败的图片
+    defect.images.pop();
+  }
+};
 
 // 添加beforeUpload方法
 const beforeUpload = (file: File) => {
@@ -1066,67 +1058,6 @@ const beforeUpload = (file: File) => {
     return false
   }
   return true
-}
-
-// 处理删除缺陷记录
-const handleDeleteDefect = async (index: number) => {
-  try {
-    // 确认删除
-    await ElMessageBox.confirm(
-      '确定要删除这条缺陷记录吗？',
-      '警告',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-
-    loading.value = true
-
-    if (tempFormData.value) {
-      const defect = tempFormData.value.defects[index]
-      
-      try {
-        // 1. 先删除所有图片文件
-        const deleteFilePromises = defect.images.map(image => 
-          removeFile(image.imagePath)
-        )
-        await Promise.all(deleteFilePromises)
-        
-        // 2. 删除数据库中的图片记录
-        const deleteImageRecordPromises = defect.images.map(image =>
-          removeDefectImages(image.id)
-        )
-        await Promise.all(deleteImageRecordPromises)
-        
-        // 3. 删除缺陷记录
-        const response = await deleteDefects(defect.id)
-        
-        if (response?.data) {
-          ElMessage.success('删除成功')
-          editingSections.value = editingSections.value.filter(
-            section => section !== `defect-${index}`
-          )
-          // 重新获取最新数据
-          await getData()
-        } else {
-          ElMessage.error('删除失败：未收到服务器响应')
-        }
-      } catch (error) {
-        console.error('删除失败:', error)
-        ElMessage.error('删除失败')
-      }
-    }
-  } catch (error: any) {
-    if (error === 'cancel') {
-      return
-    }
-    console.error('删除失败:', error)
-    ElMessage.error(`删除失败: ${error.message || '未知错误'}`)
-  } finally {
-    loading.value = false
-  }
 }
 
 // 添加新的响应式变量
@@ -1227,34 +1158,8 @@ const handleNewDefectImageRemove = async (image: IDefectImage) => {
 }
 
 // 处理取消添加缺陷记录
-const handleCancelNewDefect = async () => {
-  try {
-    // 删除已上传的图片文件
-    const deletePromises = newUploadedImages.value.map(image => 
-      removeFile(image.imagePath)
-    )
-    await Promise.all(deletePromises)
-    
-    // 清空表单和临时数据
-    newDefectForm.value = {
-      defects: {
-        id: '',
-        reportId: '',
-        defectTitle: '',
-        defectDescription: '',
-        improvementSuggestion: '',
-        inspector: '',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      defectImages: []
-    }
-    newUploadedImages.value = []
-    addDefectDialogVisible.value = false
-  } catch (error) {
-    console.error('删除图片失败:', error)
-    ElMessage.warning('部分图片删除失败')
-  }
+const handleCloseDialog = () => {
+  addDefectDialogVisible.value = false
 }
 
 // 保存新缺陷记录
@@ -1289,41 +1194,45 @@ const handleSaveNewDefect = async () => {
     try {
       // 1. 保存缺陷记录
       const response = await saveDefects(saveData)
+      console.log('Save defect response:', response)
       
       if (response?.data) {
-        // 2. 保存图片记录，一个一个保存
+        // 2. 保存图片记录
         if (newUploadedImages.value.length > 0) {
-          const saveImagePromises = newUploadedImages.value.map(image => 
-            saveDefectImages(image)
-          )
+          const saveImagePromises = newUploadedImages.value.map(image => {
+            // 构建正确的图片数据结构
+            const imageData: IDefectImage = {
+              ...image,
+              defectId: response.data.id,  // 使用新保存的缺陷记录ID
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }
+            console.log('Saving image with data:', imageData)
+            return saveDefectImages(imageData)
+          })
           await Promise.all(saveImagePromises)
         }
         
         ElMessage.success('添加成功')
         addDefectDialogVisible.value = false
         newUploadedImages.value = []
+        
         // 重新获取最新数据
         await getData()
       } else {
-        ElMessage.error('添加失败：未收到服务器响应')
-        // 保存失败时删除已上传的图片
-        const deletePromises = newUploadedImages.value.map(image => 
-          removeFile(image.imagePath)
-        )
-        await Promise.all(deletePromises)
+        throw new Error('保存失败：未收到服务器响应')
       }
     } catch (error) {
-      console.error('保存失败:', error)
-      ElMessage.error('保存失败')
       // 保存失败时删除已上传的图片
       const deletePromises = newUploadedImages.value.map(image => 
         removeFile(image.imagePath)
       )
       await Promise.all(deletePromises)
+      throw error
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('添加失败:', error)
-    ElMessage.error('添加失败')
+    ElMessage.error(`添加失败: ${error.message || '未知错误'}`)
   } finally {
     loading.value = false
   }
@@ -1399,39 +1308,94 @@ const updateImageValue = (key: string, value: string) => {
 }
 
 // 添加初始化
-onMounted(() => {
-  getData()
+onMounted(async () => {
+  await getData()
+  
+  // 检查 URL 查询参数，如果有 edit=true，则自动进入编辑状态
+  if (route.query.edit === 'true') {
+    // 确保数据已加载
+    if (formData.value) {
+      handleEdit('basic')
+    } else {
+      ElMessage.warning('数据加载失败，无法进入编辑模式')
+    }
+  }
 })
 
-// 修改取消编辑函数
-const handleCancel = async () => {
-  try {
-    if (tempFormData.value) {
-      // 删除所有临时上传的图片
-      for (const key in productImages) {
-        const currentPath = (formData.value as Record<string, any>)[key]
-        const backupPath = (tempFormData.value as Record<string, any>)[key]
-        
-        if (currentPath && currentPath !== backupPath) {
-          try {
-            await removeFile(currentPath)
-          } catch (error) {
-            console.error('删除临时图片失败:', error)
-          }
-        }
-      }
-      
-      // 恢复到编辑前的状态
-      formData.value = JSON.parse(JSON.stringify(tempFormData.value))
-    }
-    editingSections.value = []
-    tempFormData.value = null
-    ElMessage.success('已取消编辑')
-  } catch (error) {
-    console.error('取消编辑失败:', error)
-    ElMessage.error('取消编辑失败')
-  }
+// 处理取消按钮点击
+const handleCancel = () => {
+  // 清空临时数据
+  tempFormData.value = null
+  
+  // 清空待删除图片列表
+  pendingDeleteImages.value = []
+  
+  // 退出编辑模式
+  editingSections.value = []
+  
+  ElMessage.info('已取消编辑')
 }
+
+// 处理新缺陷记录图片更新
+const handleNewDefectImageUpdate = async (newPath: string, imageId: string) => {
+  if (!newPath) {
+    // 删除图片
+    const imageToDelete = newDefectForm.value.defectImages.find(img => img.id === imageId);
+    if (imageToDelete) {
+      await removeFile(imageToDelete.imagePath);
+      newDefectForm.value.defectImages = newDefectForm.value.defectImages.filter(img => img.id !== imageId);
+      newUploadedImages.value = newUploadedImages.value.filter(img => img.id !== imageId);
+    }
+  } else {
+    // 更新图片路径
+    const imageIndex = newDefectForm.value.defectImages.findIndex(img => img.id === imageId);
+    if (imageIndex > -1) {
+      newDefectForm.value.defectImages[imageIndex].imagePath = newPath;
+      // 同时更新 newUploadedImages
+      const uploadedImageIndex = newUploadedImages.value.findIndex(img => img.id === imageId);
+      if (uploadedImageIndex > -1) {
+        newUploadedImages.value[uploadedImageIndex].imagePath = newPath;
+      }
+    }
+  }
+};
+
+// 处理新缺陷记录图片添加
+const handleNewDefectImageAdd = async (newPath: string) => {
+  if (!newPath) return;
+  
+  const newImage: IDefectImage = {
+    id: getId(),
+    defectId: '', // 将在保存缺陷记录时设置
+    imagePath: newPath,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  
+  // 添加到表单数据和上传列表
+  newDefectForm.value.defectImages.push(newImage);
+  newUploadedImages.value.push(newImage);
+};
+
+// 判断是否为图片字段
+const isImageField = (key: string): boolean => {
+  const imageFields = ['frontImgPath', 'sideImgPath', 'backImgPath'];
+  return imageFields.includes(key);
+};
+
+// 更新临时表单数据的安全方法
+const updateTempFormData = (key: string, value: any) => {
+  console.log(`更新字段 ${key}:`, value); // 添加调试日志
+  
+  if (!tempFormData.value) {
+    console.warn('tempFormData.value 不存在，创建新对象'); // 添加调试日志
+    // 如果临时数据不存在，先从当前数据创建
+    tempFormData.value = formData.value ? { ...formData.value } : {};
+  }
+  
+  tempFormData.value[key] = value;
+  console.log('更新后的临时数据:', tempFormData.value); // 添加调试日志
+};
 </script>
 
 <style scoped>
@@ -1518,7 +1482,7 @@ const handleCancel = async () => {
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3列布局 */
+  grid-template-columns: repeat(2, 1fr);
   gap: 16px;
   width: 100%;
 }
@@ -1528,9 +1492,10 @@ const handleCancel = async () => {
   margin: 0;
   width: 100%;
   display: flex;
+  align-items: center;
 }
 
-/* 非编辑状态的样式 */
+/* 非编辑状态的标签样式 */
 :deep(.el-form-item__label) {
   font-weight: 500;
   color: #606266;
@@ -1539,17 +1504,19 @@ const handleCancel = async () => {
   height: 32px;
   line-height: 32px;
   border: 1px solid #dcdfe6;
-  border-right: none;
   border-radius: 4px 0 0 4px;
-  width: 38.2% !important;
+  width: 30% !important;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0 10px 0 0;
 }
 
+/* 非编辑状态的内容样式 */
 :deep(.el-form-item__content) {
   flex: none;
+  width: 61.8% !important;
   min-height: 32px;
   line-height: 32px;
   padding: 0 12px;
@@ -1562,7 +1529,7 @@ const handleCancel = async () => {
 
 /* 编辑状态的样式 */
 .table-section.editing {
-  background-color: var(--section-editing-background);
+  background-color: var(--section-editing-background, #fafcff);
   border: 2px solid #409eff;
   box-shadow: 0 0 10px rgba(64, 158, 255, 0.1);
 }
@@ -1621,13 +1588,13 @@ const handleCancel = async () => {
 /* 响应式布局 */
 @media screen and (max-width: 1400px) {
   .form-grid {
-    grid-template-columns: repeat(2, 1fr);  /* 在较小屏幕上切换为2列布局 */
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media screen and (max-width: 1000px) {
   .form-grid {
-    grid-template-columns: 1fr;  /* 在更小的屏幕上切换为单列布局 */
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1676,7 +1643,7 @@ const handleCancel = async () => {
 /* 图片网格布局 */
 .images-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
   padding: 24px;
   background-color: #f8f9fa;
@@ -1692,7 +1659,7 @@ const handleCancel = async () => {
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   width: 100%;
-  max-width: 300px;
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -1706,13 +1673,61 @@ const handleCancel = async () => {
   border-radius: 4px;
   font-size: 13px;
   color: #606266;
-  height: 24px;
+  height: 32px;
   line-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .image-container {
   width: 100%;
-  height: 200px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  padding: 0;  /* 移除内边距 */
+}
+
+/* 确保 ImageHandler 组件适应容器 */
+.image-container :deep(.image-handler) {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;  /* 移除内边距 */
+}
+
+/* 优化图片显示 */
+.image-container :deep(.image-preview) {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;  /* 移除内边距 */
+}
+
+/* 预览图片样式 */
+.image-container :deep(.preview-thumbnail) {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  margin: 0;  /* 移除外边距 */
+}
+
+/* 上传区域样式 */
+.image-container :deep(.upload-area) {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .preview-image {
@@ -1841,24 +1856,23 @@ pre {
   border-radius: 4px;
 }
 
+/* 缺陷图片网格样式 */
 .defect-image-grid {
   display: flex;
-  gap: 24px;
-  align-items: flex-start;
-  background-color: #f8f9fa;
+  gap: 16px;
+  flex-wrap: wrap;
   padding: 16px;
+  background-color: #f8f9fa;
   border-radius: 4px;
 }
 
 .defect-image-item {
-  position: relative;
   width: 180px;
   height: 180px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  overflow: hidden;
   flex-shrink: 0;
   background-color: #fff;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .defect-preview-image {
@@ -1867,158 +1881,10 @@ pre {
   object-fit: contain !important;
 }
 
-/* 上传组件样式优化 */
-.defect-image-uploader {
-  width: 180px;
-  height: 180px;
-  border: 1px dashed #d9d9d9;
-  border-radius: 4px;
-  background-color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-
-.defect-image-uploader :deep(.el-upload) {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  overflow: hidden;
-  transition: border-color 0.3s;
-}
-
-.defect-image-uploader .upload-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #8c939d;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: auto;
-  height: auto;
-}
-
-/* 修改加号图标样式 */
-.defect-image-uploader .upload-placeholder .el-icon {
-  font-size: 28px;
-  color: #8c939d;
-  margin-bottom: 8px;
-  line-height: 1;
-}
-
-/* 修改文字样式 */
-.defect-image-uploader .upload-placeholder span {
-  font-size: 12px;
-  color: #8c939d;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-/* hover效果 */
-.defect-image-uploader:hover {
-  border-color: var(--el-color-primary);
-}
-
-/* hover时改变图标和文字颜色 */
-.defect-image-uploader:hover .upload-placeholder {
-  color: var(--el-color-primary);
-}
-
-.defect-image-uploader:hover .upload-placeholder .el-icon {
-  color: var(--el-color-primary);
-}
-
-/* 图片操作按钮样式 */
-.defect-image-item .image-actions {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: none;
-  gap: 16px;
-  z-index: 2;
-}
-
-.defect-image-item::after {
-  display: none;
-}
-
-.defect-image-item:hover .image-actions {
-  display: flex;
-}
-
-.defect-image-item .image-actions .el-button {
-  padding: 12px;
-  width: 44px;
-  height: 44px;
-  color: #fff;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.8) !important; /* 使用更明显的背景 */
-  backdrop-filter: blur(4px);
-  z-index: 3;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.defect-image-item .image-actions .el-button:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.defect-image-item .image-actions .el-button.el-button--danger {
-  background: rgba(255, 77, 79, 0.8) !important;
-}
-
-.defect-image-item .image-actions .el-button.el-button--danger:hover {
-  background: rgba(255, 0, 0, 0.3);
-}
-
-.defect-image-item .image-actions .el-icon {
-  font-size: 20px;
-}
-
-/* 缺陷记录表单样式 */
-.defect-description :deep(.el-form-item) {
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-}
-
-.defect-description :deep(.el-form-item__label) {
-  padding: 0 0 8px 0;
-  color: #606266;
-  font-weight: 500;
-  line-height: 1.5;
-  font-size: 14px;
-  text-align: left;
-  margin-bottom: 4px;
-  width: 100% !important;
-}
-
-.defect-description :deep(.el-form-item__content) {
-  background-color: #fff;
-  border-radius: 4px;
-  padding: 0;
-  margin-left: 0 !important;
-  width: 100%;
-}
-
-/* 文本域样式 */
-.defect-description :deep(.el-textarea__inner) {
-  background-color: #fff;
-  border: none;
-  box-shadow: none;
-  width: 100%;
-  padding: 8px;
-  resize: none;
+/* 移除旧的上传组件相关样式 */
+.defect-image-uploader,
+.el-upload {
+  /* 这些样式可以删除 */
 }
 
 :root {
@@ -2048,7 +1914,7 @@ pre {
 :deep(.el-dialog__body) {
   padding: 0;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;  /* 改为左对齐 */
   align-items: center;
 }
 
@@ -2056,6 +1922,7 @@ pre {
   max-width: 100%;
   max-height: calc(100vh - 120px);
   object-fit: contain;
+  margin-left: 0;  /* 确保图片靠左 */
 }
 
 .section-header-content {
@@ -2074,6 +1941,8 @@ pre {
   border-radius: 8px;
   max-width: 90%;
   background-color: #fff;
+  display: flex;
+  flex-direction: column;
 }
 
 :deep(.defect-dialog .el-dialog__header) {
@@ -2086,6 +1955,9 @@ pre {
 :deep(.defect-dialog .el-dialog__body) {
   padding: 32px 24px;
   background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;  /* 内容左对齐 */
 }
 
 :deep(.defect-dialog .el-dialog__footer) {
@@ -2099,6 +1971,7 @@ pre {
   max-height: calc(100vh - 300px);
   overflow-y: auto;
   padding: 0 16px;
+  width: 100%;  /* 确保表单占满宽度 */
 }
 
 .defect-form :deep(.el-form-item) {
@@ -2290,5 +2163,378 @@ pre {
   padding: 4px 0;
   display: flex;
   align-items: center;
+}
+
+/* 移除可能影响 ImageHandler 的样式 */
+:deep(.image-handler) {
+  /* 不要在这里覆盖 ImageHandler 的样式 */
+}
+
+/* 对话框中的图片网格样式 */
+.defect-dialog .defect-image-grid {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  width: 100%;  /* 确保图片网格占满宽度 */
+  justify-content: flex-start;  /* 图片从左侧开始排列 */
+}
+
+.defect-dialog .defect-image-item {
+  width: 180px;
+  height: 180px;
+  flex-shrink: 0;
+  background-color: #fff;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* 移除旧的上传组件相关样式 */
+.defect-dialog .defect-image-uploader,
+.defect-dialog .el-upload {
+  /* 这些样式可以删除 */
+}
+
+/* 对话框表单项样式优化 */
+.defect-dialog :deep(.el-form-item) {
+  margin-bottom: 20px;
+}
+
+.defect-dialog :deep(.el-form-item__label) {
+  padding-bottom: 8px;
+  font-weight: 500;
+}
+
+.defect-dialog :deep(.el-form-item__content) {
+  background-color: transparent;
+}
+
+/* 对话框底部按钮样式 */
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+}
+
+.defect-content {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin-top: 12px;
+}
+
+/* 标签和内容分行显示 */
+.full-width-label {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  color: #606266;
+  font-weight: 500;
+}
+
+/* 调整表单项间距 */
+:deep(.el-form-item) {
+  margin-bottom: 24px;
+}
+
+/* 最后一个表单项不需要底部间距 */
+:deep(.el-form-item:last-child) {
+  margin-bottom: 0;
+}
+
+/* 非编辑状态下的文本样式 */
+.form-text {
+  display: block;
+  min-height: 22px;
+  line-height: 1.5;
+  color: #606266;
+  white-space: pre-wrap;
+  word-break: break-all;
+  padding: 8px 12px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+}
+
+/* 图片表单项的特殊样式 */
+.image-form-item {
+  flex: 1;
+  min-width: 0;
+  flex-direction: column !important;
+  align-items: center;
+}
+
+.image-form-item :deep(.el-form-item__label) {
+  text-align: center;
+  width: 100% !important;
+  justify-content: center;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  padding: 0 8px;
+  height: 24px;
+  line-height: 24px;
+  font-size: 13px;
+  white-space: nowrap;
+  background-color: #f5f7fa;
+  border: 1px solid #dcdfe6;
+}
+
+/* 编辑状态下的图片表单项样式 */
+.image-form-item.editing :deep(.el-form-item__label) {
+  background-color: #f0f7ff;
+  border-color: #a3d0ff;
+  color: #409eff;
+}
+
+/* 图片网格布局 */
+.images-grid {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* 输入框焦点状态 */
+:deep(.el-form-item:has(.el-input__wrapper:focus-within)) .el-form-item__content {
+  border-color: #409eff;
+  box-shadow: 0 0 0 1px #409eff;
+}
+
+/* 图片标签样式 */
+.image-label {
+  text-align: center;
+  width: 100%;
+  padding: 4px 8px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  background-color: #f5f7fa;
+  border: 1px solid #dcdfe6;
+  color: #606266;
+}
+
+/* 编辑状态下的图片标签样式 */
+.image-label.editing {
+  background-color: #f0f7ff;
+  border-color: #a3d0ff;
+  color: #409eff;
+  font-weight: 600;
+}
+
+/* 编辑状态下的表格区域样式 */
+.table-section.editing {
+  background-color: var(--section-editing-background, #fafcff);
+  border: 2px solid #409eff;
+  box-shadow: 0 0 10px rgba(64, 158, 255, 0.1);
+}
+
+.table-section.editing .section-header {
+  border-bottom-color: #409eff;
+  background-color: #ecf5ff;
+  margin: -16px -16px 16px -16px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-section.editing .section-header h3 {
+  color: #409eff;
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 1400px) {
+  .images-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .images-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 确保没有其他样式覆盖网格布局 */
+  .table-section .images-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.defect-card {
+  background: #fff;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.defect-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.defect-title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.defect-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.defect-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+}
+
+.info-label {
+  width: 100px;
+  font-weight: 500;
+}
+
+.info-value {
+  flex: 1;
+}
+
+.images-label {
+  font-weight: 500;
+}
+
+.images-container {
+  display: flex;
+  gap: 16px;
+}
+
+.empty-defects {
+  padding: 40px;
+  text-align: center;
+}
+
+/* 缺陷记录样式 */
+.defects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 16px;
+}
+
+.defect-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  border: 1px solid #ebeef5;
+}
+
+.defect-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f5f7fa;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.defect-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.defect-number {
+  background-color: #409eff;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.defect-title h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #303133;
+}
+
+.defect-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.defect-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.defect-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-weight: bold;
+  color: #606266;
+  font-size: 14px;
+}
+
+.info-value {
+  color: #303133;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.defect-images {
+  margin-top: 12px;
+}
+
+.images-label {
+  font-weight: bold;
+  color: #606266;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.images-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.defect-image-item {
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 150px;
+}
+
+.empty-defects {
+  padding: 32px;
+  display: flex;
+  justify-content: center;
 }
 </style>
