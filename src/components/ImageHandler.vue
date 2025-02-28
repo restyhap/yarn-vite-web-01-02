@@ -1,65 +1,89 @@
 <template>
-  <div class="image-handler"
-    :style="{
-      width: width || '100%',
-      height: height || '100%'
-    }"
+  <div 
+    class="relative flex flex-col"
   >
     <!-- 标签 -->
-    <div v-if="label" class="image-label">{{ label }}</div>
+    <div v-if="label" class="mb-2 text-sm text-gray-600">{{ label }}</div>
     
     <!-- 图片展示区域 -->
-    <div class="image-container">
-      <!-- 已上传的图片 -->
-      <div v-if="imageUrl" class="image-preview">
-        <img 
-          :src="imageUrl" 
-          :alt="label || '图片'" 
-          class="preview-thumbnail" 
-          :style="{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }"
-        />
-        <!-- 编辑状态显示预览和删除按钮，非编辑状态只显示预览按钮 -->
-        <div v-if="editable" class="image-actions">
-          <button type="button" class="action-btn" @click.prevent="handlePreview">
-            <el-icon><ZoomIn /></el-icon>
-          </button>
-          <button type="button" class="action-btn" @click.prevent="handleDelete">
-            <el-icon><Delete /></el-icon>
-          </button>
+    <div class="flex-1 relative rounded-md overflow-hidden bg-gray-50 flex items-center justify-center w-full h-full">
+      <!-- 已上传的图片列表 -->
+      <div class="flex gap-2 flex-wrap items-center">
+        <div 
+          v-for="(url, index) in modelValue" 
+          :key="index" 
+          class="relative flex items-center justify-center bg-gray-50 rounded-md overflow-hidden group"
+          :style="{ width: `${size}px`, height: `${size}px` }"
+        >
+          <img 
+            :src="url" 
+            :alt="label || '图片'" 
+            class="object-contain w-full h-full" 
+          />
+          <!-- 编辑状态显示预览和删除按钮 -->
+          <div 
+            v-if="editable" 
+            class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex justify-center items-center gap-2 transition-opacity"
+          >
+            <button 
+              type="button" 
+              class="w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-white/10 hover:scale-110 transition-all"
+              @click.prevent="() => handlePreview(url)"
+            >
+              <el-icon class="text-lg"><ZoomIn /></el-icon>
+            </button>
+            <button
+              type="button"
+              class="w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-white/10 hover:scale-110 transition-all"
+              @click.prevent="() => handleDelete(index)"
+            >
+              <el-icon class="text-lg"><Delete /></el-icon>
+            </button>
+          </div>
         </div>
-        <!-- 非编辑状态只显示预览按钮 -->
-        <div v-else class="image-actions preview-only">
-          <button type="button" class="action-btn" @click.prevent="handlePreview">
-            <el-icon><ZoomIn /></el-icon>
-          </button>
-        </div>
-      </div>
 
-      <!-- 上传按钮 - 只在编辑状态且没有图片时显示 -->
-      <div 
-        v-if="editable && !imageUrl" 
-        class="upload-area"
-        @click="triggerUpload"
-        @dragover.prevent
-        @drop.prevent="handleDrop"
-      >
-        <input
-          ref="fileInput"
-          type="file"
-          class="file-input"
-          accept="image/*"
-          @change="handleFileChange"
-        />
-        <el-icon><Plus /></el-icon>
+        <!-- 上传按钮 -->
+        <div 
+          v-if="showUploadArea"
+          class="border border-dashed border-gray-300 rounded-md cursor-pointer flex justify-center items-center text-gray-400 hover:border-blue-400 hover:text-blue-400 transition-colors"
+          :style="{ width: `${size}px`, height: `${size}px` }"
+          @click="triggerUpload"
+          @dragover.prevent
+          @drop.prevent="handleDrop"
+        >
+          <input
+            ref="fileInput"
+            type="file"
+            class="hidden"
+            accept="image/*"
+            @change="handleFileChange"
+          />
+          <div class="flex flex-col items-center gap-2">
+            <el-icon class="text-4xl"><Plus /></el-icon>
+            <span class="text-sm">点击上传</span>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- 预览弹窗 -->
-    <div v-if="previewVisible" class="preview-modal" @click.self="closePreview">
-      <div class="preview-content">
-        <img :src="imageUrl" :alt="label || '预览图'" />
-        <button type="button" class="close-btn" @click.prevent="closePreview">
-          <el-icon><Close /></el-icon>
+    <div 
+      v-if="previewVisible"
+      class="fixed inset-0 bg-black/70 flex justify-center items-center z-50"
+      @click.self="closePreview"
+    >
+      <div class="relative">
+        <img 
+          :src="previewUrl" 
+          :alt="label || '预览图'" 
+          class="max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain"
+        />
+        <button 
+          type="button" 
+          class="absolute -top-10 -right-10 w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 hover:rotate-90 transition-all"
+          @click.prevent="closePreview"
+        >
+          <el-icon class="text-lg font-bold"><Close /></el-icon>
         </button>
       </div>
     </div>
@@ -70,25 +94,51 @@
 import { ref, computed } from 'vue'
 import { Plus, ZoomIn, Delete, Close } from '@element-plus/icons-vue'
 
+// 添加组件名称
+defineOptions({
+  name: 'ImageHandler'
+})
+
 const props = defineProps<{
-  modelValue: string
+  modelValue: string[]
   label?: string
   editable?: boolean
-  width?: string
-  height?: string
+  size?: number
   limit?: number
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
+  'update:modelValue': [value: string[]]
+  'preview': [url: string]
 }>()
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const previewVisible = ref(false)
-const imageUrl = computed(() => props.modelValue)
+const previewUrl = ref('')
+
+// 计算实际的限制数量
+const actualLimit = computed(() => {
+  const limit = props.limit ?? 1
+  console.log('当前限制数量:', limit)
+  return limit
+})
+
+// 计算是否显示上传区域
+const showUploadArea = computed(() => {
+  const shouldShow = props.editable && Array.isArray(props.modelValue) && props.modelValue.length < actualLimit.value
+  console.log('上传区域显示状态:', {
+    editable: props.editable,
+    isArray: Array.isArray(props.modelValue),
+    currentLength: props.modelValue?.length,
+    limit: actualLimit.value,
+    shouldShow
+  })
+  return shouldShow
+})
 
 // 触发文件选择
 const triggerUpload = () => {
+  console.log('触发文件选择')
   fileInput.value?.click()
 }
 
@@ -97,11 +147,14 @@ const handleFileChange = (event: Event) => {
   const input = event.target as HTMLInputElement
   if (input.files?.length) {
     handleFile(input.files[0])
+    // 重置 input 的值，这样相同的文件也能触发 change 事件
+    input.value = ''
   }
 }
 
 // 处理拖放上传
 const handleDrop = (event: DragEvent) => {
+  console.log('处理文件拖放')
   const files = event.dataTransfer?.files
   if (files?.length) {
     handleFile(files[0])
@@ -110,6 +163,13 @@ const handleDrop = (event: DragEvent) => {
 
 // 处理文件
 const handleFile = (file: File) => {
+  console.log('开始处理文件:', {
+    fileName: file.name,
+    fileSize: file.size,
+    fileType: file.type,
+    currentModelValue: props.modelValue
+  })
+
   if (!file.type.startsWith('image/')) {
     alert('请上传图片文件')
     return
@@ -124,203 +184,65 @@ const handleFile = (file: File) => {
   reader.onload = (e) => {
     const result = e.target?.result
     if (typeof result === 'string') {
-      emit('update:modelValue', result)
+      const currentImages = Array.isArray(props.modelValue) ? props.modelValue : []
+      console.log('当前图片数组状态:', {
+        currentLength: currentImages.length,
+        limit: actualLimit.value,
+        canAdd: currentImages.length < actualLimit.value,
+        currentImages
+      })
+
+      if (currentImages.length >= actualLimit.value) {
+        alert(`最多只能上传${actualLimit.value}张图片`)
+        return
+      }
+
+      const newImages = [...currentImages, result]
+      console.log('更新后的图片数组:', {
+        newLength: newImages.length,
+        images: newImages
+      })
+      emit('update:modelValue', newImages)
     }
   }
   reader.readAsDataURL(file)
 }
 
 // 处理预览
-const handlePreview = () => {
+const handlePreview = (url: string) => {
+  previewUrl.value = url
   previewVisible.value = true
 }
 
 // 关闭预览
 const closePreview = () => {
   previewVisible.value = false
+  previewUrl.value = ''
 }
 
 // 处理删除
-const handleDelete = () => {
-  emit('update:modelValue', '')
+const handleDelete = (index: number) => {
+  console.log('删除图片:', {
+    index,
+    currentImages: props.modelValue,
+    isArray: Array.isArray(props.modelValue)
+  })
+
+  if (!Array.isArray(props.modelValue)) return
+  
+  const newImages = [...props.modelValue]
+  newImages.splice(index, 1)
+  console.log('删除后的图片数组:', {
+    newLength: newImages.length,
+    images: newImages
+  })
+  emit('update:modelValue', newImages)
 }
 </script>
 
-<style scoped>
-.image-handler {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
+<script lang="ts">
+// 添加默认导出
+export default {
+  name: 'ImageHandler'
 }
-
-.image-label {
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #606266;
-}
-
-.image-container {
-  flex: 1;
-  position: relative;
-  border-radius: 4px;
-  overflow: hidden;
-  background-color: #f5f7fa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-}
-
-.image-preview {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.preview-thumbnail {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-}
-
-.image-actions {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s;
-}
-
-/* 非编辑状态下的预览按钮样式 */
-.preview-only {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-.image-preview:hover .image-actions {
-  display: flex;
-}
-
-.action-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  background: transparent;
-  transition: all 0.3s;
-}
-
-.action-btn:hover {
-  transform: scale(1.1);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.upload-area {
-  width: 100%;
-  height: 100%;
-  border: 1px dashed #d9d9d9;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #8c939d;
-  transition: all 0.3s;
-}
-
-.upload-area:hover {
-  border-color: #409eff;
-  color: #409eff;
-}
-
-.file-input {
-  display: none;
-}
-
-.preview-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.preview-content {
-  position: relative;
-  /* 移除最大尺寸限制，由图片自身控制 */
-}
-
-.preview-content img {
-  /* 设置合适的最大尺寸，保持原始宽高比 */
-  max-width: min(90vw, 1200px);
-  max-height: 90vh;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-}
-
-.close-btn {
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s;
-}
-
-.close-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: rotate(90deg);
-}
-
-/* Element Plus 图标样式 */
-:deep(.el-icon) {
-  font-size: 18px;
-}
-
-/* 上传图标样式 */
-.upload-area :deep(.el-icon) {
-  font-size: 28px;
-}
-
-/* 预览和删除按钮图标样式 */
-.action-btn :deep(.el-icon) {
-  font-size: 20px;
-}
-
-/* 关闭按钮图标样式 */
-.close-btn :deep(.el-icon) {
-  font-size: 18px;
-  font-weight: bold;
-}
-</style> 
+</script> 

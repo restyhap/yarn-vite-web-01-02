@@ -1,0 +1,76 @@
+/* Element Plus 组件的全局样式覆盖 */
+
+/* 输入框相关 */
+.el-input-number {
+  @apply w-full;
+}
+
+.el-textarea__inner {
+  @apply min-h-[100px];
+}
+
+/* 卡片相关 */
+.el-card__body {
+  @apply h-full;
+}
+
+/* 表单相关 */
+.el-form-item {
+  @apply mb-6;
+}
+
+.el-form-item__content {
+  @apply justify-start;
+}
+
+/* 步骤条相关 */
+.el-steps {
+  @apply overflow-x-auto pb-3;
+}
+
+.el-steps__wrapper {
+  @apply min-w-max;
+}
+
+.el-step {
+  @apply text-center pr-5 flex flex-col items-center cursor-pointer;
+}
+
+.el-step:last-child {
+  @apply pr-0;
+}
+
+.el-step__title {
+  @apply text-sm leading-tight mt-2 text-center block;
+}
+
+.el-step__head {
+  @apply mb-2 flex justify-center w-full;
+}
+
+.el-step__main {
+  @apply whitespace-normal max-w-[120px] mx-auto text-center flex flex-col items-center;
+}
+
+.el-step__line {
+  @apply mr-0 top-[15px] left-[calc(50%+20px)] right-[calc(-50%+20px)];
+}
+
+/* 步骤条悬停效果 */
+.el-step:hover .el-step__title {
+  @apply text-blue-500;
+}
+
+.el-step:hover .el-step__icon {
+  @apply bg-blue-50;
+}
+
+/* 按钮相关 */
+.el-button {
+  @apply min-w-[100px] h-10;
+}
+
+/* 水平步骤条布局 */
+.el-steps--horizontal {
+  @apply flex justify-between items-start;
+} 

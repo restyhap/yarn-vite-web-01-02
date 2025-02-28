@@ -15,8 +15,8 @@
     </div>
 
     <!-- 缺陷记录列表 -->
-    <div v-if="defects && defects.length > 0" class="defects-list">
-      <div v-for="(defect, index) in defects" :key="defect.id" class="defect-card">
+    <div v-if="defects && defects.length > 0" class="flex flex-col gap-4">
+      <div v-for="(defect, index) in defects" :key="defect.id" class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow">
         <div class="defect-header">
           <div class="defect-title">
             <span class="defect-number">缺陷 #{{ index + 1 }}</span>

@@ -1,31 +1,36 @@
 <template>
-  <div class="flex-1 p-8 min-w-0 overflow-hidden">
-    <div class="bg-white rounded-lg shadow p-6 overflow-auto">
+  <div dir="ltr" class="flex-1 ps-1 min-w-0 overflow-hidden">
+    <div class="bg-white shadow-md p-6 h-screen overflow-auto">
       <!-- 搜索和操作区域 -->
-      <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-        <div class="flex items-center gap-4">
-          <el-input
-            v-model="searchQuery"
-            placeholder="搜索型号代码/工厂代码/供应商..."
-            class="max-w-xs"
-            clearable
-            @keyup.enter="handleSearch"
-            @clear="handleClearSearch"
-          >
-            <template #append>
-              <el-button @click="handleSearch">
-                <el-icon><Search /></el-icon>
-              </el-button>
-            </template>
-          </el-input>
+      <div class="flex justify-between items-center mb-6">
+        <div class="flex items-center min-w-[800px]">
+          <div class="left-actions w-[200px]">
+            <h2 class="text-2xl font-bold text-gray-800">质检报告列表</h2>
+          </div>
+          <div class="flex items-center ml-8 w-[450px]">
+            <el-input
+              v-model="searchQuery"
+              placeholder="搜索型号代码/工厂代码/供应商..."
+              class="w-[350px] h-8 mt-1"
+              clearable
+              @keyup.enter="handleSearch"
+              @clear="handleClearSearch"
+            >
+              <template #append>
+                <el-button @click="handleSearch" class="w-[50px]">
+                  <el-icon><Search /></el-icon>
+                </el-button>
+              </template>
+            </el-input>
+          </div>
         </div>
-        <div class="flex gap-4 flex-wrap">
+        <div class="right-actions flex gap-4">
           <el-button 
             type="primary" 
             :loading="exporting" 
             :disabled="!selectedRows.length" 
             @click="handleBatchExport"
-            style="min-width: 120px"
+            class="w-24"
           >
             <el-icon><Document /></el-icon>
             {{ exporting ? '导出中...' : '批量导出' }}
@@ -34,7 +39,7 @@
             type="danger" 
             :disabled="!selectedRows.length" 
             @click="handleBatchDelete"
-            style="min-width: 120px"
+            class="min-w-[120px]"
           >
             <el-icon class="mr-2"><Delete /></el-icon>
             批量删除
@@ -43,7 +48,7 @@
             type="info" 
             :disabled="!selectedRows.length" 
             @click="handleSendEmail"
-            style="min-width: 120px"
+            class="min-w-[120px]"
           >
             <el-icon class="mr-2"><Message /></el-icon>
             发送邮件
@@ -78,12 +83,12 @@
       </el-dialog>
 
       <!-- 表格区域 -->
-      <div class="overflow-auto">
+      <div class="overflow-auto mt-16">
         <el-table
           :data="tableData"
           border
-          style="width: 100%"
-          height="calc(100vh - 280px)"
+          class="w-full"
+          height="calc(100vh - 340px)"
           v-loading="loading"
           :empty-text="loading ? '加载中...' : '暂无数据'"
           @selection-change="handleSelectionChange"
@@ -127,35 +132,41 @@
           </el-table-column>
           <el-table-column label="操作" width="170" fixed="right">
             <template #default="scope">
-              <div class="flex items-center justify-center space-x-1">
+              <div class="flex items-center justify-center space-x-3">
                 <el-button 
                   type="primary" 
                   link 
                   size="small" 
-                  class="text-xs !px-1"
+                  style="padding: 0; min-width: 35px;"
                   @click="handleView(scope.row)"
                 >
-                  <el-icon class="mr-1"><View /></el-icon>
+                  <el-icon>
+                    <View />
+                  </el-icon>
                   查看
                 </el-button>
                 <el-button 
                   type="primary" 
                   link 
                   size="small" 
-                  class="text-xs !px-1"
+                  style="padding: 0; min-width: 35px;"
                   @click="handleEdit(scope.row)"
                 >
-                  <el-icon class="mr-1"><Edit /></el-icon>
+                  <el-icon>
+                    <Edit />
+                  </el-icon>
                   编辑
                 </el-button>
                 <el-button 
                   type="danger" 
                   link 
                   size="small" 
-                  class="text-xs !px-1" 
+                  style="padding: 0; min-width: 35px;"
                   @click="handleDelete(scope.row)"
                 >
-                  <el-icon class="mr-1"><Delete /></el-icon>
+                  <el-icon>
+                    <Delete />
+                  </el-icon>
                   删除
                 </el-button>
               </div>

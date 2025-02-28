@@ -2,31 +2,47 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-01-14 17:03:09
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-02-18 17:38:37
+ * @LastEditTime: 2025-02-28 16:14:39
  * @FilePath: /yarn-vite-web-01-02/src/views/index/prod/Create.vue
  * @Description: 产品规格创建表单
 -->
 <template>
-  <div class="create-product">
-    <el-card class="form-card">
-      <el-steps :active="activeStep" finish-status="success" class="steps-container">
-        <template v-for="(step, index) in steps" :key="index">
-          <el-step 
-            :title="step.title" 
-            :description="step.description"
-            class="step-item"
-            @click="goToStep(index)"
-          />
-        </template>
-      </el-steps>
+  <div dir="ltr" class="flex-1 ps-1 min-w-0 overflow-hidden h-screen">
+    <!-- 固定在顶部的标题和步骤条 -->
+    <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
+      <!-- 顶部操作栏 -->
+      <div class="flex justify-between items-center py-3 px-6">
+        <div class="flex-1">
+          <h2 class="text-lg font-semibold text-gray-800">创建规格表</h2>
+        </div>
+        <div class="flex gap-2">
+          <el-button type="warning" @click="generateMockData">生成模拟数据</el-button>
+          <el-button @click="router.back()">
+            <el-icon><Back /></el-icon>
+            返回
+          </el-button>
+        </div>
+      </div>
 
-      <div class="form-container">
+      <!-- 步骤条 -->
+      <div class="px-6 py-4 border-t border-gray-200">
+        <el-steps :active="activeStep" finish-status="success">
+          <template v-for="(step, index) in steps" :key="index">
+            <el-step :title="step.title" @click="goToStep(index)" />
+          </template>
+        </el-steps>
+      </div>
+    </div>
+
+    <!-- 可滚动的内容区域 -->
+    <div class="bg-white overflow-auto" style="height: calc(100vh - 116px - 64px);">
+      <div class="p-6">
         <!-- 基本信息表单 -->
         <el-form
           v-if="activeStep === 0"
           :model="basicForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="产品代码">
             <el-input v-model="basicForm.tccode" />
@@ -59,7 +75,7 @@
           v-if="activeStep === 1"
           :model="upholsteryForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="面料制造商">
             <el-input v-model="upholsteryForm.fabricManufacturer" />
@@ -80,7 +96,7 @@
           v-if="activeStep === 2"
           :model="cartonForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="包装箱宽度">
             <el-input-number v-model="cartonForm.width" class="w-full" />
@@ -107,7 +123,7 @@
           v-if="activeStep === 3"
           :model="logisticsForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="生产时间">
             <el-input-number v-model="logisticsForm.productionTime" class="w-full" />
@@ -134,7 +150,7 @@
           v-if="activeStep === 4"
           :model="dimensionsForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="座位宽度">
             <el-input-number v-model="dimensionsForm.seatWidth" class="w-full" />
@@ -176,7 +192,7 @@
           v-if="activeStep === 5"
           :model="seatInnerForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="材料代码">
             <el-input v-model="seatInnerForm.materialCode" />
@@ -197,7 +213,7 @@
           v-if="activeStep === 6"
           :model="backInnerForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="材料代码">
             <el-input v-model="backInnerForm.materialCode" />
@@ -218,7 +234,7 @@
           v-if="activeStep === 7"
           :model="seatOuterForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="材料">
             <el-input v-model="seatOuterForm.material" />
@@ -236,7 +252,7 @@
           v-if="activeStep === 8"
           :model="backOuterForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="材料">
             <el-input v-model="backOuterForm.material" />
@@ -254,7 +270,7 @@
           v-if="activeStep === 9"
           :model="armsForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="材料">
             <el-input v-model="armsForm.material" />
@@ -281,7 +297,7 @@
           v-if="activeStep === 10"
           :model="foamForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="描述">
             <el-input v-model="foamForm.description" type="textarea" />
@@ -305,7 +321,7 @@
           v-if="activeStep === 11"
           :model="castorsForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="描述">
             <el-input v-model="castorsForm.description" type="textarea" />
@@ -323,7 +339,7 @@
           v-if="activeStep === 12"
           :model="baseForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="描述">
             <el-input v-model="baseForm.description" type="textarea" />
@@ -344,7 +360,7 @@
           v-if="activeStep === 13"
           :model="gasLiftForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="描述">
             <el-input v-model="gasLiftForm.description" type="textarea" />
@@ -368,7 +384,7 @@
           v-if="activeStep === 14"
           :model="gasLiftCoverForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="描述">
             <el-input v-model="gasLiftCoverForm.description" type="textarea" />
@@ -386,7 +402,7 @@
           v-if="activeStep === 15"
           :model="mechanismForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="描述">
             <el-input v-model="mechanismForm.description" type="textarea" />
@@ -410,7 +426,7 @@
           v-if="activeStep === 16"
           :model="fittingsForm"
           label-width="140px"
-          class="form-content"
+          class="max-w-4xl mx-auto"
         >
           <el-form-item label="配件编号">
             <el-input-number v-model="fittingsForm.fittingNumber" class="w-full" />
@@ -431,55 +447,53 @@
           v-if="activeStep === 17"
           :model="productImagesForm"
           label-width="140px"
-          class="form-content image-upload-form"
+          class="max-w-6xl mx-auto"
         >
-          <div class="upload-grid">
-            <!-- 正视图上传 -->
-            <div class="upload-item">
-              <div class="upload-label">正视图</div>
-              <div class="upload-preview-container">
+          <div class="grid grid-cols-4 gap-6">
+            <div class="w-full">
+              <div class="flex flex-col">
+                <div class="text-sm text-gray-600 mb-2">正视图</div>
                 <ImageHandler
                   v-model="productImagesForm.frontImgPath"
-                  :label="'正视图'"
+                  class="aspect-square w-full"
                   :limit="1"
+                  :editable="true"
                   @preview="handlePreview"
                 />
               </div>
             </div>
-
-            <!-- 侧视图上传 -->
-            <div class="upload-item">
-              <div class="upload-label">侧视图</div>
-              <div class="upload-preview-container">
+            <div class="w-full">
+              <div class="flex flex-col">
+                <div class="text-sm text-gray-600 mb-2">侧视图</div>
                 <ImageHandler
                   v-model="productImagesForm.sideImgPath"
-                  :label="'侧视图'"
+                  class="aspect-square w-full"
                   :limit="1"
+                  :editable="true"
                   @preview="handlePreview"
                 />
               </div>
             </div>
-            <!-- 背视图上传 -->
-            <div class="upload-item">
-              <div class="upload-label">背视图</div>
-              <div class="upload-preview-container">
+            <div class="w-full">
+              <div class="flex flex-col">
+                <div class="text-sm text-gray-600 mb-2">背视图</div>
                 <ImageHandler
                   v-model="productImagesForm.backImgPath"
-                  :label="'背视图'"
+                  class="aspect-square w-full"
                   :limit="1"
+                  :editable="true"
                   @preview="handlePreview"
                 />
               </div>
             </div>
-
-            <!-- 角视图上传 -->
-            <div class="upload-item">
-              <div class="upload-label">角视图</div>
-              <div class="upload-preview-container">
+            <div class="w-full">
+              <div class="flex flex-col">
+                <div class="text-sm text-gray-600 mb-2">角视图</div>
                 <ImageHandler
                   v-model="productImagesForm.angleImgPath"
-                  :label="'角视图'"
+                  class="aspect-square w-full"
                   :limit="1"
+                  :editable="true"
                   @preview="handlePreview"
                 />
               </div>
@@ -488,19 +502,19 @@
         </el-form>
 
         <!-- 步骤控制按钮 -->
-        <div class="steps-control-wrapper">
-          <div class="steps-control">
-            <div class="button-group">
-              <el-button type="warning" @click="generateMockData">生成模拟数据</el-button>
-
+        <div class="fixed bottom-0 right-0 z-10 ps-1 min-w-0" style="width: calc(100% - 256px); margin-right: 0;">
+          <div class="bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)]">
+            <div class="flex justify-center items-center gap-4 h-16 px-5 mx-auto max-w-4xl">
               <el-button @click="prevStep" :disabled="activeStep === 0">上一步</el-button>
               <el-button type="primary" @click="nextStep" v-if="activeStep < 17">下一步</el-button>
               <el-button type="success" @click="submitForm" v-else>提交</el-button>
             </div>
           </div>
         </div>
+        <!-- 添加底部空白区域防止内容被固定按钮遮挡 -->
+        <div class="h-20"></div>
       </div>
-    </el-card>
+    </div>
   </div>
 </template>
 
@@ -1114,377 +1128,3 @@ const handlePreview = (imageUrl: string) => {
   console.log('预览图片:', imageUrl)
 }
 </script>
-
-<style scoped>
-.create-product {
-  width: 100%;
-  min-height: 100vh;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.form-card {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  padding-bottom: 80px;
-}
-
-.steps-container {
-  margin-bottom: 30px;
-  padding: 20px 0;
-}
-
-.form-container {
-  width: 100%;
-  max-width: 1200px;
-  height: calc(100% - 80px);
-  margin: 0 auto;
-  padding: 20px;
-  padding-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  justify-content: center;
-}
-
-.form-content {
-  min-height: 400px;
-  width: 100%;
-}
-
-.w-full {
-  width: 100%;
-}
-
-.steps-control-wrapper {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  z-index: 100;
-}
-
-.steps-control {
-  width: 100%;
-  background-color: white;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.button-group {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  height: 80px;
-  padding: 0 20px;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-:deep(.el-input-number) {
-  width: 100%;
-}
-
-:deep(.el-card__body) {
-  height: 100%;
-}
-
-:deep(.el-form-item) {
-  margin-bottom: 22px;
-}
-
-:deep(.el-textarea__inner) {
-  min-height: 100px;
-}
-
-:deep(.el-steps) {
-  overflow-x: auto;
-  padding-bottom: 10px;
-}
-
-:deep(.el-steps__wrapper) {
-  min-width: max-content;
-}
-
-:deep(.el-step__title) {
-  font-size: 14px;
-  line-height: 1.2;
-  margin-top: 8px;
-  text-align: center;
-  display: block;
-}
-
-:deep(.el-step__head) {
-  margin-bottom: 8px;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-:deep(.el-step) {
-  text-align: center;
-  padding-right: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-}
-
-:deep(.el-step:hover .el-step__title) {
-  color: var(--el-color-primary);
-}
-
-:deep(.el-step:hover .el-step__icon) {
-  background-color: var(--el-color-primary-light-9);
-}
-
-:deep(.el-step__main) {
-  white-space: normal;
-  max-width: 120px;
-  margin: 0 auto;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-:deep(.el-step__line) {
-  margin-right: 0;
-  top: 15px;
-  left: calc(50% + 20px);
-  right: calc(-50% + 20px);
-}
-
-:deep(.el-button) {
-  min-width: 100px;
-  height: 40px;
-}
-
-:deep(.el-steps--horizontal) {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-:deep(.el-step:last-child) {
-  padding-right: 0;
-}
-
-.upload-preview-container {
-  width: 100%;
-  min-width: 200px;
-}
-
-.upload-component {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.upload-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 1;
-  width: 100%;
-  background: #f5f7fa;
-  border: 1px dashed #d9d9d9;
-  border-radius: 4px;
-  cursor: pointer;
-  
-}
-
-.upload-placeholder:hover {
-  border-color: #409eff;
-}
-
-.image-preview {
-  width: 100%;
-  aspect-ratio: 1;
-  position: relative;
-}
-
-.image-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-.image-actions {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1;
-  display: none;
-}
-
-.image-preview:hover .image-actions {
-  display: block;
-}
-
-.upload-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  width: 100%;
-  padding: 20px;
-}
-
-.upload-item {
-  width: 100%;
-}
-
-.upload-label {
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #606266;
-  text-align: center;
-}
-
-.upload-preview-container {
-  width: 100%;
-  aspect-ratio: 1;
-}
-
-.upload-component {
-  width: 100%;
-}
-
-.upload-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 1;
-  width: 100%;
-  background: #f5f7fa;
-  border: 1px dashed #d9d9d9;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.upload-placeholder:hover {
-  border-color: #409eff;
-}
-
-.image-preview {
-  width: 100%;
-  aspect-ratio: 1;
-  position: relative;
-}
-
-.image-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-.image-actions {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1;
-  display: none;
-}
-
-.image-preview:hover .image-actions {
-  display: block;
-}
-
-:deep(.el-form-item) {
-  margin-bottom: 0;
-}
-
-:deep(.el-form-item__content) {
-  justify-content: flex-start;
-}
-
-.image-upload-form {
-  padding: 20px;
-  width: 100%;
-}
-
-.upload-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  width: 100%;
-}
-
-.upload-item {
-  width: 100%;
-}
-
-.upload-label {
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #606266;
-}
-
-.upload-preview-container {
-  width: 100%;
-}
-
-.upload-component {
-  width: 100%;
-}
-
-.upload-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 1;
-  width: 100%;
-  background: #f5f7fa;
-  border: 1px dashed #d9d9d9;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.upload-placeholder:hover {
-  border-color: #409eff;
-}
-
-.image-preview {
-  width: 100%;
-  aspect-ratio: 1;
-  position: relative;
-}
-
-.image-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-.image-actions {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1;
-  display: none;
-}
-
-.image-preview:hover .image-actions {
-  display: block;
-}
-
-:deep(.el-form-item) {
-  margin-bottom: 0;
-}
-
-:deep(.el-form-item__content) {
-  justify-content: flex-start;
-}
-</style>

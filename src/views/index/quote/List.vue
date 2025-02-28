@@ -1,31 +1,37 @@
 <template>
-  <div class="flex-1 p-8 min-w-0 overflow-hidden">
-    <div class="bg-white rounded-lg shadow p-6 overflow-auto">
+  <div dir="ltr" class="flex-1 ps-1 min-w-0 overflow-hidden">
+    <div class="bg-white shadow-md p-6 h-screen overflow-auto">
       <!-- 搜索和操作区域 -->
-      <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-        <div class="flex items-center gap-4">
-          <el-input
-              v-model="searchQuery"
-              placeholder="请输入您要检索的内容..."
-              class="max-w-xs"
-              clearable
-              @keyup.enter="handleSearch"
-              @blur="handleSearchBlur"
-              @clear="handleSearchClear"
-          >
-            <template #append>
-              <el-button @click="handleSearch">
-                <el-icon><Search /></el-icon>
-              </el-button>
-            </template>
-          </el-input>
+      <div class="flex justify-between items-center mb-6">
+        <div class="flex items-center min-w-[800px]">
+          <div class="left-actions w-[200px]">
+            <h2 class="text-2xl font-bold text-gray-800">报价单列表</h2>
+          </div>
+          <div class="flex items-center ml-8 w-[450px]">
+            <el-input
+                v-model="searchQuery"
+                placeholder="请输入您要检索的内容..."
+                class="w-[350px] h-8 mt-1"
+                clearable
+                @keyup.enter="handleSearch"
+                @blur="handleSearchBlur"
+                @clear="handleSearchClear"
+            >
+              <template #append>
+                <el-button @click="handleSearch" class="w-[50px]">
+                  <el-icon><Search /></el-icon>
+                </el-button>
+              </template>
+            </el-input>
+          </div>
         </div>
-        <div class="flex gap-2 flex-wrap">
+        <div class="right-actions flex gap-4">
           <el-button 
             type="primary" 
             :loading="exporting"
             :disabled="!selectedRows.length" 
             @click="handleBatchExport"
+            class="w-24"
           >
             <el-icon><Document /></el-icon>
             {{ exporting ? '导出中...' : '批量导出' }}
@@ -68,12 +74,12 @@
       </el-dialog>
 
       <!-- 表格区域 -->
-      <div class="overflow-auto">
+      <div class="overflow-auto mt-16">
         <el-table
             :data="tableData"
             border
-            style="width: 100%"
-            height="calc(100vh - 280px)"
+            class="w-full"
+            height="calc(100vh - 340px)"
             v-loading="loading"
             :empty-text="loading ? '加载中...' : '暂无数据'"
             @selection-change="handleSelectionChange"
@@ -93,35 +99,41 @@
           <el-table-column prop="createTime" label="创建时间" min-width="160" show-overflow-tooltip />
           <el-table-column label="操作" width="170" fixed="right">
             <template #default="scope">
-              <div class="flex items-center justify-center space-x-1">
+              <div class="flex items-center justify-center space-x-3">
                 <el-button
                     type="primary"
                     link
                     size="small"
-                    class="text-xs !px-1"
+                    style="padding: 0; min-width: 35px;"
                     @click="handleView(scope.row)"
                 >
-                  <el-icon class="mr-1"><View /></el-icon>
+                  <el-icon>
+                    <View />
+                  </el-icon>
                   查看
                 </el-button>
                 <el-button
                     type="primary"
                     link
                     size="small"
-                    class="text-xs !px-1"
+                    style="padding: 0; min-width: 35px;"
                     @click="handleEdit(scope.row)"
                 >
-                  <el-icon class="mr-1"><Edit /></el-icon>
+                  <el-icon>
+                    <Edit />
+                  </el-icon>
                   编辑
                 </el-button>
                 <el-button
                     type="danger"
                     link
                     size="small"
-                    class="text-xs !px-1"
+                    style="padding: 0; min-width: 35px;"
                     @click="handleDelete(scope.row)"
                 >
-                  <el-icon class="mr-1"><Delete /></el-icon>
+                  <el-icon>
+                    <Delete />
+                  </el-icon>
                   删除
                 </el-button>
               </div>
@@ -378,16 +390,16 @@ const handleBatchDelete = async () => {
 
 // 批量导出
 const handleBatchExport = async () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请选择要导出的数据')
+    return
+  }
+
   exporting.value = true
+  const zip = new JSZip()
+  const usedFileNames = new Set()
+
   try {
-    if (!selectedRows.value.length) {
-      ElMessage.warning('请选择要导出的记录')
-      return
-    }
-
-    const zip = new JSZip()
-    const usedFileNames = new Set()
-
     // 处理重复文件名的函数
     const getUniqueFileName = (baseFileName: string): string => {
       if (!usedFileNames.has(baseFileName)) {
@@ -482,7 +494,6 @@ const handleBatchExport = async () => {
     } else {
       ElMessage.success('批量导出成功')
     }
-
   } catch (error) {
     console.error('批量导出失败:', error)
     ElMessage.error('批量导出失败')
@@ -490,40 +501,4 @@ const handleBatchExport = async () => {
     exporting.value = false
   }
 }
-
-// 发送邮件
-const handleSendEmail = () => {
-  emailForm.value.subject = `报价单 - ${selectedRows.value.map(row => row.supplierItemCode).join(', ')}`
-  showEmailDialog.value = true
-}
-
-// 确认发送邮件
-const confirmSendEmail = async () => {
-  try {
-    // TODO: 调用API发送邮件
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    ElMessage.success('邮件发送成功')
-    showEmailDialog.value = false
-  } catch (error) {
-    console.error('邮件发送失败:', error)
-    ElMessage.error('邮件发送失败')
-  }
-}
 </script>
-
-<style scoped>
-.el-table {
-  --el-table-border-color: var(--el-border-color-lighter);
-  --el-table-border: 1px solid var(--el-table-border-color);
-  --el-table-text-color: var(--el-text-color-regular);
-  --el-table-header-text-color: var(--el-text-color-secondary);
-  --el-table-row-hover-bg-color: var(--el-fill-color-light);
-  --el-table-current-row-bg-color: var(--el-color-primary-light-9);
-  --el-table-header-bg-color: var(--el-fill-color-light);
-  --el-table-fixed-box-shadow: var(--el-box-shadow-light);
-  --el-table-bg-color: var(--el-fill-color-blank);
-  --el-table-tr-bg-color: var(--el-fill-color-blank);
-  --el-table-expanded-cell-bg-color: var(--el-fill-color-blank);
-  margin-bottom: 0;
-}
-</style>

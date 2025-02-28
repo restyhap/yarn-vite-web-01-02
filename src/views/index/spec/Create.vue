@@ -1,251 +1,276 @@
 <template>
-  <div class="info-container">
-    <div class="content-wrapper">
-      <!-- 顶部操作栏 -->
-      <div class="top-actions">
-        <div class="left-actions">
-          <h2 class="page-title">新建质检报告</h2>
+  <div dir="ltr" class="flex-1 ps-1 min-w-0 overflow-hidden h-screen">
+    <!-- 固定在顶部的标题栏 -->
+    <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
+      <div class="flex justify-between items-center py-3 px-6">
+        <div class="flex-1">
+          <h2 class="text-lg font-semibold text-gray-800">创建质检报告</h2>
         </div>
-        <div class="right-actions">
-          <el-button type="primary" @click="fillTestData">
-            填充测试数据
-          </el-button>
+        <div class="flex gap-2">
           <el-button @click="router.back()">
             <el-icon><Back /></el-icon>
             返回
           </el-button>
-          
         </div>
       </div>
+    </div>
 
-      <!-- 内容区域 -->
-      <div class="tables-container">
-        <!-- 基本信息 -->
-        <div class="table-section">
-          <div class="section-header">
-            <h3 class="text-lg font-medium">基本信息</h3>
-          </div>
-          
-          <el-form :model="formData.qcReports" label-width="120px">
-            <!-- 基本信息表格 -->
-            <div class="basic-info-grid">
-              <!-- 非日期字段 -->
-              <template v-for="(field, key) in basicFields" :key="key">
-                <template v-if="!isImageField(key) && key !== 'comments' && !isDateField(key)">
-                  <el-form-item :label="field">
-                    <template v-if="key === 'passFail'">
-                      <el-radio-group v-model="formData.qcReports[key]">
-                        <el-radio label="Pass">通过</el-radio>
-                        <el-radio label="Fail">失败</el-radio>
-                      </el-radio-group>
-                    </template>
-                    <el-input 
-                      v-else
-                      v-model="formData.qcReports[key]" 
-                      :disabled="key === 'id'"
-                    />
-                  </el-form-item>
-                </template>
-              </template>
-            </div>
-
-            <!-- 日期字段单独分组 -->
-            <div class="dates-section">
-              <div class="date-row">
-                <el-form-item label="检验日期">
-                  <el-date-picker
-                    v-model="formData.qcReports.inspectionDate"
-                    type="date"
-                    placeholder="请选择检验日期"
-                    value-format="YYYY-MM-DD"
-                  />
-                </el-form-item>
-                <el-form-item label="通过/失败">
-                  <el-radio-group v-model="formData.qcReports.passFail">
-                    <el-radio label="Pass">通过</el-radio>
-                    <el-radio label="Fail">失败</el-radio>
-                  </el-radio-group>
-                </el-form-item>
-              </div>
-              <div class="date-row">
-                <el-form-item label="报告日期">
-                  <el-date-picker
-                    v-model="formData.qcReports.reportDate"
-                    type="date"
-                    placeholder="请选择报告日期"
-                    value-format="YYYY-MM-DD"
-                  />
-                </el-form-item>
-                <el-form-item label="二次质检日期">
-                  <el-date-picker
-                    v-model="formData.qcReports.secondQcDate"
-                    type="date"
-                    placeholder="请选择二次质检日期"
-                    value-format="YYYY-MM-DD"
-                  />
-                </el-form-item>
-              </div>
-            </div>
-
-            <!-- 评价内容 -->
-            <div class="comments-section">
-              <div class="comments-label">评价内容</div>
-              <div class="comments-content-wrapper">
+    <!-- 可滚动的内容区域 -->
+    <div class="bg-white overflow-auto" style="height: calc(100vh - 64px); padding-bottom: 72px;">
+      <div class="p-6">
+        <el-form
+          :model="formData"
+          label-width="140px"
+          class="w-full mx-auto px-4"
+        >
+          <!-- 质检信息 -->
+          <div class="mb-8">
+            <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">质检信息</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+              <el-form-item label="型号代码" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center" label-position="left">
                 <el-input 
-                  v-model="formData.qcReports.comments" 
+                  v-model="formData.qcReports.modelCode"
+                  placeholder="请输入型号代码"
+                  class="w-full"
+                />
+              </el-form-item>
+              <el-form-item label="工厂代码" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center" label-position="left">
+                <el-input 
+                  v-model="formData.qcReports.factoryCode"
+                  placeholder="请输入工厂代码"
+                  class="w-full"
+                />
+              </el-form-item>
+              <el-form-item label="供应商" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center" label-position="left">
+                <el-input 
+                  v-model="formData.qcReports.supplier"
+                  placeholder="请输入供应商"
+                  class="w-full"
+                />
+              </el-form-item>
+              <el-form-item label="客户" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center" label-position="left">
+                <el-input 
+                  v-model="formData.qcReports.client"
+                  placeholder="请输入客户"
+                  class="w-full"
+                />
+              </el-form-item>
+              <el-form-item label="PO编号" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center" label-position="left">
+                <el-input 
+                  v-model="formData.qcReports.poNumber"
+                  placeholder="请输入PO编号"
+                  class="w-full"
+                />
+              </el-form-item>
+              <el-form-item label="检验日期" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center" label-position="left">
+                <el-date-picker
+                  v-model="formData.qcReports.inspectionDate"
+                  type="date"
+                  placeholder="选择日期"
+                  value-format="YYYY-MM-DD"
+                  style="width: 100%"
+                  class="w-full"
+                />
+              </el-form-item>
+              <el-form-item label="订单数量" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center" label-position="left">
+                <el-input-number 
+                  v-model="formData.qcReports.orderQty" 
+                  :min="0" 
+                  class="w-full"
+                  placeholder="请输入订单数量"
+                />
+              </el-form-item>
+              <el-form-item label="报告日期" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center" label-position="left">
+                <el-date-picker
+                  v-model="formData.qcReports.reportDate"
+                  type="date"
+                  placeholder="选择日期"
+                  value-format="YYYY-MM-DD"
+                  style="width: 100%"
+                  class="w-full"
+                />
+              </el-form-item>
+              <el-form-item label="检验数量" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center" label-position="left">
+                <el-input-number 
+                  v-model="formData.qcReports.inspectQty" 
+                  :min="0" 
+                  class="w-full"
+                  placeholder="请输入检验数量"
+                />
+              </el-form-item>
+              <el-form-item label="质检员" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center" label-position="left">
+                <el-input 
+                  v-model="formData.qcReports.qcOfficer"
+                  placeholder="请输入质检员"
+                  class="w-full"
+                />
+              </el-form-item>
+              <el-form-item label="检验结果" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center" label-position="left">
+                <el-radio-group v-model="formData.qcReports.passFail">
+                  <el-radio label="Pass">通过</el-radio>
+                  <el-radio label="Fail">失败</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="二次质检日期" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center" label-position="left">
+                <el-date-picker
+                  v-model="formData.qcReports.secondQcDate"
+                  type="date"
+                  placeholder="选择日期"
+                  value-format="YYYY-MM-DD"
+                  style="width: 100%"
+                  class="w-full"
+                />
+              </el-form-item>
+              <el-form-item label="评价内容" class="col-span-3 bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center" label-position="left">
+                <el-input
+                  v-model="formData.qcReports.comments"
                   type="textarea"
                   :rows="4"
                   placeholder="请输入评价内容"
+                  class="w-full"
                 />
-              </div>
+              </el-form-item>
             </div>
-
-            <!-- 图片字段 -->
-            <div class="images-grid">
-              <template v-for="(field, key) in basicFields" :key="key">
-                <template v-if="isImageField(key)">
+          </div>
+          <!-- 图片信息 -->
+          <div class="mb-8">
+            <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">图片信息</h3>
+            <div class="grid gap-4 lg:gap-6"
+              style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));"
+            >
+              <!-- 遍历所有图片字段 -->
+              <template v-for="(label, key) in basicFields" :key="key">
+                <!-- 只显示图片字段 -->
+                <div 
+                  v-if="isImageField(key)"
+                  class="bg-gray-100 p-2 rounded flex flex-col h-full"
+                >
+                  <div class="text-sm text-gray-600 mb-2 font-medium">{{ label }}</div>
+                  
                   <ImageHandler
-                    v-model="formData.qcReports[key]"
-                    :label="field"
-                    :field-key="key"
+                    :model-value="formData.qcReports[key] ? [formData.qcReports[key]] : []"
+                    @update:model-value="updateImageField(key, $event)"
+                    :size="200"
                     :limit="1"
-                    @preview="handlePictureCardPreview"
+                    :editable="true"
+                    @preview="handlePreview"
+                    class="mt-2"
                   />
-                </template>
+                </div>
               </template>
             </div>
-          </el-form>
-        </div>
-
-        <!-- 缺陷记录 -->
-        <div class="table-section">
-          <div class="section-header">
-            <h3 class="text-lg font-medium">缺陷记录</h3>
           </div>
 
-          <div v-for="(defect, index) in formData.defectsDTO" :key="index" class="defect-item">
-            <div class="defect-header">
-              <h4 class="defect-title">质量问题记录 #{{ index + 1 }}</h4>
-              <el-button 
-                type="danger" 
-                link
-                @click="formData.defectsDTO.splice(index, 1)"
-              >
-                <el-icon><Delete /></el-icon>
-                删除
-              </el-button>
-            </div>
-
-            <!-- 缺陷标题 -->
-            <div class="defect-field">
-              <div class="defect-label">问题标题</div>
-              <div class="defect-content">
-                <el-input 
-                  v-model="defect.defects.defectTitle"
-                  placeholder="请输入问题标题"
-                />
-              </div>
-            </div>
-
-            <!-- 缺陷描述 -->
-            <div class="defect-field">
-              <div class="defect-label">问题描述</div>
-              <div class="defect-content">
-                <el-input 
-                  v-model="defect.defects.defectDescription"
+          <!-- 缺陷记录弹窗 -->
+          <el-dialog
+            v-model="defectDialogVisible"
+            title="添加缺陷记录"
+            width="800px"
+            :close-on-click-modal="false"
+            class="!fixed defect-dialog"
+            :modal-class="'!w-[calc(100%-256px)] !left-[256px]'"
+            :style="{
+              left: '50%',
+              marginLeft: '128px',
+              transform: 'translate(-50%, -50%)',
+              top: '50%'
+            }"
+            align-center
+          >
+            <el-form :model="currentDefect" label-width="100px">
+              <el-form-item label="缺陷标题" class="bg-gray-100 p-2 rounded" label-position="left">
+                <el-input v-model="currentDefect.defects.defectTitle" placeholder="请输入缺陷标题" />
+              </el-form-item>
+              <el-form-item label="缺陷描述" class="bg-gray-100 p-2 rounded" label-position="left">
+                <el-input
+                  v-model="currentDefect.defects.defectDescription"
                   type="textarea"
                   :rows="3"
-                  placeholder="请输入问题描述"
+                  placeholder="请输入缺陷描述"
                 />
-              </div>
-            </div>
-
-            <!-- 改进建议 -->
-            <div class="defect-field">
-              <div class="defect-label">改进建议</div>
-              <div class="defect-content">
-                <el-input 
-                  v-model="defect.defects.improvementSuggestion"
+              </el-form-item>
+              <el-form-item label="改进建议" class="bg-gray-100 p-2 rounded" label-position="left">
+                <el-input
+                  v-model="currentDefect.defects.improvementSuggestion"
                   type="textarea"
                   :rows="3"
                   placeholder="请输入改进建议"
                 />
-              </div>
-            </div>
-
-            <!-- 检查人员 -->
-            <div class="defect-field">
-              <div class="defect-label">检查人员</div>
-              <div class="defect-content">
-                <el-input 
-                  v-model="defect.defects.inspector"
-                  placeholder="请输入检查人员姓名"
-                />
-              </div>
-            </div>
-
-            <!-- 图片区域 -->
-            <div class="defect-field">
-              <div class="defect-label">缺陷图片</div>
-              <div class="defect-content">
-                <div class="image-grid">
-                  <div v-for="(image, imgIndex) in defect.defectImages"
-                       :key="imgIndex"
-                       class="image-item">
-                    <ImageHandler
-                      v-model="image.imagePath"
-                      :label="`缺陷图片 ${imgIndex + 1}`"
-                      :limit="1"
-                      @preview="handlePictureCardPreview"
-                    />
-                  </div>
-                  <!-- 添加图片按钮 -->
-                  <div v-if="defect.defectImages.length < 2" class="image-item">
-                    <ImageHandler
-                      v-model="newDefectImage"
-                      label="添加图片"
-                      :limit="1"
-                      @update:model-value="(val) => handleAddDefectImage(index, val)"
-                    />
-                  </div>
+              </el-form-item>
+              <el-form-item label="检查人员" class="bg-gray-100 p-2 rounded" label-position="left">
+                <el-input v-model="currentDefect.defects.inspector" placeholder="请输入检查人员" />
+              </el-form-item>
+              
+              <!-- 缺陷图片 -->
+              <el-form-item label="缺陷图片" class="bg-gray-100 p-2 rounded" label-position="left">
+                <div class="flex gap-4">
+                  <ImageHandler
+                    v-model="defectImageUrls"
+                    class="w-[200px] h-[200px]"
+                    :limit="2"
+                    :editable="true"
+                  />
                 </div>
+              </el-form-item>
+            </el-form>
+            
+            <template #footer>
+              <div class="flex justify-end gap-2">
+                <el-button @click="defectDialogVisible = false">取消</el-button>
+                <el-button type="primary" @click="saveDefect">确定</el-button>
               </div>
-            </div>
-          </div>
+            </template>
+          </el-dialog>
 
-          <!-- 添加记录按钮 -->
-          <div class="add-defect">
-            <el-button 
-              type="primary"
-              @click="addDefect"
-            >
-              <el-icon><Plus /></el-icon>
-              添加缺陷记录
-            </el-button>
-          </div>
-        </div>
+          <!-- 图片预览弹窗 -->
+          <el-dialog
+            v-model="dialogVisible"
+            :title="'图片预览'"
+            width="auto"
+            :modal-class="'!w-[calc(100%-256px)] !left-[256px]'"
+            class="!fixed preview-dialog"
+            :style="{
+              left: '50%',
+              marginLeft: '128px',
+              transform: 'translateX(-50%)'
+            }"
+            align-center
+          >
+            <img 
+              :src="dialogImageUrl" 
+              class="max-h-[300px] w-auto object-contain"
+            />
+          </el-dialog>
+        </el-form>
+      </div>
+    </div>
 
-        <!-- 底部提交按钮 -->
-        <div class="bottom-actions">
-          <el-button type="primary" size="large" @click="handleSave">
+    <!-- 固定在底部的提交按钮 -->
+    <div class="fixed bottom-0 right-0 z-10 ps-1 min-w-0" style="width: calc(100% - 256px); margin-right: 0;">
+      <div class="bg-white shadow-[0_-2px_3px_rgba(0,0,0,0.1)]">
+        <div class="p-4 flex justify-center items-center gap-4 mx-auto">
+          <el-button type="primary" plain @click="addDefect">
+            <el-icon><Plus /></el-icon>
+            添加缺陷记录
+          </el-button>
+          <el-button 
+            type="success" 
+            class="bg-green-500 hover:bg-green-600 border-0 shadow-sm" 
+            @click="submitForm"
+          >
             <el-icon><Check /></el-icon>
             提交质检报告
           </el-button>
         </div>
       </div>
     </div>
-
-    <!-- 图片预览对话框 -->
-    <el-dialog v-model="dialogVisible">
-      <img w-full :src="dialogImageUrl" alt="Preview Image" />
-    </el-dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Check, Back, Delete, Plus, Document } from '@element-plus/icons-vue'
+import { Check, Back, Delete, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { QcReportsDTO, DefectsDTO, DefectImages } from '@/types/qcReport'
 import ImageHandler from '@/components/ImageHandler.vue'
@@ -255,7 +280,17 @@ import { saveQcReportsDTO } from '@/api/specification'
 const router = useRouter()
 const dialogImageUrl = ref('')
 const dialogVisible = ref(false)
-const mockLoading = ref(false)
+const defectDialogVisible = ref(false)
+const currentDefect = ref<DefectsDTO>({
+  defects: {
+    id: getId(),
+    defectTitle: '',
+    defectDescription: '',
+    improvementSuggestion: '',
+    inspector: ''
+  },
+  defectImages: []
+})
 
 const formData = ref<QcReportsDTO>({
   qcReports: {
@@ -310,118 +345,46 @@ const formData = ref<QcReportsDTO>({
   defectsDTO: []
 })
 
-// 定义图片字段类型
-type ImageFieldKey = keyof Pick<QcReportsDTO['qcReports'], 
-  | 'stocksInWarehouse'
-  | 'samplingOfProductsQuantity'
-  | 'shippingMarks'
-  | 'barcode'
-  | 'packingOutside'
-  | 'packingInside'
-  | 'chairComponentsPacked'
-  | 'chairComponentsUnpacked'
-  | 'fittingPackPacked'
-  | 'fittingPackUnpacked'
-  | 'productionLabel'
-  | 'assemblyInstructions'
-  | 'imageOfComponentsSeat'
-  | 'imageOfComponentsBack'
-  | 'imageOfComponentsBase'
-  | 'imageOfComponentsCastors'
-  | 'imageOfComponentsGasLiftCover'
-  | 'imageOfComponentsGasLiftStamp'
-  | 'imageOfComponentsArmrest'
-  | 'imageOfComponentMechanism'
-  | 'imageOfComponentsHeadrest'
-  | 'imageOfProductBuiltFront'
-  | 'imageOfProductBuiltSide'
-  | 'imageOfProductBuiltBack'
-  | 'imageOfProductBuilt45Degree'
-  | 'frontImageOfProductBuiltCompare1'
-  | 'frontImageOfProductBuiltCompare2'
-  | 'functionCheckSeatHeightExtension'
-  | 'functionCheckMechanismAdjustment'
-  | 'functionCheckArmrestAdjustment'
-  | 'functionCheckHeadrestAdjustment'
-  | 'functionCheckOther1'
-  | 'functionCheckOther2'
->
+// 修改 defectImageUrls 的定义，确保它是响应式数组
+const defectImageUrls = ref<string[]>([])
 
-// 判断是否为图片字段
-const isImageField = (key: keyof QcReportsDTO['qcReports']): key is ImageFieldKey => {
-  const imageFields: ImageFieldKey[] = [
-    'stocksInWarehouse',
-    'samplingOfProductsQuantity',
-    'shippingMarks',
-    'barcode',
-    'packingOutside',
-    'packingInside',
-    'chairComponentsPacked',
-    'chairComponentsUnpacked',
-    'fittingPackPacked',
-    'fittingPackUnpacked',
-    'productionLabel',
-    'assemblyInstructions',
-    'imageOfComponentsSeat',
-    'imageOfComponentsBack',
-    'imageOfComponentsBase',
-    'imageOfComponentsCastors',
-    'imageOfComponentsGasLiftCover',
-    'imageOfComponentsGasLiftStamp',
-    'imageOfComponentsArmrest',
-    'imageOfComponentMechanism',
-    'imageOfComponentsHeadrest',
-    'imageOfProductBuiltFront',
-    'imageOfProductBuiltSide',
-    'imageOfProductBuiltBack',
-    'imageOfProductBuilt45Degree',
-    'frontImageOfProductBuiltCompare1',
-    'frontImageOfProductBuiltCompare2',
-    'functionCheckSeatHeightExtension',
-    'functionCheckMechanismAdjustment',
-    'functionCheckArmrestAdjustment',
-    'functionCheckHeadrestAdjustment',
-    'functionCheckOther1',
-    'functionCheckOther2'
-  ]
-  return imageFields.includes(key as ImageFieldKey)
-}
-
-// 判断是否为日期字段
-const isDateField = (key: keyof QcReportsDTO['qcReports']): boolean => {
-  const dateFields = ['inspectionDate', 'reportDate', 'secondQcDate']
-  return dateFields.includes(key)
-}
-
-// 基本字段定义 - 重新排序，将日期字段放在一起
-const basicFields: Record<keyof Omit<QcReportsDTO['qcReports'], 'createdAt' | 'updatedAt'>, string> = {
+// 基本字段定义
+const basicFields = {
+  // 基础信息字段
   id: '序列号',
   modelCode: '型号代码',
   factoryCode: '工厂代码',
   supplier: '供应商',
   client: '客户',
   poNumber: 'PO编号',
+  inspectionDate: '检验日期',
   orderQty: '订单数量',
+  reportDate: '报告日期',
   inspectQty: '检验数量',
   qcOfficer: '质检员',
-  // 将三个日期字段放在一起
-  inspectionDate: '检验日期',
-  reportDate: '报告日期',
+  passFail: '检验结果',
   secondQcDate: '二次质检日期',
-  passFail: '通过/失败',
   comments: '评价内容',
+  
+  // 产品外观图片
   stocksInWarehouse: '仓库库存图片',
   samplingOfProductsQuantity: '产品抽样数量图片',
   shippingMarks: '运输标记图片',
   barcode: '条形码图片',
   packingOutside: '外包装图片',
   packingInside: '内包装图片',
+  
+  // 椅子组件图片
   chairComponentsPacked: '椅子组件-已包装图片',
   chairComponentsUnpacked: '椅子组件-未包装图片',
+  
+  // 配件包图片
   fittingPackPacked: '配件包-已包装图片',
   fittingPackUnpacked: '配件包-未包装图片',
   productionLabel: '生产标签图片',
   assemblyInstructions: '组装说明图片',
+  
+  // 组件图片
   imageOfComponentsSeat: '组件图片-座椅',
   imageOfComponentsBack: '组件图片-靠背',
   imageOfComponentsBase: '组件图片-底座',
@@ -431,12 +394,16 @@ const basicFields: Record<keyof Omit<QcReportsDTO['qcReports'], 'createdAt' | 'u
   imageOfComponentsArmrest: '组件图片-扶手',
   imageOfComponentMechanism: '组件图片-机构',
   imageOfComponentsHeadrest: '组件图片-头枕',
+  
+  // 成品图片
   imageOfProductBuiltFront: '成品图片-正视图',
   imageOfProductBuiltSide: '成品图片-侧视图',
   imageOfProductBuiltBack: '成品图片-背视图',
   imageOfProductBuilt45Degree: '成品图片-45度视图',
   frontImageOfProductBuiltCompare1: '成品图片-样品对比图1',
   frontImageOfProductBuiltCompare2: '成品图片-样品对比图2',
+  
+  // 功能检查图片
   functionCheckSeatHeightExtension: '功能检查-座椅高度调节',
   functionCheckMechanismAdjustment: '功能检查-机构调节',
   functionCheckArmrestAdjustment: '功能检查-扶手调节',
@@ -445,47 +412,90 @@ const basicFields: Record<keyof Omit<QcReportsDTO['qcReports'], 'createdAt' | 'u
   functionCheckOther2: '功能检查-其他2'
 }
 
-// 添加缺陷记录
-const addDefect = () => {
+// 修改 isImageField 函数的实现
+const isImageField = (key: string): boolean => {
+  // 排除基础字段
+  const basicFieldKeys = [
+    'id', 'modelCode', 'factoryCode', 'supplier', 'client', 'poNumber',
+    'inspectionDate', 'orderQty', 'reportDate', 'inspectQty', 'qcOfficer',
+    'passFail', 'secondQcDate', 'comments'
+  ]
+  return !basicFieldKeys.includes(key)
+}
+
+// 判断是否为日期字段
+const isDateField = (key: keyof QcReportsDTO['qcReports']): boolean => {
+  const dateFields = ['inspectionDate', 'reportDate', 'secondQcDate']
+  return dateFields.includes(key)
+}
+
+// 修改保存缺陷记录的方法
+const saveDefect = () => {
+  // 验证必填字段
+  if (!currentDefect.value.defects.defectTitle) {
+    ElMessage.warning('请输入缺陷标题')
+    return
+  }
+
+  // 验证是否有图片
+  if (defectImageUrls.value.length === 0) {
+    ElMessage.warning('请至少上传一张缺陷图片')
+    return
+  }
+
+  // 创建新的缺陷记录对象
   const newDefect: DefectsDTO = {
     defects: {
+      ...currentDefect.value.defects,
+      id: getId()
+    },
+    defectImages: defectImageUrls.value.map(url => ({
       id: getId(),
-      reportId: formData.value.qcReports.id,
+      defectId: currentDefect.value.defects.id,
+      imagePath: url,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }))
+  }
+
+  // 添加到表单数据中
+  formData.value.defectsDTO.push(newDefect)
+  
+  // 重置表单和图片数组
+  currentDefect.value = {
+    defects: {
+      id: getId(),
       defectTitle: '',
       defectDescription: '',
       improvementSuggestion: '',
-      inspector: formData.value.qcReports.qcOfficer || '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      inspector: ''
     },
     defectImages: []
   }
+  defectImageUrls.value = []
   
-  formData.value.defectsDTO.push(newDefect)
+  defectDialogVisible.value = false
+  ElMessage.success('缺陷记录添加成功')
 }
 
-// 处理缺陷图片变化
-const handleDefectImageChange = (images: string[], index: number) => {
-  // 将新的图片数据转换为DefectImages对象
-  const defectImages: DefectImages[] = images.map(imagePath => ({
-    id: getId(),
-    defectId: formData.value.defectsDTO[index].defects.id,
-    imagePath,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }))
-  
-  // 更新defectImages数组
-  formData.value.defectsDTO[index].defectImages = defectImages
-}
-
-// 获取缺陷图片路径数组
-const getDefectImagePaths = (defectImages: DefectImages[]) => {
-  return defectImages.map(img => img.imagePath)
+// 添加缺陷记录时重置所有数据
+const addDefect = () => {
+  currentDefect.value = {
+    defects: {
+      id: getId(),
+      defectTitle: '',
+      defectDescription: '',
+      improvementSuggestion: '',
+      inspector: ''
+    },
+    defectImages: []
+  }
+  defectImageUrls.value = [] // 确保重置图片数组
+  defectDialogVisible.value = true
 }
 
 // 处理图片预览
-const handlePictureCardPreview = (url: string) => {
+const handlePreview = (url: string) => {
   dialogImageUrl.value = url
   dialogVisible.value = true
 }
@@ -669,384 +679,34 @@ const fillTestData = () => {
       functionCheckOther1: getRandomImage(),
       functionCheckOther2: getRandomImage(),
     },
-    defectsDTO
+    defectsDTO,
   }
 
   ElMessage.success(`测试数据填充成功: ${defectCount}个缺陷记录`)
 }
 
+// 修改 initializeImageFields 函数
+const initializeImageFields = () => {
+  const allFields = Object.keys(formData.value.qcReports)
+  
+  allFields.forEach(field => {
+    if (isImageField(field) && formData.value.qcReports[field] === undefined) {
+      formData.value.qcReports[field] = ''
+    }
+  })
+}
+
+// 修改 updateImageField 函数
+const updateImageField = (key: string, value: string[]) => {
+  if (isImageField(key)) {
+    formData.value.qcReports[key] = value[0] || ''  // 只取第一张图片
+  }
+}
+
+// 在组件挂载时初始化
+onMounted(() => {
+  initializeImageFields()
+})
 
 </script>
 
-<style scoped>
-/* 复用 Info.vue 的样式 */
-.info-container {
-  height: 100vh;
-  overflow: hidden;
-  padding: 20px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.content-wrapper {
-  flex: 1;
-  overflow-y: auto;
-  width: 100%;
-  padding-right: 10px;
-  padding-top: 10px;
-}
-
-.tables-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding-bottom: 20px;
-}
-
-.table-section {
-  padding: 16px;
-  width: 100%;
-  margin-bottom: 24px;
-  border: none;
-  box-shadow: none;
-  background-color: #fff;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.section-header h3 {
-  margin: 0;
-  font-size: 16px;
-  color: #303133;
-  font-weight: 600;
-}
-
-.top-actions {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  width: 100%;
-  padding: 12px 16px;
-  background-color: #fff;
-  border-bottom: 1px solid #ebeef5;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.left-actions {
-  flex: 1;
-}
-
-.right-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 18px;
-  color: #303133;
-  font-weight: 600;
-}
-
-/* 基本信息表格样式 */
-.basic-info-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.basic-info-grid :deep(.el-form-item) {
-  margin: 0;
-}
-
-.basic-info-grid :deep(.el-form-item__label) {
-  width: 120px !important;
-  justify-content: flex-start;
-  padding: 0 12px;
-  background-color: #f5f7fa;
-  border-radius: 4px;
-}
-
-.basic-info-grid :deep(.el-form-item__content) {
-  flex: 1;
-  padding: 0 12px;
-}
-
-/* 修改基本信息表格中的 input 背景色 */
-.basic-info-grid :deep(.el-input__wrapper) {
-  background-color: #fff;
-}
-
-/* 评价内容样式 */
-.comments-section {
-  margin-bottom: 24px;
-  width: 100%;
-}
-
-.comments-label {
-  padding: 8px 12px;
-  background-color: #f5f7fa;
-  border-radius: 4px;
-  color: #606266;
-  font-size: 14px;
-  line-height: 20px;
-  margin-bottom: 8px;
-  width: 120px;
-  text-align: center;
-}
-
-.comments-content-wrapper {
-  width: 100%;
-}
-
-/* 修改评价内容的背景色 */
-.comments-content-wrapper :deep(.el-textarea__inner) {
-  background-color: #fff;
-}
-
-/* 图片网格布局 */
-.images-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  padding: 24px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-}
-
-.image-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #fff;
-  padding: 16px;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.image-label {
-  font-size: 14px;
-  color: #606266;
-  text-align: center;
-  margin-bottom: 12px;
-  font-weight: 500;
-}
-
-/* 图片上传和预览样式 */
-:deep(.el-upload--picture-card) {
-  display: inline-flex;
-  width: 148px;
-  height: 148px;
-  margin: 0;
-}
-
-:deep(.el-upload-list--picture-card .el-upload-list__item) {
-  width: 148px;
-  height: 148px;
-}
-
-:deep(.el-upload-list--picture-card .el-upload-list__item-thumbnail) {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* 当有图片时隐藏上传按钮 */
-:deep(.el-upload-list:not(:empty) + .el-upload--picture-card) {
-  display: none !important;
-}
-
-/* 缺陷记录样式 */
-.defect-item {
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05);
-  margin-bottom: 16px;
-}
-
-.defect-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.defect-title {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 500;
-  color: #303133;
-}
-
-.defect-field {
-  margin-bottom: 20px;
-}
-
-.defect-field:last-child {
-  margin-bottom: 0;
-}
-
-.defect-label {
-  font-size: 14px;
-  color: #606266;
-  margin-bottom: 8px;
-}
-
-.defect-content {
-  width: 100%;
-}
-
-/* 修改缺陷记录中的 input 背景色 */
-.defect-content :deep(.el-input__wrapper),
-.defect-content :deep(.el-textarea__inner) {
-  background-color: transparent;  /* 移除背景色 */
-  border: 1px solid #dcdfe6;     /* 添加边框 */
-}
-
-.defect-content :deep(.el-input__wrapper:hover),
-.defect-content :deep(.el-textarea__inner:hover) {
-  border-color: #c0c4cc;
-}
-
-.defect-content :deep(.el-input__wrapper.is-focus),
-.defect-content :deep(.el-textarea__inner:focus) {
-  border-color: #409eff;
-}
-
-.add-defect {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
-}
-
-/* 响应式布局 */
-@media screen and (max-width: 1400px) {
-  .basic-info-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media screen and (max-width: 1000px) {
-  .basic-info-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .images-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 自定义滚动条样式 */
-.content-wrapper::-webkit-scrollbar {
-  width: 6px;
-}
-
-.content-wrapper::-webkit-scrollbar-thumb {
-  background: #dcdfe6;
-  border-radius: 3px;
-}
-
-.content-wrapper::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-/* 底部提交按钮样式 */
-.bottom-actions {
-  display: flex;
-  justify-content: center;
-  margin-top: 24px;
-  margin-bottom: 24px;
-  padding: 16px;
-}
-
-.bottom-actions :deep(.el-button) {
-  min-width: 200px;
-  height: 48px;
-  font-size: 16px;
-}
-
-/* 单选按钮组样式 */
-:deep(.el-radio-group) {
-  display: flex;
-  gap: 16px;
-}
-
-:deep(.el-radio) {
-  margin-right: 0;
-  height: 32px;
-  display: flex;
-  align-items: center;
-}
-
-:deep(.el-radio__label) {
-  font-size: 14px;
-  padding-left: 8px;
-}
-
-:deep(.el-radio__input.is-checked + .el-radio__label) {
-  color: var(--el-color-primary);
-}
-
-/* 日期字段分组样式 */
-.dates-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding: 16px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-}
-
-.date-row {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.dates-section :deep(.el-form-item) {
-  margin: 0;
-  width: 100%;
-}
-
-.dates-section :deep(.el-form-item__label) {
-  width: 120px !important;
-  justify-content: flex-start;
-  padding: 0 12px;
-  background-color: #fff;
-  border-radius: 4px;
-}
-
-.dates-section :deep(.el-date-editor.el-input),
-.dates-section :deep(.el-radio-group) {
-  width: 100%;
-}
-
-/* 修改日期选择器的背景色 */
-.dates-section :deep(.el-input__wrapper) {
-  background-color: #fff;
-}
-
-/* 响应式布局调整 */
-@media screen and (max-width: 768px) {
-  .date-row {
-    grid-template-columns: 1fr;
-  }
-}
-</style> 

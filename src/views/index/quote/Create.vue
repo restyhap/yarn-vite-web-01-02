@@ -1,116 +1,49 @@
 <template>
-  <div class="info-container">
-    <div class="content-wrapper">
-      <!-- 顶部操作栏 -->
-      <div class="top-actions">
-        <div class="left-actions">
-          <h2 class="page-title">新建报价单</h2>
+  <div dir="ltr" class="flex-1 ps-1 min-w-0 overflow-hidden h-screen">
+    <!-- 固定在顶部的标题栏 -->
+    <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
+      <div class="flex justify-between items-center py-3 px-6">
+        <div class="flex-1">
+          <h2 class="text-lg font-semibold text-gray-800">创建报价单</h2>
         </div>
-        <div class="right-actions">
+        <div class="flex gap-2">
           <el-button @click="router.back()">
             <el-icon><Back /></el-icon>
             返回
           </el-button>
         </div>
       </div>
+    </div>
 
-      <!-- 内容区域 -->
-      <div class="tables-container">
-        <!-- 基本信息 -->
-        <div class="table-section">
-          <div class="section-header">
-            <h3 class="text-lg font-medium">基本信息</h3>
-          </div>
-          
-          <el-form :model="formData" label-width="120px">
-            
+    <!-- 可滚动的内容区域 -->
+    <div class="bg-white overflow-auto" style="height: calc(100vh - 64px); padding-bottom: 72px;">
+      <div class="p-6">
+        <el-form
+          ref="formRef"
+          :model="formData"
+          label-width="140px"
+          class="max-w-4xl mx-auto"
+        >
+          <!-- 表单内容 -->
+        </el-form>
+      </div>
+    </div>
 
-            <!-- 基本信息表格 -->
-            <div class="form-grid">
-              <template v-for="(field, key) in basicFields" :key="key">
-                <template v-if="!isImageField(key)">
-                  <el-form-item :label="field">
-                    <template v-if="isSpecialField(key)">
-                      <el-select v-model="formData[key]" class="w-full">
-                        <el-option label="人民币" :value="0" />
-                        <el-option label="美元" :value="1" />
-                      </el-select>
-                    </template>
-                    <template v-else-if="isSwitchField(key)">
-                      <el-switch
-                        v-model="formData[key]"
-                        :active-value="1"
-                        :inactive-value="0"
-                        active-text="是"
-                        inactive-text="否"
-                        class="custom-switch"
-                        style="--el-switch-on-color: #13ce66; --el-switch-off-color: #C0C4CC;"
-                      />
-                    </template>
-                    <template v-else-if="isDateTimeField(key)">
-                      <el-date-picker
-                        v-model="formData[key]"
-                        type="datetime"
-                        placeholder="选择日期时间"
-                        class="w-full"
-                      />
-                    </template>
-                    <template v-else-if="isNumberField(key)">
-                      <el-input-number 
-                        v-model="formData[key]" 
-                        :precision="key === 'fobPrice' ? 2 : 0"
-                        :step="key === 'fobPrice' ? 0.1 : 1"
-                        :min="0"
-                        class="w-full"
-                      />
-                    </template>
-                    <template v-else-if="isTextareaField(key)">
-                      <el-input 
-                        v-model="formData[key]"
-                        type="textarea"
-                        :rows="3"
-                        placeholder="请输入内容"
-                      />
-                    </template>
-                    <template v-else>
-                      <el-input v-model="formData[key]" />
-                    </template>
-                  </el-form-item>
-                </template>
-              </template>
-            </div>
-            <!-- 图片上传 -->
-            <div class="image-section">
-              <el-form-item label="产品图片">
-                <div class="image-container">
-                  <ImageHandler
-                    v-model="formData.image"
-                    :label="'产品图片'"
-                    :limit="1"
-                    @preview="handlePreview"
-                  />
-                </div>
-              </el-form-item>
-            </div>
-
-            <!-- 底部提交按钮 -->
-        <div class="bottom-actions">
-          
-          <el-button type="primary" size="large" @click="handleSubmit">
+    <!-- 固定在底部的提交按钮 -->
+    <div class="fixed bottom-0 right-0 z-10 ps-1 min-w-0" style="width: calc(100% - 256px); margin-right: 0;">
+      <div class="bg-white shadow-[0_-2px_3px_rgba(0,0,0,0.1)]">
+        <div class="p-4 flex justify-center items-center gap-4 mx-auto max-w-4xl">
+          <el-button type="primary" @click="handleSubmit">
             <el-icon><Check /></el-icon>
             提交报价单
           </el-button>
         </div>
-          </el-form>
-        </div>
-
-        
       </div>
     </div>
 
     <!-- 图片预览对话框 -->
     <el-dialog v-model="dialogVisible" title="图片预览" width="800px" align-center>
-      <img :src="dialogImageUrl" style="width: 100%;" />
+      <img :src="dialogImageUrl" class="w-full" />
     </el-dialog>
   </div>
 </template>
@@ -118,7 +51,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Check, Back, Plus } from '@element-plus/icons-vue'
+import { Check, Back } from '@element-plus/icons-vue'
 import type { UploadFile } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { addQuotation } from '@/api'
@@ -321,241 +254,4 @@ const handleSubmit = async () => {
   }
 }
 
-
-</script>
-
-<style scoped>
-/* 复用 Info.vue 的样式 */
-.info-container {
-  height: 100vh;
-  overflow: hidden;
-  padding: 20px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  background: var(--page-background);
-}
-
-.content-wrapper {
-  flex: 1;
-  overflow-y: auto;
-  width: 100%;
-  padding-right: 10px;
-  padding-top: 10px;
-}
-
-.tables-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding-bottom: 20px;
-}
-
-.table-section {
-  padding: 16px;
-  width: 100%;
-  margin-bottom: 24px;
-  border: none;
-  box-shadow: none;
-  background: var(--section-background);
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.section-header h3 {
-  margin: 0;
-  font-size: 16px;
-  color: #303133;
-  font-weight: 600;
-}
-
-.top-actions {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  width: 100%;
-  padding: 12px 16px;
-  background-color: #fff;
-  border-bottom: 1px solid #ebeef5;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.left-actions {
-  flex: 1;
-}
-
-.right-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 18px;
-  color: #303133;
-  font-weight: 600;
-}
-
-/* 修改表单布局样式 */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2列布局 */
-  gap: 16px;
-  width: 100%;
-}
-
-/* 修改表单项样式 */
-:deep(.el-form-item) {
-  margin: 0;
-  width: 100%;
-  display: flex;
-  align-items: center;
-}
-
-/* 非编辑状态的样式 */
-:deep(.el-form-item__label) {
-  font-weight: 500;
-  color: #606266;
-  background-color: #f8f9fb;
-  padding: 0;
-  height: 32px;
-  line-height: 32px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px 0 0 4px;
-  width: 30% !important;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 10px 0 0;
-}
-
-:deep(.el-form-item__content) {
-  flex: none;
-  width: 61.8% !important;
-  min-height: 32px;
-  line-height: 32px;
-  display: flex;
-  align-items: center;
-  
- 
-}
-
-/* 图片上传样式 */
-.image-section {
-  margin-bottom: 24px;
-  width: 100%;
-}
-
-.image-section :deep(.el-form-item) {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.image-section :deep(.el-form-item__label) {
-  width: 100% !important;
-  justify-content: flex-start;
-  border-radius: 4px;
-  margin-bottom: 8px;
-  border-right: 1px solid #dcdfe6;
-}
-
-.image-section :deep(.el-form-item__content) {
-  width: 100% !important;
-  border: none;
-  padding: 0;
-  background: none;
-}
-
-.image-container {
-  position: relative;
-  display: inline-block;
-}
-
-:deep(.el-upload--picture-card) {
-  display: inline-flex;
-  width: 148px;
-  height: 148px;
-  margin: 0;
-}
-
-:deep(.el-upload-list--picture-card .el-upload-list__item) {
-  width: 148px;
-  height: 148px;
-}
-
-:deep(.el-upload-list--picture-card .el-upload-list__item-thumbnail) {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* 响应式布局 */
-@media screen and (max-width: 1400px) {
-  .form-grid {
-    grid-template-columns: repeat(2, 1fr); /* 保持2列布局 */
-  }
-}
-
-@media screen and (max-width: 1000px) {
-  .form-grid {
-    grid-template-columns: 1fr; /* 在更小的屏幕上切换为单列布局 */
-  }
-}
-
-/* 底部提交按钮样式 */
-.bottom-actions {
-  display: flex;
-  justify-content: center;
-
-}
-
-.bottom-actions :deep(.el-button) {
-  min-width: 200px;
-  height: 48px;
-  font-size: 16px;
-}
-
-:root {
-  --page-background: #f5f7fa;  /* 页面背景色 */
-  --section-background: #ffffff;  /* 表格区域背景色 */
-  --section-header-background: #ffffff;  /* 表格头部背景色 */
-  --section-editing-background: #fafcff;  /* 编辑状态背景色 */
-}
-
-/* 自定义开关样式 */
-:deep(.custom-switch) {
-  --el-switch-on-color: #13ce66;
-  --el-switch-off-color: #C0C4CC;
-}
-
-:deep(.custom-switch .el-switch__label) {
-  color: var(--el-text-color-primary);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-:deep(.custom-switch .el-switch__label--left) {
-  margin-right: 8px;
-}
-
-:deep(.custom-switch .el-switch__label--right) {
-  margin-left: 8px;
-}
-
-:deep(.custom-switch .el-switch__core) {
-  min-width: 50px;
-}
-</style> 
+</script> 

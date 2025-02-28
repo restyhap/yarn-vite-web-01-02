@@ -1,5 +1,5 @@
 <template>
-  <div class="info-container">
+  <div class="flex flex-col h-full bg-white">
     <el-skeleton :loading="loading" animated>
       <template #template>
         <div style="padding: 20px">
@@ -10,11 +10,11 @@
       </template>
 
       <template #default>
-        <div class="content-wrapper" v-if="formData">
+        <div class="flex-1 p-6" v-if="formData">
           <!-- 顶部操作栏 -->
-          <div class="top-actions">
+          <div class="flex justify-between items-center mb-6">
             <div class="left-actions">
-              <h2 class="page-title">质检报告详情</h2>
+              <h2 class="text-2xl font-bold text-gray-800">质检报告详情</h2>
             </div>
             <div class="right-actions">
               <template v-if="editingSections.includes('basic')">
@@ -48,7 +48,7 @@
           <!-- 内容区域 -->
           <div class="tables-container">
             <!-- 基本信息 -->
-            <div class="table-section" :class="{ 'editing': editingSections.includes('basic') }">
+            <div class="table-section" :class="{ 'border-2 border-blue-500 bg-blue-50': editingSections.includes('basic') }">
               <div class="section-header">
                 <h3>质检信息</h3>
               </div>
@@ -1620,6 +1620,19 @@ const debugField = (key: string) => {
   align-items: center;
 }
 
+ :deep(.el-dialog__body .el-form-item__content) {
+  width:100% !important;
+  min-height: 32px;
+  line-height: 32px;
+ 
+  background-color: #fff;
+  border: 1px solid #dcdfe6;
+  border-radius: 0 4px 4px 0;
+  display: flex;
+  align-items: center;
+  margin : 0 10px 0 0 ;
+}
+
 /* 编辑状态的样式 */
 .table-section.editing {
   background-color: var(--section-editing-background, #fafcff);
@@ -2189,6 +2202,7 @@ pre {
 
 /* 确保el-form-item__content内的元素正确布局 */
 .defect-form :deep(.el-form-item__content) {
+  
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -2326,6 +2340,7 @@ pre {
 }
 
 .defect-dialog :deep(.el-form-item__content) {
+  width: 100%;
   background-color: transparent;
 }
 
@@ -2417,6 +2432,7 @@ pre {
 
 /* 输入框焦点状态 */
 :deep(.el-form-item:has(.el-input__wrapper:focus-within)) .el-form-item__content {
+  width: 100%;
   border-color: #409eff;
   box-shadow: 0 0 0 1px #409eff;
 }

@@ -1,45 +1,43 @@
 <template>
-  <div class="flex-1 p-8 min-w-0 overflow-hidden">
-    <div class="bg-white rounded-lg shadow p-6 overflow-auto">
+  <div dir="ltr" class="flex-1 ps-1 min-w-0 overflow-hidden">
+    <div class="bg-white shadow-md p-6 h-screen overflow-auto">
       <!-- 搜索和操作区域 -->
-      <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-        <div class="flex items-center gap-4">
-          <el-input
-            v-model="searchQuery"
-            placeholder="搜索产品代码/供应商..."
-            class="max-w-xs"
-            clearable
-            @keyup.enter="handleSearch"
-          >
-            <template #append>
-              <el-button @click="handleSearch">
-                <el-icon><Search /></el-icon>
-              </el-button>
-            </template>
-          </el-input>
+      <div class="flex justify-between items-center mb-6">
+        <div class="flex items-center min-w-[800px]">
+          <div class="left-actions w-[200px]">
+            <h2 class="text-2xl font-bold text-gray-800">产品规格列表</h2>
+          </div>
+          <div class="flex items-center ml-8 w-[450px] ">
+            <el-input v-model="searchQuery" placeholder="搜索产品代码/供应商..." class="w-[350px] h-8 mt-1" clearable @keyup.enter="handleSearch">
+              <template #append>
+                <el-button @click="handleSearch" class=" w-[50px]">
+                  <el-icon>
+                    <Search />
+                  </el-icon>
+                </el-button>
+              </template>
+            </el-input>
+          </div>
         </div>
-        <div class="flex gap-4 flex-wrap">
-          <el-button 
-            type="primary" 
-            :loading="exporting" 
-            :disabled="!selectedRows.length" 
-            @click="handleBatchExport"
-            style="min-width: 120px"
-          >
-            <el-icon><Document /></el-icon>
+
+        <div class="right-actions flex gap-4">
+          <el-button type="primary" :loading="exporting" :disabled="!selectedRows.length" @click="handleBatchExport"
+            class="w-24">
+            <el-icon>
+              <Document />
+            </el-icon>
             {{ exporting ? '导出中...' : '批量导出' }}
           </el-button>
-          <el-button 
-            type="danger" 
-            :disabled="!selectedRows.length" 
-            @click="handleBatchDelete"
-            style="min-width: 120px"
-          >
-            <el-icon class="mr-2"><Delete /></el-icon>
+          <el-button type="danger" :disabled="!selectedRows.length" @click="handleBatchDelete" class="min-w-[120px]">
+            <el-icon class="mr-2">
+              <Delete />
+            </el-icon>
             批量删除
           </el-button>
           <el-button type="info" :disabled="!selectedRows.length" @click="handleSendEmail">
-            <el-icon class="mr-2"><Message /></el-icon>
+            <el-icon class="mr-2">
+              <Message />
+            </el-icon>
             发送邮件
           </el-button>
         </div>
@@ -55,12 +53,7 @@
             <el-input v-model="emailForm.subject" placeholder="请输入邮件主题" />
           </el-form-item>
           <el-form-item label="正文">
-            <el-input
-              v-model="emailForm.content"
-              type="textarea"
-              :rows="6"
-              placeholder="请输入邮件内容"
-            />
+            <el-input v-model="emailForm.content" type="textarea" :rows="6" placeholder="请输入邮件内容" />
           </el-form-item>
         </el-form>
         <template #footer>
@@ -72,16 +65,9 @@
       </el-dialog>
 
       <!-- 表格区域 -->
-      <div class="overflow-auto">
-        <el-table
-          :data="tableData"
-          border
-          style="width: 100%"
-          height="calc(100vh - 340px)"
-          v-loading="loading"
-          :empty-text="loading ? '加载中...' : '暂无数据'"
-          @selection-change="handleSelectionChange"
-        >
+      <div class="overflow-auto mt-16 ">
+        <el-table :data="tableData" border class="w-full" :style="{ height: 'calc(100vh - 340px)' }" v-loading="loading"
+          :empty-text="loading ? '加载中...' : '暂无数据'" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="55" fixed="left" />
           <el-table-column prop="id" label="ID" width="170" fixed="left" />
           <el-table-column prop="tccode" label="产品代码" min-width="120" show-overflow-tooltip />
@@ -91,46 +77,56 @@
           <el-table-column prop="fireStandard" label="防火标准" min-width="120" show-overflow-tooltip />
           <el-table-column label="20尺柜FOB价格" min-width="140" align="right">
             <template #default="scope">
-              ¥{{ scope.row.fob20ContainerPrice?.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+              ¥{{ scope.row.fob20ContainerPrice?.toLocaleString('zh-CN', {
+                minimumFractionDigits: 2,
+              maximumFractionDigits: 2 }) }}
             </template>
           </el-table-column>
           <el-table-column label="40尺柜FOB价格" min-width="140" align="right">
             <template #default="scope">
-              ¥{{ scope.row.fob40ContainerPrice?.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+              ¥{{ scope.row.fob40ContainerPrice?.toLocaleString('zh-CN', {
+                minimumFractionDigits: 2,
+              maximumFractionDigits: 2 }) }}
             </template>
           </el-table-column>
           <el-table-column prop="shippingPort" label="发货港口" min-width="120" show-overflow-tooltip />
           <el-table-column label="操作" width="170" fixed="right">
             <template #default="scope">
-              <div class="flex items-center justify-center space-x-1">
+              <div class="flex items-center justify-center space-x-3">
                 <el-button 
                   type="primary" 
                   link 
                   size="small" 
-                  class="text-xs !px-1"
+                  style="padding: 0; min-width: 35px;"
                   @click="handleView(scope.row)"
                 >
-                  <el-icon class="mr-1"><View /></el-icon>
+                  <el-icon>
+                    <View />
+                  </el-icon>
                   查看
                 </el-button>
                 <el-button 
                   type="primary" 
                   link 
                   size="small" 
-                  class="text-xs !px-1"
+                  style="padding: 0; min-width: 35px;"
                   @click="handleEdit(scope.row)"
                 >
-                  <el-icon class="mr-1"><Edit /></el-icon>
+                  <el-icon>
+                    <Edit />
+                  </el-icon>
                   编辑
                 </el-button>
                 <el-button 
                   type="danger" 
                   link 
                   size="small" 
-                  class="text-xs !px-1" 
+                  style="padding: 0; min-width: 35px;"
                   @click="handleDelete(scope.row.id)"
                 >
-                  <el-icon class="mr-1"><Delete /></el-icon>
+                  <el-icon>
+                    <Delete />
+                  </el-icon>
                   删除
                 </el-button>
               </div>
@@ -141,15 +137,9 @@
 
       <!-- 分页区域 -->
       <div class="flex justify-center mt-4">
-        <el-pagination
-          v-model:current-page="pagination.pageNumber"
-          v-model:page-size="pagination.pageSize"
-          :total="total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="sizes, prev, pager, next, total"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
+        <el-pagination v-model:current-page="pagination.pageNumber" v-model:page-size="pagination.pageSize"
+          :total="total" :page-sizes="[10, 20, 50, 100]" layout="sizes, prev, pager, next, total"
+          @size-change="handleSizeChange" @current-change="handleCurrentChange" />
       </div>
     </div>
   </div>
@@ -279,7 +269,7 @@ const handleBatchExport = async () => {
   try {
     loading.value = true
     const zip = new JSZip()
-    
+
     // 使用模拟数据
     const getMockProdData = (item: ProdData) => {
       return {
@@ -351,9 +341,9 @@ const handleBatchExport = async () => {
     })
 
     const results = await Promise.all(exportTasks)
-    
+
     // 过滤掉失败的导出
-    const successfulResults = results.filter((result): result is { fileName: string; doc: Blob } => 
+    const successfulResults = results.filter((result): result is { fileName: string; doc: Blob } =>
       result !== null && result.doc instanceof Blob
     )
 
@@ -370,7 +360,7 @@ const handleBatchExport = async () => {
     const zipContent = await zip.generateAsync({ type: 'blob' })
     const timestamp = new Date().getTime()
     saveAs(zipContent, `产品规格书_${timestamp}.zip`)
-    
+
     if (successfulResults.length < selectedRows.value.length) {
       ElMessage.warning(`部分文档导出失败，成功导出 ${successfulResults.length}/${selectedRows.value.length} 个文档`)
     } else {
@@ -402,11 +392,11 @@ const handleBatchDelete = async () => {
         type: 'warning'
       }
     )
-    
+
     // 调用批量删除API
     const deletePromises = selectedRows.value.map(row => removeProductDto(row.id))
     await Promise.all(deletePromises)
-    
+
     ElMessage.success('批量删除成功')
     fetchTableData()
   } catch (error) {
@@ -504,17 +494,3 @@ onMounted(() => {
   fetchTableData()
 })
 </script>
-
-<style scoped>
-.flex {
-  display: flex;
-}
-
-.justify-center {
-  justify-content: center;
-}
-
-.mt-4 {
-  margin-top: 1rem;
-}
-</style>
