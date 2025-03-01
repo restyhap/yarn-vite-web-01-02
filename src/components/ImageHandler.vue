@@ -22,22 +22,24 @@
           />
           <!-- 编辑状态显示预览和删除按钮 -->
           <div 
-            v-if="editable" 
-            class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex justify-center items-center gap-2 transition-opacity"
+            class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex justify-center items-center gap-4 transition-opacity"
           >
             <button 
               type="button" 
-              class="w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-white/10 hover:scale-110 transition-all"
+              class="rounded-full flex items-center justify-center text-white hover:bg-white/10 hover:scale-110 transition-all"
+              :style="buttonStyle"
               @click.prevent="() => handlePreview(url)"
             >
-              <el-icon class="text-lg"><ZoomIn /></el-icon>
+              <el-icon :style="iconSize"><ZoomIn /></el-icon>
             </button>
             <button
+              v-if="editable"
               type="button"
-              class="w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-white/10 hover:scale-110 transition-all"
+              class="rounded-full flex items-center justify-center text-white hover:bg-white/10 hover:scale-110 transition-all"
+              :style="buttonStyle"
               @click.prevent="() => handleDelete(index)"
             >
-              <el-icon class="text-lg"><Delete /></el-icon>
+              <el-icon :style="iconSize"><Delete /></el-icon>
             </button>
           </div>
         </div>
@@ -135,6 +137,16 @@ const showUploadArea = computed(() => {
   })
   return shouldShow
 })
+
+// 修改按钮样式计算属性
+const buttonStyle = computed(() => ({
+  width: `${props.size * 0.143}px`,   // 1:7 的比例
+  height: `${props.size * 0.143}px`   // 1:7 的比例
+}))
+
+const iconSize = computed(() => ({
+  fontSize: `${props.size * 0.143}px`  // 设置为容器尺寸的14.3%,保持1:7的比例
+}))
 
 // 触发文件选择
 const triggerUpload = () => {
