@@ -454,22 +454,18 @@ const confirmSendEmail = async () => {
 }
 
 // 操作处理
-const handleView = (row: TableRow) => {
-  if (!row || !row.id) {
-    ElMessage.warning('无效的产品ID')
-    return
-  }
-  router.push(`/prod/info/${row.id}`)
+const handleView = (row: any) => {
+  router.push({
+    name: 'productInfo',
+    params: { id: row.id }
+  })
 }
 
 const handleEdit = (row: any) => {
-  if (!row.id) {
-    ElMessage.warning('无效的记录')
-    return
-  }
   router.push({
-    path: `/prod/info/${row.id}`,
-    query: { edit: 'true' }  // 添加编辑状态标记
+    name: 'productInfo',
+    params: { id: row.id },
+    query: { mode: 'edit' }
   })
 }
 

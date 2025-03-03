@@ -1,13 +1,12 @@
 /*
  * @Author: resty restyhap@hotmail.com
- * @Date: 2025-02-11 15:40:01
+ * @Date: 2025-02-19 13:18:01
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-02-14 12:55:58
+ * @LastEditTime: 2025-02-19 14:51:24
  * @Description: 报价单相关接口
  */
-import { file } from 'jszip'
 import http from '../axios'
-import { upload } from './index'
+
 /**
  * 搜索报价单
  * @param {Object} params - 搜索参数
@@ -44,13 +43,11 @@ export const getQuotationDetail = (id) => {
 }
 
 /**
- * 添加报价单
+ * 添加/保存报价单
  * @param {Object} data - 报价单数据
- * @param {Array} file - 文件列表
  * @returns {Promise}
  */
-export const addQuotation = async (data) => {
-  console.log(data);
+export const saveQuotation = (data) => {
   return http.post('/quotation/save', data)
 }
 

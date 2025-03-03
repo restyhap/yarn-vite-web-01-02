@@ -1,0 +1,40 @@
+<!-- 图片信息 -->
+<div class="mb-8">
+  <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">图片信息</h3>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <template v-for="(label, key) in specSections.images" :key="key">
+      <div class="bg-gray-100 p-4 rounded">
+        <div class="text-center text-sm text-gray-600 mb-2 font-medium">{{ label }}</div>
+        <div class="w-full h-[240px] bg-white rounded-lg overflow-hidden">
+          <div class="w-full h-full flex items-center justify-center">
+            <ImageHandler
+              :model-value="formData.images[key] ? [formData.images[key]] : []"
+              @update:model-value="val => updateSingleImage('images', key, val)"
+              :editable="editingSections.includes('images')"
+              class="w-full h-full"
+            />
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
+
+<style>
+/* 图片处理组件样式 */
+:deep(.image-handler) {
+  @apply w-full h-full flex items-center justify-center;
+}
+
+:deep(.image-handler img) {
+  @apply w-auto h-auto max-w-full max-h-full object-contain m-auto;
+}
+
+:deep(.el-upload) {
+  @apply w-full h-full flex items-center justify-center;
+}
+
+:deep(.el-upload-dragger) {
+  @apply w-full h-full flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-blue-500;
+}
+</style> 

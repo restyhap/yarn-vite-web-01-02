@@ -1,330 +1,149 @@
 <template>
-  <div class="flex flex-col h-full bg-white">
-    <el-skeleton :loading="loading" animated>
-      <template #template>
-        <div style="padding: 20px">
-          <el-skeleton-item variant="text" style="width: 30%" />
-          <el-skeleton-item variant="text" style="width: 40%" />
-          <el-skeleton-item variant="text" style="width: 100%" />
+  <div class="h-full bg-gray-100">
+    <!-- 顶部操作栏 -->
+    <div class="fixed top-0 left-0 right-0 z-10">
+      <div class="flex items-center justify-between py-3 px-6 bg-white border-b border-gray-200">
+        <div class="flex items-center gap-2">
+          <el-button @click="$router.back()">
+            <el-icon><Back /></el-icon>
+            返回
+          </el-button>
+          <span class="text-lg font-medium">规格详情</span>
         </div>
-      </template>
+        <div class="flex items-center gap-2">
+          <el-button type="primary" @click="handleExport">
+            <el-icon><Document /></el-icon>
+            导出
+          </el-button>
+        </div>
+      </div>
+    </div>
 
-      <template #default>
-        <div class="flex-1 p-6" v-if="formData">
-          <!-- 顶部操作栏 -->
-          <div class="flex justify-between items-center mb-6">
-            <div class="left-actions">
-              <h2 class="text-2xl font-bold text-gray-800">质检报告详情</h2>
-            </div>
-            <div class="right-actions">
-              <template v-if="editingSections.includes('basic')">
-                <el-button type="success" @click="handleSave">
-                  <el-icon><Check /></el-icon>
-                  保存
-                </el-button>
-                <el-button type="danger" @click="handleCancel">
-                  <el-icon><Close /></el-icon>
-                  取消
-                </el-button>
-                
-              </template>
-              <template v-else>
-                <el-button type="primary" @click="handleEdit('basic')">
-                  <el-icon><Edit /></el-icon>
-                  编辑
-                </el-button>
-              </template>
-              <el-button type="primary" :loading="exporting" @click="handleExport">
-                <el-icon><Document /></el-icon>
-                {{ exporting ? '导出中...' : '导出文档' }}
-              </el-button>
-              <el-button @click="router.back()">
-                <el-icon><Back /></el-icon>
-                返回
-              </el-button>
-            </div>
-          </div>
-
-          <!-- 内容区域 -->
-          <div class="tables-container">
-            <!-- 基本信息 -->
-            <div class="table-section" :class="{ 'border-2 border-blue-500 bg-blue-50': editingSections.includes('basic') }">
-              <div class="section-header">
-                <h3>质检信息</h3>
-              </div>
-              <div class="form-content">
-                <el-form :model="formData" label-width="120px">
-                  <div class="form-grid">
-                    <el-form-item v-for="(field, key) in basicFields"
-                      :key="key"
-                      :label="field">
+    <!-- 主要内容区域 -->
+    <div class="pt-[60px] h-full overflow-auto">
+      <el-skeleton :loading="loading" animated>
+        <template #default>
+          <div class="max-w-[1200px] mx-auto">
+            <div class="bg-white rounded-lg shadow-sm">
+              <div class="p-6">
+                <!-- 基本信息部分 -->
+                <div class="mb-8">
+                  <h3 class="text-lg font-medium text-gray-800 w-full border-b pb-2 flex justify-between items-center">
+                    <span>基本信息</span>
+                    <div class="flex gap-2 ml-auto">
                       <template v-if="editingSections.includes('basic')">
-                        <el-input 
-                          v-model="editingData[key]"
-                        />
-                      </template>
-                      <template v-else>
-                        {{ formData[key] || '-' }}
-                      </template>
-                    </el-form-item>
-                  </div>
-                </el-form>
-              </div>
-            </div>
-
-            <!-- 产品图片部分 -->
-            <div class="table-section" :class="{ 'editing': editingSections.includes('basic') }">
-              <div class="section-header">
-                <h3>产品图片</h3>
-              </div>
-              <div class="images-grid">
-                <template v-for="(label, key) in productImages" :key="key">
-                  <div class="image-item">
-                    <div class="image-label" :class="{ 'editing': editingSections.includes('basic') }">
-                      {{ label }}
-                    </div>
-                    <div class="image-container">
-                      <ImageHandler
-                        v-model="formData[key]"
-                        :editable="editingSections.includes('basic')"
-                        width="100%"
-                        height="200px"
-                        @temp-file="handleTempFile"
-                      />
-                    </div>
-                  </div>
-                </template>
-              </div>
-            </div>
-
-            <!-- 缺陷记录 -->
-            <div class="table-section" :class="{ 'editing': editingSections.includes('defects') }">
-              <div class="section-header">
-                <div class="section-header-content">
-                  <h3 class="text-lg font-medium">缺陷记录 ({{ formData.defects?.length || 0 }})</h3>
-                  <el-button 
-                    type="primary" 
-                    size="small"
-                    @click="handleShowAddDefect"
-                  >
-                    <el-icon><Plus /></el-icon>
-                    添加记录
-                  </el-button>
-                </div>
-              </div>
-
-              <!-- 添加调试信息 -->
-              <pre v-if="showDebugInfo">{{ JSON.stringify(formData.defects, null, 2) }}</pre>
-              
-              <!-- 缺陷记录列表 -->
-              <div v-if="formData.defects && formData.defects.length > 0" class="defects-list">
-                <div v-for="(defect, index) in formData.defects" :key="defect.id" class="defect-card" :class="{ 'editing': editingSections.includes(`defect-${index}`) }">
-                  <div class="defect-header">
-                    <div class="defect-title">
-                      <span class="defect-number">缺陷 #{{ index + 1 }}</span>
-                      <template v-if="editingSections.includes(`defect-${index}`)">
-                        <el-input 
-                          v-model="tempFormData.defects[index].defectTitle" 
-                          placeholder="请输入缺陷标题"
-                          class="title-input"
-                        />
-                      </template>
-                      <template v-else>
-                        <h4>{{ defect.defectTitle || '缺陷记录' }}</h4>
-                      </template>
-                    </div>
-                    <div class="defect-actions">
-                      <template v-if="editingSections.includes(`defect-${index}`)">
-                        <el-button type="success" size="small" @click="handleSaveDefect(index)">
+                        <el-button type="success" @click="handleSave('basic')">
                           <el-icon><Check /></el-icon>
                           保存
                         </el-button>
-                        <el-button type="danger" size="small" @click="handleCancelDefect(index)">
+                        <el-button type="danger" @click="handleCancel('basic')">
                           <el-icon><Close /></el-icon>
                           取消
                         </el-button>
                       </template>
                       <template v-else>
-                        <el-button type="primary" size="small" @click="handleEditDefect(index)">
+                        <el-button type="primary" @click="handleEdit('basic')">
                           <el-icon><Edit /></el-icon>
                           编辑
                         </el-button>
-                        <el-button type="danger" size="small" @click="handleDeleteDefect(index)">
-                          <el-icon><Delete /></el-icon>
-                          删除
-                        </el-button>
                       </template>
                     </div>
-                  </div>
-                  
-                  <div class="defect-content">
-                    <div class="defect-info">
-                      <div class="info-item">
-                        <div class="info-label">问题描述:</div>
-                        <div class="info-value">
-                          <template v-if="editingSections.includes(`defect-${index}`)">
-                            <el-input 
-                              v-model="tempFormData.defects[index].defectDescription" 
-                              type="textarea" 
-                              :rows="3"
-                              placeholder="请输入问题描述"
-                            />
+                  </h3>
+
+                  <el-form 
+                    :model="formData"
+                    label-width="140px"
+                    class="[&_.el-form-item__label]:text-gray-600 [&_.el-form-item__label]:font-medium [&_.el-input__wrapper]:shadow-none [&_.el-input__inner]:h-[38px]"
+                  >
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <template v-for="(label, key) in basicFields" :key="key">
+                        <el-form-item 
+                          :label="label" 
+                          :class="[
+                            'mb-4',
+                            key === 'comments' ? 'col-span-full' : ''
+                          ]"
+                        >
+                          <template v-if="editingSections.includes('basic')">
+                            <template v-if="key === 'comments'">
+                              <el-input 
+                                v-model="formData[key]"
+                                type="textarea"
+                                :rows="4"
+                                :placeholder="`请输入${label}`"
+                                class="w-full"
+                              />
+                            </template>
+                            <template v-else>
+                              <el-input 
+                                v-model="formData[key]"
+                                :placeholder="`请输入${label}`"
+                                class="w-full"
+                              />
+                            </template>
                           </template>
                           <template v-else>
-                            <div class="text-content">{{ defect.defectDescription || '无' }}</div>
+                            <div :class="[
+                              'w-full text-gray-700 bg-white p-2 rounded',
+                              key === 'comments' ? 'min-h-[100px] whitespace-pre-wrap' : 'h-[38px] leading-[22px]'
+                            ]">
+                              {{ formatFieldValue(key, formData[key]) || '-' }}
+                            </div>
                           </template>
-                        </div>
-                      </div>
-                      
-                      <div class="info-item">
-                        <div class="info-label">改进建议:</div>
-                        <div class="info-value">
-                          <template v-if="editingSections.includes(`defect-${index}`)">
-                            <el-input 
-                              v-model="tempFormData.defects[index].improvementSuggestion" 
-                              type="textarea" 
-                              :rows="3"
-                              placeholder="请输入改进建议"
-                            />
-                          </template>
-                          <template v-else>
-                            <div class="text-content">{{ defect.improvementSuggestion || '无' }}</div>
-                          </template>
-                        </div>
-                      </div>
-                      
-                      <div class="info-item">
-                        <div class="info-label">检查员:</div>
-                        <div class="info-value">
-                          <template v-if="editingSections.includes(`defect-${index}`)">
-                            <el-input 
-                              v-model="tempFormData.defects[index].inspector" 
-                              placeholder="请输入检查员姓名"
-                            />
-                          </template>
-                          <template v-else>
-                            <div class="text-content">{{ defect.inspector || '无' }}</div>
-                          </template>
-                        </div>
-                      </div>
+                        </el-form-item>
+                      </template>
                     </div>
-                    
-                    <div class="defect-images">
-                      <div class="images-label">缺陷图片:</div>
-                      <div class="images-container">
-                        <template v-if="defect.images && defect.images.length > 0">
-                          <div v-for="(image, imgIndex) in defect.images" :key="image.id" class="defect-image-item">
-                            <ImageHandler
-                              :model-value="image.imagePath"
-                              :editable="editingSections.includes(`defect-${index}`)"
-                              width="100%"
-                              height="150px"
-                              @update:model-value="(val) => handleDefectImageUpdate(val, index, imgIndex)"
-                            />
-                          </div>
+                  </el-form>
+                </div>
+
+                <!-- 图片部分 -->
+                <template v-for="(section, _index) in imageSections" :key="section.key">
+                  <div class="mb-8">
+                    <h3 class="text-lg font-medium text-gray-800 w-full border-b pb-2 flex justify-between items-center">
+                      <span>{{ section.title }}</span>
+                      <div class="flex gap-2 ml-auto">
+                        <template v-if="editingSections.includes(section.key)">
+                          <el-button type="success" @click="handleSave(section.key)">
+                            <el-icon><Check /></el-icon>
+                            保存
+                          </el-button>
+                          <el-button type="danger" @click="handleCancel(section.key)">
+                            <el-icon><Close /></el-icon>
+                            取消
+                          </el-button>
                         </template>
-                        
-                        <div v-if="editingSections.includes(`defect-${index}`) && (!defect.images || defect.images.length < 2)" 
-                             class="defect-image-item">
-                          <ImageHandler
-                            :model-value="''"
-                            alt="添加图片"
-                            :editable="true"
-                            width="100%"
-                            height="150px"
-                            @update:model-value="(val) => handleDefectImageAdd(val, index)"
+                        <template v-else>
+                          <el-button type="primary" @click="handleEdit(section.key)">
+                            <el-icon><Edit /></el-icon>
+                            编辑
+                          </el-button>
+                        </template>
+                      </div>
+                    </h3>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
+                      <div v-for="(label, key) in section.fields" :key="key" class="bg-white rounded-lg p-4">
+                        <div class="text-sm text-gray-600 mb-2 font-medium">{{ label }}</div>
+                        <div class="w-full h-[240px] bg-white rounded-lg overflow-hidden">
+                          <ImageHandler 
+                            :model-value="getImageValue(key)"
+                            @update:model-value="val => updateImageValue(key, val)"
+                            :editable="editingSections.includes(section.key)"
+                            class="!w-full !h-full [&_img]:w-auto [&_img]:h-auto [&_img]:max-w-full [&_img]:max-h-full [&_img]:object-contain [&_img]:m-auto [&_.el-upload]:w-full [&_.el-upload]:h-full [&_.el-upload]:flex [&_.el-upload]:items-center [&_.el-upload]:justify-center [&_.el-upload-dragger]:w-full [&_.el-upload-dragger]:h-full [&_.el-upload-dragger]:flex [&_.el-upload-dragger]:items-center [&_.el-upload-dragger]:justify-center [&_.el-upload-dragger]:border-2 [&_.el-upload-dragger]:border-dashed [&_.el-upload-dragger]:border-gray-300 hover:[&_.el-upload-dragger]:border-blue-500 [&_.el-upload__tip]:hidden"
                           />
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-              
-              <div v-else class="empty-defects">
-                <el-empty description="暂无缺陷记录" />
+                </template>
               </div>
             </div>
           </div>
-        </div>
-      </template>
-    </el-skeleton>
-
-    <!-- 图片预览对话框 -->
-    <el-dialog v-model="dialogVisible">
-      <img w-full :src="dialogImageUrl" alt="Preview Image" />
-    </el-dialog>
-
-    <!-- 添加缺陷记录对话框 -->
-    <el-dialog
-      v-model="addDefectDialogVisible"
-      title="新建缺陷记录"
-      class="defect-dialog"
-      width="800px"
-      :close-on-click-modal="false"
-      :before-close="handleCloseDialog"
-    >
-      <el-form
-        ref="defectFormRef"
-        :model="newDefectForm.defects"
-        label-position="top"
-        class="defect-form"
-      >
-        <el-form-item label="问题标题">
-          <el-input v-model="newDefectForm.defects.defectTitle" placeholder="请输入问题标题" />
-        </el-form-item>
-        <el-form-item label="问题描述">
-          <el-input 
-            v-model="newDefectForm.defects.defectDescription" 
-            type="textarea" 
-            :rows="3"
-            placeholder="请输入问题描述"
-          />
-        </el-form-item>
-        <el-form-item label="改进建议">
-          <el-input 
-            v-model="newDefectForm.defects.improvementSuggestion" 
-            type="textarea" 
-            :rows="3"
-            placeholder="请输入改进建议"
-          />
-        </el-form-item>
-        <el-form-item label="缺陷图片">
-          <div class="defect-image-grid">
-            <div v-for="(image, imgIndex) in newDefectForm.defectImages" 
-                 :key="image.id" 
-                 class="defect-image-item">
-              <ImageHandler
-                :model-value="image.imagePath"
-                :alt="`缺陷图片${imgIndex + 1}`"
-                :editable="true"
-                @update:model-value="(val) => handleNewDefectImageUpdate(val, image.id)"
-              />
-            </div>
-            <!-- 如果图片数量小于2，显示上传按钮 -->
-            <div v-if="newDefectForm.defectImages.length < 2" 
-                 class="defect-image-item">
-              <ImageHandler
-                :model-value="''"
-                alt="添加图片"
-                :editable="true"
-                @update:model-value="handleNewDefectImageAdd"
-              />
-            </div>
-          </div>
-        </el-form-item>
-      </el-form>
-
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button type="primary" @click="handleSaveNewDefect">保存</el-button>
-        </div>
-      </template>
-    </el-dialog>
+        </template>
+      </el-skeleton>
+    </div>
   </div>
 </template>
-
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
@@ -467,7 +286,79 @@ const basicFields = {
   passFail: '通过/失败',
   secondQcDate: '二次质检日期',
   comments: '评价内容'
-}
+} as const
+
+// 图片部分定义
+const imageSections = {
+  appearance: {
+    title: '产品外观',
+    fields: {
+      stocksInWarehouse: '仓库库存',
+      samplingOfProductsQuantity: '产品抽样数量',
+      shippingMarks: '运输标记',
+      barcode: '条形码',
+      packingOutside: '外包装',
+      packingInside: '内包装'
+    }
+  },
+  chairComponents: {
+    title: '椅子组件',
+    fields: {
+      chairComponentsPacked: '已包装',
+      chairComponentsUnpacked: '未包装'
+    }
+  },
+  fittingPack: {
+    title: '配件包',
+    fields: {
+      fittingPackPacked: '已包装',
+      fittingPackUnpacked: '未包装'
+    }
+  },
+  labelsAndInstructions: {
+    title: '标签和说明',
+    fields: {
+      productionLabel: '生产标签',
+      assemblyInstructions: '组装说明'
+    }
+  },
+  components: {
+    title: '组件图片',
+    fields: {
+      imageOfComponentsSeat: '座椅',
+      imageOfComponentsBack: '靠背',
+      imageOfComponentsBase: '底座',
+      imageOfComponentsCastors: '脚轮',
+      imageOfComponentsGasLiftCover: '气压棒外罩',
+      imageOfComponentsGasLiftStamp: '气压棒标记',
+      imageOfComponentsArmrest: '扶手',
+      imageOfComponentMechanism: '机构',
+      imageOfComponentsHeadrest: '头枕'
+    }
+  },
+  finishedProduct: {
+    title: '成品图片',
+    fields: {
+      imageOfProductBuiltFront: '正视图',
+      imageOfProductBuiltSide: '侧视图',
+      imageOfProductBuiltBack: '背视图',
+      imageOfProductBuilt45Degree: '45度视图',
+      frontImageOfProductBuiltCompare1: '样品对比图1',
+      frontImageOfProductBuiltCompare2: '样品对比图2'
+    }
+  },
+  functionCheck: {
+    title: '功能检查',
+    fields: {
+      functionCheckSeatHeightExtension: '座椅高度调节',
+      functionCheckMechanismAdjustment: '机构调节',
+      functionCheckArmrestAdjustment: '扶手调节',
+      functionCheckHeadrestAdjustment: '头枕调节',
+      functionCheckOther1: '其他1',
+      functionCheckOther2: '其他2'
+    }
+  }
+} as const
 
 // 产品图片字段
 const productImages = {
@@ -525,6 +416,28 @@ const DEFECT_TITLES = {
   MULTIPLE_1: 'First Defect Finding',
   MULTIPLE_2: 'Second Defect Finding',
   MULTIPLE_3: 'Third Defect Finding'
+}
+
+// 格式化字段值的函数
+const formatFieldValue = (key: string, value: any): string => {
+  if (value === undefined || value === null) return '-'
+  
+  switch (key) {
+    case 'currency':
+      return value === 0 ? '人民币' : '美元'
+    case 'bifmaTested':
+    case 'cadBlockAvailable':
+    case 'productDataAvailable':
+    case 'productImagesAvailable':
+      return value === 1 ? '是' : '否'
+    case 'sampleLeadTime':
+    case 'createTime':
+      return value ? new Date(value).toLocaleString() : '-'
+    case 'fobPrice':
+      return typeof value === 'number' ? value.toFixed(2) : '-'
+    default:
+      return String(value || '-')
+  }
 }
 
 // 获取数据
@@ -643,7 +556,7 @@ const handleEdit = (section: string) => {
 };
 
 // 处理保存按钮点击
-const handleSave = async () => {
+const handleSave = async (section: string) => {
   // 确保 tempFormData.value 存在
   if (!tempFormData.value) {
     ElMessage.error('没有要保存的数据');
@@ -1364,7 +1277,7 @@ onMounted(async () => {
 })
 
 // 处理取消按钮点击
-const handleCancel = () => {
+const handleCancel = (section: string) => {
   // 清空临时数据
   tempFormData.value = null
   
@@ -1489,1316 +1402,9 @@ const debugField = (key: string) => {
   );
   return tempFormData.value ? tempFormData.value[key] : (formData.value ? formData.value[key] : '');
 };
+
+// 更新单个图片
+const updateImage = (key: string, value: string[]) => {
+  formData.value[key] = value[0] || ''
+}
 </script>
-
-<style scoped>
-.info-container {
-  height: 100vh;
-  overflow: hidden;
-  padding: 20px;
-  background: var(--page-background);
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.content-wrapper {
-  flex: 1;
-  overflow-y: auto;
-  width: 100%;
-  padding-right: 10px;
-}
-
-.tables-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding-bottom: 20px;
-}
-
-/* 基本信息表占据整行 */
-.table-section:first-child {
-  grid-column: 1 / -1;
-}
-
-.table-section {
-  background: var(--section-background);
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
-  width: 100%;
-  margin-bottom: 24px;
-  border: 1px solid transparent;
-  transition: all 0.15s ease;
-}
-
-.table-section:last-child {
-  margin-bottom: 0;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #ebeef5;
-  transition: all 0.15s ease;
-}
-
-.section-header h3 {
-  margin: 0;
-  font-size: 16px;
-  color: #303133;
-  font-weight: 600;
-}
-
-.top-actions {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  width: 100%;
-  background: white;
-  padding: 12px 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
-}
-
-/* 表单布局样式 */
-:deep(.el-form) {
-  width: 100%;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  width: 100%;
-}
-
-/* 修改表单项样式 */
-:deep(.el-form-item) {
-  margin: 0;
-  width: 100%;
-  display: flex;
-  align-items: center;
-}
-
-/* 非编辑状态的标签样式 */
-:deep(.el-form-item__label) {
-  font-weight: 500;
-  color: #606266;
-  background-color: #f8f9fb;
-  padding: 0;
-  height: 32px;
-  line-height: 32px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px 0 0 4px;
-  width: 30% !important;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 10px 0 0;
-}
-
-/* 非编辑状态的内容样式 */
-:deep(.el-form-item__content) {
-  flex: none;
-  width: 61.8% !important;
-  min-height: 32px;
-  line-height: 32px;
-  padding: 0 12px;
-  background-color: #fff;
-  border: 1px solid #dcdfe6;
-  border-radius: 0 4px 4px 0;
-  display: flex;
-  align-items: center;
-}
-
- :deep(.el-dialog__body .el-form-item__content) {
-  width:100% !important;
-  min-height: 32px;
-  line-height: 32px;
- 
-  background-color: #fff;
-  border: 1px solid #dcdfe6;
-  border-radius: 0 4px 4px 0;
-  display: flex;
-  align-items: center;
-  margin : 0 10px 0 0 ;
-}
-
-/* 编辑状态的样式 */
-.table-section.editing {
-  background-color: var(--section-editing-background, #fafcff);
-  border: 2px solid #409eff;
-  box-shadow: 0 0 10px rgba(64, 158, 255, 0.1);
-}
-
-.table-section.editing .section-header {
-  border-bottom-color: #409eff;
-  background-color: #ecf5ff;
-  margin: -16px -16px 16px -16px;
-  padding: 16px;
-}
-
-.table-section.editing .section-header h3 {
-  color: #409eff;
-}
-
-.table-section.editing :deep(.el-form-item__label) {
-  background-color: #f0f7ff;
-  border-color: #a3d0ff;
-  color: #409eff;
-  font-weight: 600;
-}
-
-.table-section.editing :deep(.el-form-item__content) {
-  border-color: #a3d0ff;
-  background-color: #fff;
-}
-
-/* 输入框焦点状态 */
-:deep(.el-form-item:has(.el-input__wrapper:focus-within)) .el-form-item__content {
-  border-color: #409eff;
-  box-shadow: 0 0 0 1px #409eff;
-}
-
-/* 移除之前的flex布局相关样式 */
-:deep(.el-row) {
-  display: none;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 18px;
-  color: #303133;
-  font-weight: 600;
-}
-
-.right-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.actions {
-  display: flex;
-  gap: 8px;
-}
-
-/* 响应式布局 */
-@media screen and (max-width: 1400px) {
-  .form-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media screen and (max-width: 1000px) {
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-:deep(.el-input__wrapper) {
-  box-shadow: none !important;
-  border: none !important;
-  padding: 0;
-}
-
-:deep(.el-input__wrapper:hover) {
-  background-color: #f5f7fa;
-}
-
-:deep(.el-input__inner) {
-  height: 32px;
-  line-height: 32px;
-}
-
-:deep(.el-form-item__content:has(.el-input__wrapper:focus-within)) {
-  border-color: #409eff;
-}
-
-/* 自定义滚动条样式 */
-.content-wrapper::-webkit-scrollbar {
-  width: 6px;
-}
-
-.content-wrapper::-webkit-scrollbar-thumb {
-  background: #dcdfe6;
-  border-radius: 3px;
-}
-
-.content-wrapper::-webkit-scrollbar-track {
-  background: var(--page-background);
-}
-
-/* 表格间距 */
-.table-section {
-  margin-bottom: 24px;
-}
-
-.table-section:last-child {
-  margin-bottom: 0;
-}
-
-/* 图片网格布局 */
-.images-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  padding: 24px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-}
-
-.image-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #fff;
-  padding: 16px;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  width: 100%;
-  max-width: 100%;
-  margin: 0 auto;
-}
-
-.image-label {
-  width: 100%;
-  text-align: center;
-  margin-bottom: 8px;
-  padding: 4px 8px;
-  background-color: #f5f7fa;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  font-size: 13px;
-  color: #606266;
-  height: 32px;
-  line-height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.image-container {
-  width: 100%;
-  height: 220px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  background-color: #f9f9f9;
-  padding: 0;  /* 移除内边距 */
-}
-
-/* 确保 ImageHandler 组件适应容器 */
-.image-container :deep(.image-handler) {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;  /* 移除内边距 */
-}
-
-/* 优化图片显示 */
-.image-container :deep(.image-preview) {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;  /* 移除内边距 */
-}
-
-/* 预览图片样式 */
-.image-container :deep(.preview-thumbnail) {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  margin: 0;  /* 移除外边距 */
-}
-
-/* 上传区域样式 */
-.image-container :deep(.upload-area) {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.preview-image {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: scale-down;
-  border-radius: 4px;
-  display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 0;
-}
-
-.image-actions {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: fit-content;
-  height: fit-content;
-  display: none; /* 改为 display: none 而不是 opacity: 0 */
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  z-index: 2;
-}
-
-/* 移除遮罩层 */
-.image-container::after {
-  display: none; /* 完全移除遮罩效果 */
-}
-
-/* 修改hover时的显示逻辑 */
-.image-container:hover .image-actions {
-  display: flex; /* 使用 display: flex 替代 opacity */
-}
-
-.image-actions .el-button {
-  padding: 12px;
-  width: 44px;
-  height: 44px;
-  color: #fff;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.8) !important; /* 使用更明显的背景 */
-  backdrop-filter: blur(4px);
-  z-index: 3;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.image-actions .el-button:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.image-actions .el-button.el-button--danger {
-  background: rgba(255, 77, 79, 0.8) !important;
-}
-
-.image-actions .el-button.el-button--danger:hover {
-  background: rgba(255, 0, 0, 0.3);
-}
-
-.image-actions .el-icon {
-  font-size: 20px;
-}
-
-.defect-item {
-  background: #fff;
-  border: 1px solid #ebeef5;
-  border-radius: 4px;
-  padding: 16px;
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
-}
-
-.defect-item.editing {
-  border-color: #409eff;
-  box-shadow: 0 0 8px rgba(64, 158, 255, 0.2);
-}
-
-.empty-state {
-  padding: 40px;
-  text-align: center;
-}
-
-/* 确保缺陷记录区域有足够的间距 */
-.table-section {
-  margin-bottom: 24px;
-  padding: 20px;
-}
-
-/* 调试信息样式 */
-pre {
-  background: #f8f9fa;
-  padding: 10px;
-  border-radius: 4px;
-  margin: 10px 0;
-  font-size: 12px;
-  overflow-x: auto;
-}
-
-.defect-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  border-bottom: 1px solid #ebeef5;
-  background-color: #fff;
-}
-
-.defect-content {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.defect-images {
-  width: 100%;
-  background-color: #fff;
-  padding: 24px;
-  border-radius: 4px;
-}
-
-/* 缺陷图片网格样式 */
-.defect-image-grid {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 16px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-}
-
-.defect-image-item {
-  width: 180px;
-  height: 180px;
-  flex-shrink: 0;
-  background-color: #fff;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.defect-preview-image {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: contain !important;
-}
-
-/* 移除旧的上传组件相关样式 */
-.defect-image-uploader,
-.el-upload {
-  /* 这些样式可以删除 */
-}
-
-:root {
-  --page-background: #f5f7fa;  /* 页面背景色 */
-  --section-background: #ffffff;  /* 表格区域背景色 */
-  --section-header-background: #ffffff;  /* 表格头部背景色 */
-  --section-editing-background: #fafcff;  /* 编辑状态背景色 */
-}
-
-:deep(.el-image) {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-:deep(.el-image img) {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: scale-down;
-  padding: 0;
-}
-
-/* 图片预览对话框样式 */
-:deep(.el-dialog__body) {
-  padding: 0;
-  display: flex;
-  justify-content: flex-start;  /* 改为左对齐 */
-  align-items: center;
-}
-
-:deep(.el-dialog__body img) {
-  max-width: 100%;
-  max-height: calc(100vh - 120px);
-  object-fit: contain;
-  margin-left: 0;  /* 确保图片靠左 */
-}
-
-.section-header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.section-header-content .el-button {
-  margin-left: 16px;
-}
-
-/* 对话框样式 */
-:deep(.defect-dialog) {
-  border-radius: 8px;
-  max-width: 90%;
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-}
-
-:deep(.defect-dialog .el-dialog__header) {
-  margin: 0;
-  padding: 20px 24px;
-  border-bottom: 1px solid #dcdfe6;
-  background-color: #f8f9fa;
-}
-
-:deep(.defect-dialog .el-dialog__body) {
-  padding: 32px 24px;
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;  /* 内容左对齐 */
-}
-
-:deep(.defect-dialog .el-dialog__footer) {
-  padding: 16px 24px;
-  border-top: 1px solid #dcdfe6;
-  background-color: #f8f9fa;
-}
-
-/* 表单样式 */
-.defect-form {
-  max-height: calc(100vh - 300px);
-  overflow-y: auto;
-  padding: 0 16px;
-  width: 100%;  /* 确保表单占满宽度 */
-}
-
-.defect-form :deep(.el-form-item) {
-  margin-bottom: 24px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  padding: 12px;
-  border: 1px solid #ebeef5;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-
-.defect-form :deep(.el-form-item__label) {
-  padding: 0 0 8px 0;
-  color: #606266;
-  font-weight: 500;
-  line-height: 1.5;
-  font-size: 14px;
-  text-align: left;
-  margin-bottom: 4px;
-  width: 100% !important;
-}
-
-.defect-form :deep(.el-form-item__content) {
-  background-color: #fff;
-  border-radius: 4px;
-  padding: 0;
-  margin-left: 0 !important;
-  width: 100%;
-}
-
-/* 输入框和文本域样式 */
-.defect-form :deep(.el-input__wrapper),
-.defect-form :deep(.el-textarea__inner) {
-  background-color: #fff;
-  border: none;
-  box-shadow: none;
-  width: 100%;
-  padding: 8px;
-}
-
-/* 特别处理文本域 */
-.defect-form :deep(.el-textarea__inner) {
-  padding: 8px;
-  resize: none;
-  min-height: 80px;
-}
-
-.defect-form :deep(.el-form-item:focus-within) {
-  border-color: var(--el-color-primary);
-}
-
-/* 修改必填星号的样式 */
-.defect-form :deep(.el-form-item.is-required .el-form-item__label::before) {
-  color: #f56c6c;
-  margin-right: 4px;
-}
-
-/* 添加滚动条样式 */
-.upload-container::-webkit-scrollbar {
-  height: 6px;
-}
-
-.upload-container::-webkit-scrollbar-thumb {
-  background: #dcdfe6;
-  border-radius: 3px;
-}
-
-.upload-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-/* 上传容器样式 */
-.upload-container {
-  width: 100%;
-  padding: 16px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-}
-
-/* 图片列表布局 */
-.image-list {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  align-items: flex-start;
-}
-
-/* 图片项样式 */
-.defect-image-item {
-  width: 180px;
-  height: 180px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  overflow: hidden;
-  position: relative;
-  background-color: #fff;
-}
-
-/* 上传按钮样式 */
-.defect-image-uploader {
-  width: 180px;
-  height: 180px;
-  border: 1px dashed #d9d9d9;
-  border-radius: 4px;
-  background-color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-
-.defect-image-uploader:hover {
-  border-color: var(--el-color-primary);
-}
-
-.defect-image-uploader .el-icon {
-  font-size: 28px;
-  color: #8c939d;
-}
-
-/* 确保el-form-item__content内的元素正确布局 */
-.defect-form :deep(.el-form-item__content) {
-  
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-/* 添加新的样式 */
-.defect-title {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.defect-number {
-  background-color: #409eff;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.defect-title h4 {
-  margin: 0;
-  font-size: 16px;
-  color: #303133;
-}
-
-/* 标题输入框样式 */
-.title-input {
-  width: 100%;
-  max-width: 300px;
-}
-
-.title-input :deep(.el-input__inner) {
-  font-weight: 500;
-  font-size: 16px;
-  height: 32px;
-}
-
-/* 确保标题输入框的样式不被覆盖 */
-.defect-title :deep(.el-input__wrapper) {
-  background-color: #fff !important;
-  border: 1px solid #dcdfe6 !important;
-  box-shadow: none !important;
-  padding: 0 12px !important;
-  transition: all 0.3s;
-  border-radius: 4px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  margin: 0;
-  width: 100%;
-}
-
-.defect-title :deep(.el-input__wrapper:hover) {
-  border-color: var(--el-color-primary) !important;
-}
-
-.defect-title :deep(.el-input__wrapper.is-focus) {
-  border-color: var(--el-color-primary) !important;
-  box-shadow: 0 0 0 1px var(--el-color-primary) !important;
-}
-
-.defect-title :deep(.el-input__inner) {
-  height: 24px;
-  line-height: 24px;
-  font-size: 16px;
-  font-weight: 500;
-  padding: 4px 0;
-  color: #303133;
-  width: 100%;
-}
-
-/* 修改标题容器样式 */
-.defect-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  border-bottom: 1px solid #ebeef5;
-  background-color: #fff;
-}
-
-/* 确保标题区域有足够的空间 */
-.defect-title {
-  flex: 1;
-  min-width: 0;
-  padding: 4px 0;
-  display: flex;
-  align-items: center;
-}
-
-/* 移除可能影响 ImageHandler 的样式 */
-:deep(.image-handler) {
-  /* 不要在这里覆盖 ImageHandler 的样式 */
-}
-
-/* 对话框中的图片网格样式 */
-.defect-dialog .defect-image-grid {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 16px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  width: 100%;  /* 确保图片网格占满宽度 */
-  justify-content: flex-start;  /* 图片从左侧开始排列 */
-}
-
-.defect-dialog .defect-image-item {
-  width: 180px;
-  height: 180px;
-  flex-shrink: 0;
-  background-color: #fff;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-/* 移除旧的上传组件相关样式 */
-.defect-dialog .defect-image-uploader,
-.defect-dialog .el-upload {
-  /* 这些样式可以删除 */
-}
-
-/* 对话框表单项样式优化 */
-.defect-dialog :deep(.el-form-item) {
-  margin-bottom: 20px;
-}
-
-.defect-dialog :deep(.el-form-item__label) {
-  padding-bottom: 8px;
-  font-weight: 500;
-}
-
-.defect-dialog :deep(.el-form-item__content) {
-  width: 100%;
-  background-color: transparent;
-}
-
-/* 对话框底部按钮样式 */
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding-top: 16px;
-}
-
-.defect-content {
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 4px;
-  margin-top: 12px;
-}
-
-/* 标签和内容分行显示 */
-.full-width-label {
-  display: block;
-  width: 100%;
-  margin-bottom: 8px;
-  color: #606266;
-  font-weight: 500;
-}
-
-/* 调整表单项间距 */
-:deep(.el-form-item) {
-  margin-bottom: 24px;
-}
-
-/* 最后一个表单项不需要底部间距 */
-:deep(.el-form-item:last-child) {
-  margin-bottom: 0;
-}
-
-/* 非编辑状态下的文本样式 */
-.form-text {
-  display: block;
-  min-height: 22px;
-  line-height: 1.5;
-  color: #606266;
-  white-space: pre-wrap;
-  word-break: break-all;
-  padding: 8px 12px;
-  background-color: #f5f7fa;
-  border-radius: 4px;
-}
-
-/* 图片表单项的特殊样式 */
-.image-form-item {
-  flex: 1;
-  min-width: 0;
-  flex-direction: column !important;
-  align-items: center;
-}
-
-.image-form-item :deep(.el-form-item__label) {
-  text-align: center;
-  width: 100% !important;
-  justify-content: center;
-  margin-bottom: 8px;
-  border-radius: 4px;
-  padding: 0 8px;
-  height: 24px;
-  line-height: 24px;
-  font-size: 13px;
-  white-space: nowrap;
-  background-color: #f5f7fa;
-  border: 1px solid #dcdfe6;
-}
-
-/* 编辑状态下的图片表单项样式 */
-.image-form-item.editing :deep(.el-form-item__label) {
-  background-color: #f0f7ff;
-  border-color: #a3d0ff;
-  color: #409eff;
-}
-
-/* 图片网格布局 */
-.images-grid {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 16px;
-}
-
-/* 输入框焦点状态 */
-:deep(.el-form-item:has(.el-input__wrapper:focus-within)) .el-form-item__content {
-  width: 100%;
-  border-color: #409eff;
-  box-shadow: 0 0 0 1px #409eff;
-}
-
-/* 图片标签样式 */
-.image-label {
-  text-align: center;
-  width: 100%;
-  padding: 4px 8px;
-  margin-bottom: 8px;
-  border-radius: 4px;
-  font-size: 13px;
-  background-color: #f5f7fa;
-  border: 1px solid #dcdfe6;
-  color: #606266;
-}
-
-/* 编辑状态下的图片标签样式 */
-.image-label.editing {
-  background-color: #f0f7ff;
-  border-color: #a3d0ff;
-  color: #409eff;
-  font-weight: 600;
-}
-
-/* 编辑状态下的表格区域样式 */
-.table-section.editing {
-  background-color: var(--section-editing-background, #fafcff);
-  border: 2px solid #409eff;
-  box-shadow: 0 0 10px rgba(64, 158, 255, 0.1);
-}
-
-.table-section.editing .section-header {
-  border-bottom-color: #409eff;
-  background-color: #ecf5ff;
-  margin: -16px -16px 16px -16px;
-  padding: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.table-section.editing .section-header h3 {
-  color: #409eff;
-}
-
-/* 响应式布局 */
-@media screen and (max-width: 1400px) {
-  .images-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .images-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 确保没有其他样式覆盖网格布局 */
-  .table-section .images-grid {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
-}
-
-.defect-card {
-  background: #fff;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.defect-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.defect-title {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-}
-
-.defect-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.defect-info {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;  /* 改回垂直布局 */
-  align-items: center;  /* 居中对齐 */
-  margin-bottom: 16px;
-  width: 100%;
-}
-
-.info-label {
-  font-weight: 500;
-  color: #606266;
-  background-color: #f8f9fb;
-  padding: 0 16px;
-  height: 32px;
-  line-height: 32px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  width: 80%;  /* 设置为父容器的 80% */
-  text-align: center;
-  margin-bottom: 8px;
-}
-
-.info-value {
-  width: 80%;  /* 设置为父容器的 80% */
-  border: none !important;
-  background: transparent !important;
-  padding: 0 !important;
-}
-
-.images-label {
-  font-weight: 500;
-}
-
-.images-container {
-  display: flex;
-  gap: 16px;
-}
-
-.empty-defects {
-  padding: 40px;
-  text-align: center;
-}
-
-/* 缺陷记录样式 */
-.defects-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-top: 16px;
-}
-
-.defect-card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  border: 1px solid #ebeef5;
-}
-
-.defect-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background-color: #f5f7fa;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.defect-title {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-}
-
-.defect-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.defect-content {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.defect-info {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;  /* 改回垂直布局 */
-  align-items: center;  /* 居中对齐 */
-  margin-bottom: 16px;
-  width: 100%;
-}
-
-.info-label {
-  font-weight: 500;
-  color: #606266;
-  background-color: #f8f9fb;
-  padding: 0 16px;
-  height: 32px;
-  line-height: 32px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  width: 80%;  /* 设置为父容器的 80% */
-  text-align: center;
-  margin-bottom: 8px;
-}
-
-.info-value {
-  width: 80%;  /* 设置为父容器的 80% */
-  border: none !important;
-  background: transparent !important;
-  padding: 0 !important;
-}
-
-.images-label {
-  font-weight: 500;
-}
-
-.images-container {
-  display: flex;
-  gap: 16px;
-}
-
-.empty-defects {
-  padding: 40px;
-  text-align: center;
-}
-
-/* 添加到 <style> 部分 */
-.text-content {
-  padding: 8px 12px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  min-height: 40px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-.info-item {
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.info-label {
-  font-weight: 500;
-  color: #606266;
-  margin-bottom: 8px;
-}
-
-.info-value {
-  width: 80%;
-}
-
-/* 修改文本域输入框样式 */
-:deep(.el-textarea__inner) {
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  padding: 8px 12px;
-  min-height: 80px;
-  width: 100%;
-  resize: vertical;
-}
-
-:deep(.el-textarea__inner:hover) {
-  border-color: #c0c4cc;
-}
-
-:deep(.el-textarea__inner:focus) {
-  border-color: #409eff;
-  outline: none;
-}
-
-/* 非编辑状态下的文本内容样式 */
-.text-content {
-  padding: 8px 12px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  min-height: 40px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-/* 修改缺陷卡片在编辑状态下的样式 */
-.defect-card.editing {
-  background-color: var(--section-editing-background, #fafcff);
-  border: 2px solid #409eff;
-  box-shadow: 0 0 10px rgba(64, 158, 255, 0.1);
-}
-
-/* 编辑状态下的头部样式 */
-.defect-card.editing .defect-header {
-  background-color: #ecf5ff;
-  margin: -16px -16px 16px -16px;
-  padding: 16px;
-  border-bottom-color: #409eff;
-}
-
-.defect-card.editing .defect-title h4 {
-  color: #409eff;
-}
-
-/* 编辑状态下的表单项样式 */
-.defect-card.editing .info-label {
-  background-color: #f0f7ff;
-  border-color: #a3d0ff;
-  color: #409eff;
-  font-weight: 600;
-}
-
-.defect-card.editing .info-value {
-  border: 1px solid #a3d0ff !important;
-  background-color: #fff !important;
-  border-radius: 4px;
-  padding: 0;
-}
-
-/* 编辑状态下的输入框样式 */
-.defect-card.editing :deep(.el-input__wrapper) {
-  box-shadow: none !important;
-  border: none !important;
-  padding: 0;
-}
-
-.defect-card.editing :deep(.el-input__wrapper:hover) {
-  background-color: #f5f7fa;
-}
-
-.defect-card.editing :deep(.el-input__inner) {
-  height: 32px;
-  line-height: 32px;
-}
-
-/* 编辑状态下的文本域样式 */
-.defect-card.editing :deep(.el-textarea__inner) {
-  border: none;
-  padding: 8px 12px;
-  background-color: #fff;
-}
-
-/* 编辑状态下的表单项获得焦点时的样式 */
-.defect-card.editing .info-value:has(:deep(.el-input__wrapper:focus-within)),
-.defect-card.editing .info-value:has(:deep(.el-textarea__inner:focus)) {
-  border-color: #409eff !important;
-  box-shadow: 0 0 0 1px #409eff;
-}
-
-/* 缺陷图片区域在编辑状态下的样式 */
-.defect-card.editing .defect-images {
-  background-color: #f0f7ff;
-  border: 1px solid #a3d0ff;
-  border-radius: 4px;
-}
-
-.defect-card.editing .images-label {
-  color: #409eff;
-  font-weight: 600;
-}
-
-</style>

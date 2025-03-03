@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-02-11 13:18:01
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-02-18 14:51:24
+ * @LastEditTime: 2025-03-01 18:54:14
  * @Description: 规格相关接口
  */
 import http from '../axios'

@@ -284,7 +284,7 @@ const fetchQuoteDetail = async () => {
 }
 
 // 格式化字段显示值
-const formatFieldValue = (key: string, value: any) => {
+const formatFieldValue = (key: string, value: any): string => {
   if (value === undefined || value === null) return '-'
   
   switch (key) {
@@ -299,9 +299,9 @@ const formatFieldValue = (key: string, value: any) => {
     case 'createTime':
       return value ? new Date(value).toLocaleString() : '-'
     case 'fobPrice':
-      return value.toFixed(2)
+      return typeof value === 'number' ? value.toFixed(2) : '-'
     default:
-      return value
+      return String(value)
   }
 }
 

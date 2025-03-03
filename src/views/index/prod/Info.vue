@@ -2,140 +2,129 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-01-15 11:34:14
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-02-27 17:59:01
+ * @LastEditTime: 2025-03-03 11:25:10
  * @FilePath: /yarn-vite-web-01-02/src/views/index/prod/Info.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
-  <div class="info-container">
+  <div dir="ltr" class="flex-1 ps-1 min-w-0 overflow-y h-screen">
     <el-skeleton :loading="loading" animated>
       <template #template>
-        <div style="padding: 20px">
-          <el-skeleton-item variant="text" style="width: 30%" />
-          <el-skeleton-item variant="text" style="width: 40%" />
-          <el-skeleton-item variant="text" style="width: 100%" />
+        <div class="p-5">
+          <el-skeleton-item variant="text" class="w-[30%]" />
+          <el-skeleton-item variant="text" class="w-[40%]" />
+          <el-skeleton-item variant="text" class="w-full" />
         </div>
       </template>
 
       <template #default>
-        <div class="content-wrapper">
+        <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
           <!-- 顶部操作栏 -->
-          <div class="top-actions">
-            <div class="left-actions">
-              <h2 class="page-title">产品规格详情</h2>
+          <div class="flex justify-between items-center py-3 px-6">
+            <div class="flex-1">
+              <h2 class="text-lg font-semibold text-gray-800">产品规格详情</h2>
             </div>
-            <div class="right-actions">
-              
-              <el-button 
-                type="primary" 
-                :loading="exporting" 
-                @click="handleExport"
-                style="min-width: 120px"
-              >
-                <el-icon><Document /></el-icon>
+            <div class="flex gap-2">
+              <el-button type="primary" :loading="exporting" @click="handleExport" class="min-w-[120px]">
+                <el-icon>
+                  <Document />
+                </el-icon>
                 {{ exporting ? '导出中...' : '导出文档' }}
               </el-button>
               <el-button @click="router.back()">
-                <el-icon><Back /></el-icon>
+                <el-icon>
+                  <Back />
+                </el-icon>
                 返回
               </el-button>
             </div>
           </div>
+        </div>
 
-          <div class="tables-container">
-            <!-- 基本信息表 -->
-            <div class="table-section" :class="{ 'editing': editingSections.includes('basic') }">
-              <div class="section-header">
-                <h2>基本信息</h2>
-                <div class="actions">
-                  <template v-if="editingSections.includes('basic')">
-                    <el-button type="success" @click="handleSave('basic')">
-                      <el-icon><Check /></el-icon>
-                      保存
-                    </el-button>
-                    <el-button type="danger" @click="handleCancel('basic')">
-                      <el-icon><Close /></el-icon>
-                      取消
-                    </el-button>
-                  </template>
-                  <template v-else>
-                    <el-button type="primary" @click="handleEdit('basic')">
-                      <el-icon><Edit /></el-icon>
-                      编辑
-                    </el-button>
-                  </template>
-                </div>
-              </div>
-
-              <el-form :model="formData.products" label-width="120px">
-                <div class="form-grid">
-                  <el-form-item v-for="(label, key) in basicFields"
-                                :key="key"
-                                :label="label">
-                    <template v-if="editingSections.includes('basic')">
-                      <el-input v-model="formData.products[key]" />
+        <div class="bg-white overflow-auto" style="height: calc(100vh - 64px); padding-bottom: 72px;">
+          <div class="p-6">
+            <!-- 统一处理所有表格，包括基本信息 -->
+            <div v-for="(sectionKey, _index) in ['basic', ...Object.keys(specSections)]" :key="sectionKey" class="mb-8">
+              <div class="flex items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-800 w-full border-b pb-2 flex justify-between items-center">
+                  <span>{{ sectionKey === 'basic' ? '基本信息' : formatSectionTitle(sectionKey) }}</span>
+                  <div class="flex gap-2 ml-auto">
+                    <template v-if="editingSections.includes(sectionKey)">
+                      <el-button type="success" @click="handleSave(sectionKey)">
+                        <el-icon><Check /></el-icon>
+                        保存
+                      </el-button>
+                      <el-button type="danger" @click="handleCancel(sectionKey)">
+                        <el-icon><Close /></el-icon>
+                        取消
+                      </el-button>
                     </template>
                     <template v-else>
-                      {{ formData.products[key] || '-' }}
+                      <el-button type="primary" @click="handleEdit(sectionKey)">
+                        <el-icon><Edit /></el-icon>
+                        编辑
+                      </el-button>
                     </template>
-                  </el-form-item>
-                </div>
-              </el-form>
-            </div>
-
-            <!-- 其他表格 -->
-            <div v-for="(section, sectionKey) in specSections"
-                 :key="sectionKey"
-                 class="table-section"
-                 :class="{ 'editing': editingSections.includes(String(sectionKey)) }">
-              <div class="section-header">
-                <h2>{{ formatSectionTitle(String(sectionKey)) }}</h2>
-                <div class="actions">
-                  <template v-if="editingSections.includes(String(sectionKey))">
-                    <el-button type="success" @click="handleSave(String(sectionKey))">
-                      <el-icon><Check /></el-icon>
-                      保存
-                    </el-button>
-                    <el-button type="danger" @click="handleCancel(String(sectionKey))">
-                      <el-icon><Close /></el-icon>
-                      取消
-                    </el-button>
-                  </template>
-                  <template v-else>
-                    <el-button type="primary" @click="handleEdit(String(sectionKey))">
-                      <el-icon><Edit /></el-icon>
-                      编辑
-                    </el-button>
-                  </template>
-                </div>
+                  </div>
+                </h3>
               </div>
 
-              <el-form :model="formData[sectionKey]" label-width="120px">
-                <div class="form-grid">
-                  <el-form-item 
-                    v-for="(field, key) in section"
-                    :key="key"
-                    :label="field"
-                    :class="{ 'image-form-item': isImagePath(key) }"
-                  >
-                    <template v-if="isImagePath(key)">
-                      <ImageHandler
-                        v-model="formData[sectionKey][key]"
-                        :alt="field"
-                        :editable="editingSections.includes(String(sectionKey))"
-                        @temp-file="handleTempFile"
-                      />
-                    </template>
-                    <template v-else>
-                      <template v-if="editingSections.includes(String(sectionKey))">
-                        <el-input v-model="formData[sectionKey][key]" />
+              <el-form 
+                :model="sectionKey === 'basic' ? formData.products : formData[sectionKey]" 
+                label-width="140px"
+                class="[&_.el-form-item__label]:text-gray-600 [&_.el-form-item__label]:font-medium [&_.el-input__wrapper]:shadow-none [&_.el-input__inner]:h-[38px]"
+              >
+                <template v-if="sectionKey === 'images'">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div v-for="(label, key) in specSections.images" :key="key" class="bg-gray-100 p-4 rounded">
+                      <div class="text-center text-sm text-gray-600 mb-2 font-medium">{{ label }}</div>
+                      <div class="w-full h-[240px] bg-white rounded-lg overflow-hidden">
+                        <div class="w-full h-full flex items-center justify-center">
+                          <ImageHandler 
+                            :model-value="formData.images[key as keyof ProductImage] ? [formData.images[key as keyof ProductImage]] : []"
+                            @update:model-value="val => updateSingleImage('images', key as keyof ProductImage, val)"
+                            :editable="editingSections.includes('images')" 
+                            class="!w-full !h-full [&_img]:w-auto [&_img]:h-auto [&_img]:max-w-full [&_img]:max-h-full [&_img]:object-contain [&_img]:m-auto [&_.el-upload]:w-full [&_.el-upload]:h-full [&_.el-upload]:flex [&_.el-upload]:items-center [&_.el-upload]:justify-center [&_.el-upload-dragger]:w-full [&_.el-upload-dragger]:h-full [&_.el-upload-dragger]:flex [&_.el-upload-dragger]:items-center [&_.el-upload-dragger]:justify-center [&_.el-upload-dragger]:border-2 [&_.el-upload-dragger]:border-dashed [&_.el-upload-dragger]:border-gray-300 hover:[&_.el-upload-dragger]:border-blue-500 [&_.el-upload__tip]:hidden" 
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
+                    <el-form-item 
+                      v-for="(label, key) in sectionKey === 'basic' ? basicFields : specSections[sectionKey]" 
+                      :key="key" 
+                      :label="label"
+                      class="bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2"
+                      label-position="left"
+                    >
+                      <template v-if="editingSections.includes(sectionKey)">
+                        <el-input 
+                          v-if="sectionKey === 'basic'"
+                          v-model="(formData.products[key as keyof Product])" 
+                          :placeholder="`请输入${label}`"
+                          class="w-full !h-[38px]" 
+                        />
+                        <el-input 
+                          v-else
+                          v-model="formData[sectionKey][key]" 
+                          :placeholder="`请输入${label}`"
+                          class="w-full !h-[38px]" 
+                        />
                       </template>
                       <template v-else>
-                        {{ formData[sectionKey]?.[key] || '-' }}
+                        <div class="w-full text-gray-700 bg-white p-2 rounded h-[38px] leading-[22px]">
+                          {{ sectionKey === 'basic' 
+                            ? (formData.products[key as keyof Product] || '-')
+                            : (formData[sectionKey][key] || '-') 
+                          }}
+                        </div>
                       </template>
-                    </template>
-                  </el-form-item>
-                </div>
+                    </el-form-item>
+                  </div>
+                </template>
               </el-form>
             </div>
           </div>
@@ -156,6 +145,7 @@ import type { Product, CartonDetail, ProductDimension, ProductionLogistics, Seat
 import { ElImageViewer } from 'element-plus'
 import ImageHandler from '@/components/ImageHandler.vue'
 import http from '@/axios'
+import type { UploadFile } from 'element-plus'
 
 interface FormData {
   products: Product;
@@ -501,7 +491,7 @@ const specSections: SpecSections = {
 onMounted(async () => {
   console.log('组件已挂载，开始获取数据')
   await fetchData()
-  
+
   // 检查路由参数，如果有edit=true，则自动进入基本信息的编辑状态
   if (route.query.edit === 'true') {
     handleEdit('basic')
@@ -520,7 +510,7 @@ const fetchData = async () => {
 
     console.log('正在获取产品数据，ID:', id)
     const response = await getProductDTOById(id)
-    
+
     if (response?.data) {
       console.log('获取到的产品数据:', response.data)
       // 重新组织数据结构
@@ -1139,7 +1129,7 @@ const handleSaveData = async (section: string) => {
       console.log('准备保存的数据:', section, sectionData)
       await saveData(section, sectionData)
     }
-    
+
     return true
   } catch (error) {
     console.error('保存失败:', error)
@@ -1153,13 +1143,13 @@ const handleSave = async (section: string): Promise<void> => {
     // 获取该部分所有图片字段的当前值和备份值
     const currentData = formData.value[section]
     const backupData = formDataBackup.value[section]
-    
+
     // 找出所有需要从服务器删除的图片
     for (const key in backupData) {
       if (isImagePath(key)) {
         const currentPath = currentData[key]
         const backupPath = backupData[key]
-        
+
         // 如果备份中有图片但当前没有，说明是被删除的，需要从服务器删除
         if (backupPath && !currentPath) {
           try {
@@ -1173,14 +1163,14 @@ const handleSave = async (section: string): Promise<void> => {
 
     // 保存数据
     await handleSaveData(section)
-    
+
     // 保存成功后，更新备份数据
     if (section === 'basic') {
       formDataBackup.value.products = JSON.parse(JSON.stringify(formData.value.products))
     } else {
       formDataBackup.value[section] = JSON.parse(JSON.stringify(formData.value[section]))
     }
-    
+
     editingSections.value = editingSections.value.filter(s => s !== section)
     ElMessage.success('保存成功')
   } catch (error) {
@@ -1204,13 +1194,13 @@ const handleCancel = async (section: string) => {
       // 图片部分的处理
       const currentData = formData.value[section]
       const backupData = formDataBackup.value[section]
-      
+
       // 找出所有需要删除的临时上传图片
       for (const key in currentData) {
         if (isImagePath(key)) {
           const currentPath = currentData[key]
           const backupPath = backupData[key]
-          
+
           // 如果当前有图片但与备份不同，说明是临时上传的，需要删除
           if (currentPath && currentPath !== backupPath) {
             await http.get(`/files/remove?filePath=${currentPath}`)
@@ -1218,14 +1208,14 @@ const handleCancel = async (section: string) => {
         }
       }
     }
-    
+
     // 恢复原始数据
     if (section === 'basic') {
       formData.value.products = JSON.parse(JSON.stringify(formDataBackup.value.products))
     } else {
       formData.value[section] = JSON.parse(JSON.stringify(formDataBackup.value[section]))
     }
-    
+
     editingSections.value = editingSections.value.filter(s => s !== section)
     ElMessage.success('已取消编辑')
   } catch (error) {
@@ -1335,285 +1325,75 @@ const handleImageUpload = async (sectionKey: string, imageKey: string, file: Fil
     ElMessage.error('上传失败')
   }
 }
+
+// 添加新的更新单个图片的函数
+const updateSingleImage = (sectionKey: string, imageKey: string, value: string[]) => {
+  formData.value[sectionKey][imageKey] = value[0] || ''
+}
+
+// 确保组件可以被正确导入
+defineOptions({
+  name: 'ProdInfo'
+})
 </script>
 
-<style scoped>
-:root {
-  --page-background: #f5f7fa;  /* 页面背景色 */
-  --section-background: #ffffff;  /* 表格区域背景色 */
-  --section-header-background: #ffffff;  /* 表格头部背景色 */
-  --section-editing-background: #fafcff;  /* 编辑状态背景色 */
-}
-
-.info-container {
-  height: 100vh;
-  overflow: hidden;
-  padding: 20px;
-  background: var(--page-background);
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.content-wrapper {
-  flex: 1;
-  overflow-y: auto;
-  width: 100%;
-  padding-right: 10px;
-}
-
-.tables-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding-bottom: 20px;
-}
-
-/* 基本信息表占据整行 */
-.table-section:first-child {
-  grid-column: 1 / -1;
-}
-
-.table-section {
-  background: var(--section-background);
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
-  width: 100%;
-  margin-bottom: 24px;
-  border: 1px solid transparent;
-  transition: all 0.15s ease;
-}
-
-.table-section:last-child {
-  margin-bottom: 0;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #ebeef5;
-  transition: all 0.15s ease;
-}
-
-.section-header h2 {
-  margin: 0;
-  font-size: 16px;
-  color: #303133;
-  font-weight: 600;
-}
-
-.top-actions {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  width: 100%;
-  background: white;
-  padding: 12px 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
-}
-
-/* 表单布局样式 */
-:deep(.el-form) {
-  width: 100%;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 修改为4列布局，更适合图片展示 */
-  gap: 20px;
-  width: 100%;
-}
-
-/* 修改表单项样式 */
-:deep(.el-form-item) {
-  margin: 0;
-  width: 100%;
-  display: flex;
-}
-
-/* 非编辑状态的样式 */
+<style>
+/* 移除所有样式，直接在模板中使用 Tailwind 类名 */
 :deep(.el-form-item__label) {
+  color: rgb(75 85 99);
   font-weight: 500;
-  color: #606266;
-  background-color: #f8f9fb;
-  padding: 0;
-  height: 32px;
-  line-height: 32px;
-  border: 1px solid #dcdfe6;
-  border-right: none;
-  border-radius: 4px 0 0 4px;
-  width: 38% !important;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-:deep(.el-form-item__content) {
-  flex: none;
-  width: 61.8% !important;
-  min-height: 32px;
-  line-height: 32px;
-  padding: 0 12px;
-  background-color: #fff;
-  border: 1px solid #dcdfe6;
-  border-radius: 0 4px 4px 0;
-  display: flex;
-  align-items: center;
+:deep(.el-input__wrapper) {
+  box-shadow: none;
 }
 
-/* 编辑状态的样式 */
-.table-section.editing {
-  background-color: var(--section-editing-background);
-  border: 2px solid #409eff;
-  box-shadow: 0 0 10px rgba(64, 158, 255, 0.1);
+:deep(.el-input__inner) {
+  height: 38px;
 }
 
-.table-section.editing .section-header {
-  border-bottom-color: #409eff;
-  background-color: #ecf5ff;
-  margin: -16px -16px 16px -16px;
-  padding: 16px;
+:deep(.image-handler) {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
 }
 
-.table-section.editing .section-header h2 {
-  color: #409eff;
+:deep(.image-handler img) {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  margin: auto;
 }
 
-.table-section.editing :deep(.el-form-item__label) {
-  background-color: #f0f7ff;
-  border-color: #a3d0ff;
-  color: #409eff;
-  font-weight: 600;
+:deep(.el-upload) {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
 }
 
-.table-section.editing :deep(.el-form-item__content) {
-  border-color: #a3d0ff;
-  background-color: #fff;
+:deep(.el-upload-dragger) {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border: 2px dashed rgb(209 213 219);
 }
 
-/* 输入框焦点状态 */
-:deep(.el-form-item:has(.el-input__wrapper:focus-within)) .el-form-item__content {
-  border-color: #409eff;
-  box-shadow: 0 0 0 1px #409eff;
+:deep(.el-upload-dragger:hover) {
+  border-color: rgb(59 130 246);
 }
 
-/* 移除之前的flex布局相关样式 */
-:deep(.el-row) {
+:deep(.el-upload__tip) {
   display: none;
 }
 
-.page-title {
-  margin: 0;
-  font-size: 18px;
-  color: #303133;
-  font-weight: 600;
-}
-
-.right-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.actions {
-  display: flex;
-  gap: 8px;
-}
-
-/* 响应式布局 */
-@media screen and (max-width: 1600px) {
-  .form-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media screen and (max-width: 1200px) {
-  .form-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 图片预览查看器样式 */
-:deep(.el-image-viewer__wrapper) {
-  z-index: 2100;
-}
-
-/* 针对图片模块的特殊布局 */
-.table-section:has(.image-form-item) .form-grid {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  width: 100%;
-}
-
-/* 添加图片表单项的特殊样式 */
-:deep(.image-form-item) {
-  flex: 1;
-  min-width: 0;
-  flex-direction: column !important;
-  align-items: center;
-}
-
-:deep(.image-form-item .el-form-item__label) {
-  text-align: center;
-  width: 100% !important;
-  justify-content: center;
-  margin-bottom: 8px;
-  border-radius: 4px;
-  padding: 0 8px;
-  height: 24px;
-  line-height: 24px;
-  font-size: 13px;
-  white-space: nowrap;
-  background-color: #f5f7fa;
-  border: 1px solid #dcdfe6;
-}
-
-:deep(.image-form-item .el-form-item__content) {
-  width: 100% !important;
-  margin-left: 0 !important;
-  justify-content: center;
-  border: none;
-  background: none;
-  padding: 0;
-  height: 200px;
-}
-
-/* 响应式布局 */
-@media screen and (max-width: 1400px) {
-  :deep(.image-form-item .el-form-item__content) {
-    aspect-ratio: 4/3; /* 在较小屏幕上调整宽高比 */
-  }
-}
-
-@media screen and (max-width: 1200px) {
-  .table-section:has(.image-form-item) .form-grid {
-    flex-wrap: wrap; /* 在更小的屏幕上允许换行 */
-  }
-  
-  :deep(.image-form-item) {
-    flex: 0 0 calc(50% - 10px); /* 每行两张图片 */
-  }
-}
-
-@media screen and (max-width: 768px) {
-  :deep(.image-form-item) {
-    flex: 0 0 100%; /* 在移动端每行一张图片 */
+@media (min-width: 1024px) {
+  .image-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 </style>

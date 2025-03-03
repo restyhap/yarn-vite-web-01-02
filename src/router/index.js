@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2024-10-31 17:23:18
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-02-27 12:02:22
+ * @LastEditTime: 2025-03-01 18:43:40
  * @FilePath: /yarn-vite-web-01-02/src/router/index.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -27,6 +27,7 @@ const routes = [
       { path: "/prod/info/:id", name: "productInfo", component: () => import("@/views/index/prod/Info.vue") },
       { path: "/quote/list", name: "quoteList", component: () => import("@/views/index/quote/List.vue"), },
       { path: "/quote/create" , name : "quoteCreat" , component:()=> import("@/views/index/quote/Create.vue") },
+      { path: "/quote/info/:id", name: "quoteInfo", component: () => import("@/views/index/quote/Info.vue") },
       { path: "/spec/list", name: "specList", component: () => import("@/views/index/spec/List.vue"), },
       { path: "/spec/create" , name : "specCreate" , component:()=> import("@/views/index/spec/Create.vue") },
       { path: "/spec/info/:id", name: "specInfo", component: () => import("@/views/index/spec/Info.vue") },
