@@ -6,9 +6,9 @@
     <div v-if="label" class="mb-2 text-sm text-gray-600">{{ label }}</div>
     
     <!-- 图片展示区域 -->
-    <div class="flex-1 relative rounded-md overflow-hidden bg-gray-50 flex items-center justify-center w-full h-full">
+    <div class="flex-1 rounded-md overflow-hidden bg-gray-50 flex items-center justify-center w-full h-full">
       <!-- 已上传的图片列表 -->
-      <div class="flex gap-2 flex-wrap items-center">
+      <div class="flex gap-2 items-center">
         <div 
           v-for="(url, index) in modelValue" 
           :key="index" 
@@ -18,7 +18,8 @@
           <img 
             :src="url" 
             :alt="label || '图片'" 
-            class="object-contain w-full h-full" 
+            class="object-contain w-full h-full cursor-pointer" 
+            @click="handlePreview(url)"
           />
           <!-- 编辑状态显示预览和删除按钮 -->
           <div 
@@ -78,7 +79,8 @@
         <img 
           :src="previewUrl" 
           :alt="label || '预览图'" 
-          class="max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain"
+          :style="{ maxHeight: `${windowHeight * 0.9}px` }"
+          class="max-w-[90vw] w-auto h-auto object-contain"
         />
         <button 
           type="button" 
@@ -93,7 +95,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Plus, ZoomIn, Delete, Close } from '@element-plus/icons-vue'
 
 // 添加组件名称
@@ -107,16 +109,18 @@ const props = defineProps<{
   editable?: boolean
   size?: number
   limit?: number
+  multiple?: boolean
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string[]]
+  'update:model-value': [value: string[]]
   'preview': [url: string]
 }>()
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const previewVisible = ref(false)
 const previewUrl = ref('')
+const windowHeight = ref(0)
 
 // 计算实际的限制数量
 const actualLimit = computed(() => {
@@ -128,13 +132,7 @@ const actualLimit = computed(() => {
 // 计算是否显示上传区域
 const showUploadArea = computed(() => {
   const shouldShow = props.editable && Array.isArray(props.modelValue) && props.modelValue.length < actualLimit.value
-  console.log('上传区域显示状态:', {
-    editable: props.editable,
-    isArray: Array.isArray(props.modelValue),
-    currentLength: props.modelValue?.length,
-    limit: actualLimit.value,
-    shouldShow
-  })
+  
   return shouldShow
 })
 
@@ -147,6 +145,15 @@ const buttonStyle = computed(() => ({
 const iconSize = computed(() => ({
   fontSize: `${props.size * 0.143}px`  // 设置为容器尺寸的14.3%,保持1:7的比例
 }))
+
+// 添加 watch 来监控 editable 属性
+watch(() => props.editable, (newVal) => {
+  console.log('ImageHandler editable 属性变化:', {
+    editable: newVal,
+    modelValue: props.modelValue,
+    hasImages: props.modelValue?.length > 0
+  });
+}, { immediate: true });
 
 // 触发文件选择
 const triggerUpload = () => {
@@ -214,7 +221,7 @@ const handleFile = (file: File) => {
         newLength: newImages.length,
         images: newImages
       })
-      emit('update:modelValue', newImages)
+      emit('update:model-value', newImages)
     }
   }
   reader.readAsDataURL(file)
@@ -248,8 +255,24 @@ const handleDelete = (index: number) => {
     newLength: newImages.length,
     images: newImages
   })
-  emit('update:modelValue', newImages)
+  emit('update:model-value', newImages)
 }
+
+// 更新窗口高度
+const updateWindowHeight = () => {
+  windowHeight.value = window.innerHeight
+}
+
+// 组件挂载时添加事件监听
+onMounted(() => {
+  updateWindowHeight()
+  window.addEventListener('resize', updateWindowHeight)
+})
+
+// 组件卸载时移除事件监听
+onUnmounted(() => {
+  window.removeEventListener('resize', updateWindowHeight)
+})
 </script>
 
 <script lang="ts">

@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-01-15 11:34:14
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-03-03 11:25:10
+ * @LastEditTime: 2025-03-03 19:09:18
  * @FilePath: /yarn-vite-web-01-02/src/views/index/prod/Info.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -85,6 +85,7 @@
                             @update:model-value="val => updateSingleImage('images', key as keyof ProductImage, val)"
                             :editable="editingSections.includes('images')" 
                             class="!w-full !h-full [&_img]:w-auto [&_img]:h-auto [&_img]:max-w-full [&_img]:max-h-full [&_img]:object-contain [&_img]:m-auto [&_.el-upload]:w-full [&_.el-upload]:h-full [&_.el-upload]:flex [&_.el-upload]:items-center [&_.el-upload]:justify-center [&_.el-upload-dragger]:w-full [&_.el-upload-dragger]:h-full [&_.el-upload-dragger]:flex [&_.el-upload-dragger]:items-center [&_.el-upload-dragger]:justify-center [&_.el-upload-dragger]:border-2 [&_.el-upload-dragger]:border-dashed [&_.el-upload-dragger]:border-gray-300 hover:[&_.el-upload-dragger]:border-blue-500 [&_.el-upload__tip]:hidden" 
+                            :size="260"
                           />
                         </div>
                       </div>
@@ -115,7 +116,7 @@
                         />
                       </template>
                       <template v-else>
-                        <div class="w-full text-gray-700 bg-white p-2 rounded h-[38px] leading-[22px]">
+                        <div class="w-full text-gray-700 bg-gray-50 p-2 rounded h-[38px] leading-[22px]">
                           {{ sectionKey === 'basic' 
                             ? (formData.products[key as keyof Product] || '-')
                             : (formData[sectionKey][key] || '-') 

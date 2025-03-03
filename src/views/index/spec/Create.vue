@@ -334,7 +334,7 @@
             title="添加缺陷记录"
             width="800px"
             :close-on-click-modal="false"
-            class="!fixed defect-dialog"
+            class="!fixed"
             :modal-class="'!w-[calc(100%-256px)] !left-[256px]'"
             :style="{
               left: '50%',
@@ -380,7 +380,7 @@
                     type="textarea"
                     :rows="3"
                     placeholder="请输入缺陷描述"
-                    class="w-full !h-[38px]"
+                    class="w-full "
                   />
                 </el-form-item>
 
@@ -394,7 +394,7 @@
                     type="textarea"
                     :rows="3"
                     placeholder="请输入改进建议"
-                    class="w-full !h-[38px]"
+                    class="w-full "
                   />
                 </el-form-item>
                 
@@ -410,7 +410,6 @@
                       :editable="true"
                       :size="120"
                       :limit="2"
-                      label="缺陷图片"
                     />
                   </div>
                 </el-form-item>
