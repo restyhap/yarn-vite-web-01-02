@@ -501,4 +501,4 @@ const handleBatchExport = async () => {
     exporting.value = false
   }
 }
-</script>
+</script>@/api/bak/quotation

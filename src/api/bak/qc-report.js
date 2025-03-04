@@ -5,7 +5,7 @@
  * @LastEditTime: 2025-02-12 15:30:13
  * @Description: QC报告相关接口
  */
-import http from '../axios'
+import http from '../../axios'
 
 /**
  * 搜索QC报告

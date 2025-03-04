@@ -5,7 +5,7 @@
  * @LastEditTime: 2025-02-26 08:08:23
  * @Description: 产品相关接口
  */
-import http from '../axios'
+import http from '../../axios'
 import type { AxiosResponse } from 'axios'
 
 import type { Product, ProductDTO , ProductParams } from './product.d'

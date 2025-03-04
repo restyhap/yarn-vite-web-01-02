@@ -1128,3 +1128,4 @@ const handlePreview = (imageUrl: string) => {
   console.log('预览图片:', imageUrl)
 }
 </script>
+@/api/bak/product@/api/bak/product@/api/bak/product

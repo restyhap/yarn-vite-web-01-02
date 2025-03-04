@@ -6,12 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-api": "node --loader ts-node/esm src/api/generate.ts"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
     "@types/xlsx": "^0.0.36",
-    "axios": "^1.7.9",
     "docx": "^9.1.1",
     "element-plus": "^2.9.3",
     "exceljs": "^4.4.0",
@@ -32,8 +32,11 @@
     "@types/node": "^20.10.6",
     "@vitejs/plugin-vue": "^4.5.2",
     "autoprefixer": "^10.4.16",
+    "axios": "^1.8.1",
     "postcss": "^8.4.32",
+    "swagger-typescript-api": "^13.0.23",
     "tailwindcss": "^3.4.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.2.2",
     "vite": "^5.0.8",
     "vue-tsc": "^1.8.25"

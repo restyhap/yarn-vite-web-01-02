@@ -8,7 +8,7 @@
  */
 import {defineStore} from 'pinia' ;
 import {ref} from "vue";
-import type {IUser} from '@/api/user.d'
+import type {IUser} from '@/api/bak/user'
 import { UserRoleType } from '@/constants/enums'
 
 export const useUserStore = defineStore('user', {

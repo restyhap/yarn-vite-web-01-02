@@ -5,7 +5,7 @@
  * @LastEditTime: 2025-02-19 14:51:24
  * @Description: 报价单相关接口
  */
-import http from '../axios'
+import http from '../../axios'
 
 /**
  * 搜索报价单

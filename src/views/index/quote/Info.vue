@@ -779,4 +779,4 @@ onMounted(async () => {
 .no-image .el-icon {
   margin-bottom: 8px;
 }
-</style> 
+</style> @/api/bak/quotation

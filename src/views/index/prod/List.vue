@@ -490,3 +490,4 @@ onMounted(() => {
   fetchTableData()
 })
 </script>
+@/api/bak/product@/api/bak/product@/api/bak/product

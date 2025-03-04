@@ -226,4 +226,4 @@ const handleSave = () => {
   console.log('新的权限配置:', newPermissions)
   ElMessage.success('保存成功')
 }
-</script> 
+</script> @/api/bak/user
