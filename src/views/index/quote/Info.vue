@@ -3,53 +3,46 @@
     <div class="content-wrapper">
       <!-- 顶部操作栏 -->
       <div class="top-actions">
-            <div class="left-actions">
-              <h2 class="page-title">质检报告详情</h2>
-            </div>
-            <div class="right-actions">
-              <template v-if="editingSections.includes('basic')">
-                <el-button type="success" @click="handleSave">
-                  <el-icon><Check /></el-icon>
-                  保存
-                </el-button>
-                <el-button type="danger" @click="handleCancel">
-                  <el-icon><Close /></el-icon>
-                  取消
-                </el-button>
-              </template>
-              <template v-else>
-                <el-button type="primary" @click="handleEdit('basic')">
-                  <el-icon><Edit /></el-icon>
-                  编辑
-                </el-button>
-              </template>
-              <el-button 
-                type="primary" 
-                :loading="exporting" 
-                @click="handleExport"
-                style="min-width: 120px"
-              >
-                <el-icon><Document /></el-icon>
-                {{ exporting ? '导出中...' : '导出文档' }}
-              </el-button>
-              <el-button @click="router.back()">
-                <el-icon><Back /></el-icon>
-                返回
-              </el-button>
-            </div>
-          </div>
+        <div class="left-actions">
+          <h2 class="page-title">质检报告详情</h2>
+        </div>
+        <div class="right-actions">
+          <template v-if="editingSections.includes('basic')">
+            <el-button type="success" @click="handleSave">
+              <el-icon><Check /></el-icon>
+              保存
+            </el-button>
+            <el-button type="danger" @click="handleCancel">
+              <el-icon><Close /></el-icon>
+              取消
+            </el-button>
+          </template>
+          <template v-else>
+            <el-button type="primary" @click="handleEdit('basic')">
+              <el-icon><Edit /></el-icon>
+              编辑
+            </el-button>
+          </template>
+          <el-button type="primary" :loading="exporting" @click="handleExport" style="min-width: 120px">
+            <el-icon><Document /></el-icon>
+            {{ exporting ? '导出中...' : '导出文档' }}
+          </el-button>
+          <el-button @click="router.back()">
+            <el-icon><Back /></el-icon>
+            返回
+          </el-button>
+        </div>
+      </div>
 
       <!-- 内容区域 -->
       <div class="tables-container">
         <!-- 基本信息 -->
-        <div class="table-section" :class="{ 'editing': editingSections.includes('basic') }">
+        <div class="table-section" :class="{editing: editingSections.includes('basic')}">
           <div class="section-header">
             <h3 class="text-lg font-medium">基本信息</h3>
           </div>
-          
-          <el-form :model="formData" label-width="120px">
-            
 
+          <el-form :model="formData" label-width="120px">
             <!-- 基本信息表格 -->
             <div class="form-grid">
               <template v-for="(field, key) in basicFields" :key="key">
@@ -63,36 +56,16 @@
                         </el-select>
                       </template>
                       <template v-else-if="key === 'bifmaTested' || key === 'cadBlockAvailable' || key === 'productDataAvailable' || key === 'productImagesAvailable'">
-                        <el-switch
-                          v-model="formData[key]"
-                          :active-value="1"
-                          :inactive-value="0"
-                        />
+                        <el-switch v-model="formData[key]" :active-value="1" :inactive-value="0" />
                       </template>
                       <template v-else-if="key === 'fobPrice'">
-                        <el-input-number 
-                          v-model="formData[key]" 
-                          :precision="2" 
-                          :step="0.1" 
-                          :min="0"
-                          class="w-full"
-                        />
+                        <el-input-number v-model="formData[key]" :precision="2" :step="0.1" :min="0" class="w-full" />
                       </template>
                       <template v-else-if="key === 'sampleLeadTime' || key === 'createTime'">
-                        <el-date-picker
-                          v-model="formData[key]"
-                          type="datetime"
-                          placeholder="选择日期时间"
-                          class="w-full"
-                        />
+                        <el-date-picker v-model="formData[key]" type="datetime" placeholder="选择日期时间" class="w-full" />
                       </template>
                       <template v-else-if="key === 'remark'">
-                        <el-input 
-                          v-model="formData[key]"
-                          type="textarea"
-                          :rows="3"
-                          placeholder="请输入备注"
-                        />
+                        <el-input v-model="formData[key]" type="textarea" :rows="3" placeholder="请输入备注" />
                       </template>
                       <template v-else>
                         <el-input v-model="formData[key]" />
@@ -105,45 +78,39 @@
                 </template>
               </template>
             </div>
-            <br>
-            
+            <br />
+
             <!-- 图片上传 -->
             <div class="image-section">
               <el-form-item label="产品图片">
                 <div class="image-container">
-                  <ImageHandler
-                    v-model="formData.image"
-                    alt="产品图片"
-                    :editable="editingSections.includes('basic')"
-                    @temp-file="handleTempFile"
-                  />
+                  <ImageHandler v-model="imageArray" alt="产品图片" :editable="editingSections.includes('basic')" @temp-file="handleTempFile" />
                 </div>
               </el-form-item>
             </div>
           </el-form>
         </div>
-
-        
       </div>
     </div>
 
     <!-- 图片预览对话框 -->
     <el-dialog v-model="dialogVisible" title="图片预览" width="800px" align-center>
-      <img :src="dialogImageUrl" style="width: 100%;" />
+      <img :src="dialogImageUrl" style="width: 100%" />
     </el-dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, nextTick } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { Check, Back, Plus, Edit, Close, Document, Picture } from '@element-plus/icons-vue'
-import type { UploadFile } from 'element-plus'
-import { ElMessage } from 'element-plus'
-import {getQuotationDetail , updateQuotation} from '@/api/quotation'
-import { exportQuotation } from '@/utils/exportQuotation'
-import { saveAs } from 'file-saver'
+import {ref, onMounted, nextTick, computed} from 'vue'
+import {useRouter, useRoute} from 'vue-router'
+import {Check, Back, Plus, Edit, Close, Document, Picture} from '@element-plus/icons-vue'
+import type {UploadFile} from 'element-plus'
+import {ElMessage} from 'element-plus'
+import {getQuotationGetInfoById, putQuotationUpdate, getFilesRemove, postFilesUpload} from '@/api'
+import {exportQuotation} from '@/utils/exportQuotation'
+import {saveAs} from 'file-saver'
 import ImageHandler from '@/components/ImageHandler.vue'
+import request from '@/api/request'
 
 const router = useRouter()
 const route = useRoute()
@@ -154,36 +121,40 @@ const loading = ref(false)
 const tempFormData = ref<any>(null) // 添加临时数据存储
 const exporting = ref(false)
 const tempFiles = ref<string[]>([])
+// 存储临时上传的图片路径，用于取消时删除
+const tempUploadedImages = ref<{[key: string]: string[]}>({
+  newUploads: []
+})
 
 interface FormData {
-  id?: string;
-  image?: string;
-  supplier?: string;
-  supplierItemCode?: string;
-  specificationDetails?: string;
-  sampleLeadTime?: string;
-  overallDimensionsWidth?: number;
-  overallDimensionsDepth?: number;
-  overallDimensionsHeight?: number;
-  boxDimensionsWidth?: number;
-  boxDimensionsDepth?: number;
-  boxDimensionsHeight?: number;
-  boxWeightNetWeighth?: number;
-  netWeightGrossWeight?: string;
-  effectiveVol?: string;
-  loadingQty?: number;
-  moq?: string;
-  fobPrice?: number;
-  currency?: number;
-  bifmaTested?: number;
-  cadBlockAvailable?: number;
-  productDataAvailable?: number;
-  productImagesAvailable?: number;
-  salesContacts?: string;
-  createTime?: string;
-  validPeriod?: string;
-  port?: string;
-  remark?: string;
+  id?: string
+  image?: string
+  supplier?: string
+  supplierItemCode?: string
+  specificationDetails?: string
+  sampleLeadTime?: string
+  overallDimensionsWidth?: number
+  overallDimensionsDepth?: number
+  overallDimensionsHeight?: number
+  boxDimensionsWidth?: number
+  boxDimensionsDepth?: number
+  boxDimensionsHeight?: number
+  boxWeightNetWeighth?: number
+  netWeightGrossWeight?: string
+  effectiveVol?: string
+  loadingQty?: number
+  moq?: string
+  fobPrice?: number
+  currency?: number
+  bifmaTested?: number
+  cadBlockAvailable?: number
+  productDataAvailable?: number
+  productImagesAvailable?: number
+  salesContacts?: string
+  createTime?: string
+  validPeriod?: string
+  port?: string
+  remark?: string
 }
 
 const formData = ref<FormData>({
@@ -192,7 +163,48 @@ const formData = ref<FormData>({
   cadBlockAvailable: 0,
   productDataAvailable: 0,
   productImagesAvailable: 0,
-  fobPrice: 0,
+  fobPrice: 0
+})
+
+// 图片数组计算属性
+const imageArray = computed({
+  get: () => {
+    // 如果 formData.image 存在且不为空，则将其作为数组的唯一元素返回
+    return formData.value.image ? [formData.value.image] : []
+  },
+  set: (newValue: string[]) => {
+    // 获取原始值
+    const originalValue = formData.value.image
+
+    // 当 ImageHandler 更新值时，取数组的第一个元素作为 formData.image
+    const newImageValue = newValue.length > 0 ? newValue[0] : undefined
+
+    // 如果原始值存在且与新值不同，记录原始值用于可能的删除
+    if (originalValue && originalValue !== newImageValue) {
+      // 初始化临时存储
+      if (!tempUploadedImages.value['basic']) {
+        tempUploadedImages.value['basic'] = []
+      }
+      // 记录被替换的图片路径
+      tempUploadedImages.value['basic'].push(originalValue)
+      console.log('记录被替换的图片路径:', originalValue)
+    }
+
+    // 如果新值是http开头的URL，且不在newUploads中，也添加到newUploads
+    if (newImageValue && typeof newImageValue === 'string' && newImageValue.startsWith('http')) {
+      const newUploads = tempUploadedImages.value['newUploads'] || []
+      if (!newUploads.includes(newImageValue)) {
+        if (!tempUploadedImages.value['newUploads']) {
+          tempUploadedImages.value['newUploads'] = []
+        }
+        tempUploadedImages.value['newUploads'].push(newImageValue)
+        console.log('记录新的图片URL到newUploads:', newImageValue)
+      }
+    }
+
+    // 更新图片值
+    formData.value.image = newImageValue
+  }
 })
 
 // 基本字段定义
@@ -246,9 +258,9 @@ const handleRemove = () => {
 // 处理图片变化
 const handleImageChange = (uploadFile: UploadFile) => {
   if (!uploadFile.raw) return
-  
+
   const reader = new FileReader()
-  reader.onload = (e) => {
+  reader.onload = e => {
     if (e.target?.result && typeof e.target.result === 'string') {
       formData.value.image = e.target.result
       updateUploadDisplay()
@@ -263,7 +275,7 @@ const updateUploadDisplay = () => {
     // 选择上传按钮
     const uploadBtn = document.querySelector('.el-upload.el-upload--picture-card')
     if (uploadBtn) {
-      (uploadBtn as HTMLElement).style.display = formData.value.image ? 'none' : 'inline-flex'
+      ;(uploadBtn as HTMLElement).style.display = formData.value.image ? 'none' : 'inline-flex'
     }
   })
 }
@@ -273,8 +285,8 @@ const fetchQuoteDetail = async () => {
   try {
     loading.value = true
     const id = route.params.id as string
-    const response = await getQuotationDetail(parseInt(id))
-    formData.value = { ...formData.value, ...response.data }
+    const response = await getQuotationGetInfoById({id})
+    formData.value = {...formData.value, ...response.data}
   } catch (error) {
     console.error('获取详情失败:', error)
     ElMessage.error('获取详情失败')
@@ -286,7 +298,7 @@ const fetchQuoteDetail = async () => {
 // 格式化字段显示值
 const formatFieldValue = (key: string, value: any): string => {
   if (value === undefined || value === null) return '-'
-  
+
   switch (key) {
     case 'currency':
       return value === 0 ? '人民币' : '美元'
@@ -320,19 +332,51 @@ const handleEdit = (section: string) => {
 const handleSave = async () => {
   try {
     loading.value = true
-    
+
     // 如果有备份数据，且备份中有图片但当前没有，需要删除旧图片
     if (tempFormData.value?.image && !formData.value.image) {
       try {
-        await http.get(`/files/remove?filePath=${tempFormData.value.image}`)
+        await getFilesRemove({filePath: tempFormData.value.image})
+        console.log('已从服务器删除旧图片:', tempFormData.value.image)
       } catch (error) {
         console.error('删除旧图片失败:', error)
       }
     }
 
     // 调用更新接口
-    await updateQuotation(formData.value)
-    
+    await putQuotationUpdate(formData.value)
+
+    // 保存成功后，处理需要删除的图片
+    if (tempUploadedImages.value['basic'] && tempUploadedImages.value['basic'].length > 0) {
+      console.log('保存成功，开始删除记录的需要删除的图片:', tempUploadedImages.value['basic'])
+
+      // 删除所有记录的需要删除的图片
+      for (const path of tempUploadedImages.value['basic']) {
+        if (path && path.startsWith('http')) {
+          try {
+            await getFilesRemove({filePath: path})
+            console.log('已从服务器删除图片:', path)
+          } catch (error) {
+            console.error('从服务器删除图片失败:', error)
+          }
+        }
+      }
+
+      // 清空该部分的临时图片记录
+      tempUploadedImages.value['basic'] = []
+    }
+
+    // 清理newUploads中的相关记录
+    if (tempUploadedImages.value['newUploads'] && tempUploadedImages.value['newUploads'].length > 0) {
+      // 找出使用的图片
+      const usedImages = [formData.value.image].filter(val => typeof val === 'string' && val.startsWith('http')) as string[]
+
+      // 从newUploads中移除已保存的图片
+      tempUploadedImages.value['newUploads'] = tempUploadedImages.value['newUploads'].filter(path => !usedImages.includes(path))
+
+      console.log('保存后清理临时上传记录，剩余:', tempUploadedImages.value['newUploads'])
+    }
+
     // 更新备份数据
     tempFormData.value = JSON.parse(JSON.stringify(formData.value))
     editingSections.value = []
@@ -348,19 +392,47 @@ const handleSave = async () => {
 // 处理取消
 const handleCancel = async () => {
   try {
-    if (tempFormData.value) {
-      // 如果当前图片与备份不同，需要删除临时上传的图片
-      if (formData.value.image && formData.value.image !== tempFormData.value.image) {
+    console.log('取消编辑')
+
+    // 处理图片
+    // 如果当前图片与备份不同，需要删除临时上传的图片
+    if (formData.value.image && formData.value.image !== tempFormData.value?.image) {
+      try {
+        await getFilesRemove({filePath: formData.value.image})
+        console.log('已删除临时上传的图片:', formData.value.image)
+      } catch (error) {
+        console.error('删除临时图片失败:', error)
+      }
+    }
+
+    // 获取临时上传的图片列表
+    const newUploads = tempUploadedImages.value['newUploads'] || []
+
+    // 删除所有临时上传的图片，确保没有遗漏
+    for (const path of newUploads) {
+      if (path && path.startsWith('http') && path !== tempFormData.value?.image) {
         try {
-          await http.get(`/files/remove?filePath=${formData.value.image}`)
+          await getFilesRemove({filePath: path})
+          console.log('已删除临时上传的图片:', path)
         } catch (error) {
-          console.error('删除临时图片失败:', error)
+          console.error('删除临时上传图片失败:', error)
         }
       }
-      
-      // 恢复到编辑前的状态
+    }
+
+    // 清空临时上传列表
+    tempUploadedImages.value['newUploads'] = []
+
+    // 如果有临时记录，清空
+    if (tempUploadedImages.value['basic']) {
+      tempUploadedImages.value['basic'] = []
+    }
+
+    // 恢复到编辑前的状态
+    if (tempFormData.value) {
       formData.value = JSON.parse(JSON.stringify(tempFormData.value))
     }
+
     editingSections.value = []
     tempFormData.value = null
     ElMessage.success('已取消编辑')
@@ -404,17 +476,15 @@ const handleExport = async () => {
       remark: formData.value.remark || '',
       image: formData.value.image || ''
     }
-    
+
     const buffer = await exportQuotation(exportData)
-    const blob = new Blob([buffer], { 
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     })
-    const createDate = formData.value.createTime 
-      ? formData.value.createTime.split('T')[0].replace(/-/g, '')
-      : new Date().toISOString().split('T')[0].replace(/-/g, '')
+    const createDate = formData.value.createTime ? formData.value.createTime.split('T')[0].replace(/-/g, '') : new Date().toISOString().split('T')[0].replace(/-/g, '')
     const fileName = `TC QUOTATION FORM ${exportData.supplier} ${createDate}.xlsx`
     saveAs(blob, fileName)
-    
+
     ElMessage.success('导出成功')
   } catch (error) {
     console.error('导出失败:', error)
@@ -426,6 +496,11 @@ const handleExport = async () => {
 
 // 处理临时文件
 const handleTempFile = (filePath: string) => {
+  if (!tempUploadedImages.value['newUploads']) {
+    tempUploadedImages.value['newUploads'] = []
+  }
+  tempUploadedImages.value['newUploads'].push(filePath)
+  console.log('记录新上传的图片到newUploads:', filePath)
   tempFiles.value.push(filePath)
 }
 
@@ -654,10 +729,10 @@ onMounted(async () => {
 }
 
 :root {
-  --page-background: #f5f7fa;  /* 页面背景色 */
-  --section-background: #ffffff;  /* 表格区域背景色 */
-  --section-header-background: #ffffff;  /* 表格头部背景色 */
-  --section-editing-background: #fafcff;  /* 编辑状态背景色 */
+  --page-background: #f5f7fa; /* 页面背景色 */
+  --section-background: #ffffff; /* 表格区域背景色 */
+  --section-header-background: #ffffff; /* 表格头部背景色 */
+  --section-editing-background: #fafcff; /* 编辑状态背景色 */
 }
 
 /* 非编辑状态下的文本显示样式 */
@@ -779,4 +854,4 @@ onMounted(async () => {
 .no-image .el-icon {
   margin-bottom: 8px;
 }
-</style> @/api/bak/quotation
+</style>

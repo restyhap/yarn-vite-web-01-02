@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-01-15 11:34:14
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-03-03 19:09:18
+ * @LastEditTime: 2025-03-12 16:55:03
  * @FilePath: /yarn-vite-web-01-02/src/views/index/prod/Info.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -41,10 +41,10 @@
           </div>
         </div>
 
-        <div class="bg-white overflow-auto" style="height: calc(100vh - 64px); padding-bottom: 72px;">
+        <div class="bg-white overflow-auto" style="height: calc(100vh - 64px); padding-bottom: 72px">
           <div class="p-6">
             <!-- 统一处理所有表格，包括基本信息 -->
-            <div v-for="(sectionKey, _index) in ['basic', ...Object.keys(specSections)]" :key="sectionKey" class="mb-8">
+            <div v-for="sectionKey in ['basic', ...Object.keys(specSections)]" :key="sectionKey" class="mb-8">
               <div class="flex items-center mb-4">
                 <h3 class="text-lg font-medium text-gray-800 w-full border-b pb-2 flex justify-between items-center">
                   <span>{{ sectionKey === 'basic' ? '基本信息' : formatSectionTitle(sectionKey) }}</span>
@@ -69,22 +69,18 @@
                 </h3>
               </div>
 
-              <el-form 
-                :model="sectionKey === 'basic' ? formData.products : formData[sectionKey]" 
-                label-width="140px"
-                class="[&_.el-form-item__label]:text-gray-600 [&_.el-form-item__label]:font-medium [&_.el-input__wrapper]:shadow-none [&_.el-input__inner]:h-[38px]"
-              >
+              <el-form :model="sectionKey === 'basic' ? formData.products : formData[sectionKey]" label-width="140px" class="[&_.el-form-item__label]:text-gray-600 [&_.el-form-item__label]:font-medium [&_.el-input__wrapper]:shadow-none [&_.el-input__inner]:h-[38px]">
                 <template v-if="sectionKey === 'images'">
                   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     <div v-for="(label, key) in specSections.images" :key="key" class="bg-gray-100 p-4 rounded">
                       <div class="text-center text-sm text-gray-600 mb-2 font-medium">{{ label }}</div>
                       <div class="w-full h-[240px] bg-white rounded-lg overflow-hidden">
                         <div class="w-full h-full flex items-center justify-center">
-                          <ImageHandler 
-                            :model-value="formData.images[key as keyof ProductImage] ? [formData.images[key as keyof ProductImage]] : []"
-                            @update:model-value="val => updateSingleImage('images', key as keyof ProductImage, val)"
-                            :editable="editingSections.includes('images')" 
-                            class="!w-full !h-full [&_img]:w-auto [&_img]:h-auto [&_img]:max-w-full [&_img]:max-h-full [&_img]:object-contain [&_img]:m-auto [&_.el-upload]:w-full [&_.el-upload]:h-full [&_.el-upload]:flex [&_.el-upload]:items-center [&_.el-upload]:justify-center [&_.el-upload-dragger]:w-full [&_.el-upload-dragger]:h-full [&_.el-upload-dragger]:flex [&_.el-upload-dragger]:items-center [&_.el-upload-dragger]:justify-center [&_.el-upload-dragger]:border-2 [&_.el-upload-dragger]:border-dashed [&_.el-upload-dragger]:border-gray-300 hover:[&_.el-upload-dragger]:border-blue-500 [&_.el-upload__tip]:hidden" 
+                          <ImageHandler
+                            :model-value="formData.images[key] ? [formData.images[key]] : []"
+                            @update:model-value="val => updateSingleImage('images', String(key), val)"
+                            :editable="editingSections.includes('images')"
+                            class="!w-full !h-full [&_img]:w-auto [&_img]:h-auto [&_img]:max-w-full [&_img]:max-h-full [&_img]:object-contain [&_img]:m-auto [&_.el-upload]:w-full [&_.el-upload]:h-full [&_.el-upload]:flex [&_.el-upload]:items-center [&_.el-upload]:justify-center [&_.el-upload-dragger]:w-full [&_.el-upload-dragger]:h-full [&_.el-upload-dragger]:flex [&_.el-upload-dragger]:items-center [&_.el-upload-dragger]:justify-center [&_.el-upload-dragger]:border-2 [&_.el-upload-dragger]:border-dashed [&_.el-upload-dragger]:border-gray-300 hover:[&_.el-upload-dragger]:border-blue-500 [&_.el-upload__tip]:hidden"
                             :size="260"
                           />
                         </div>
@@ -94,33 +90,14 @@
                 </template>
                 <template v-else>
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
-                    <el-form-item 
-                      v-for="(label, key) in sectionKey === 'basic' ? basicFields : specSections[sectionKey]" 
-                      :key="key" 
-                      :label="label"
-                      class="bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2"
-                      label-position="left"
-                    >
+                    <el-form-item v-for="(label, key) in sectionKey === 'basic' ? basicFields : specSections[sectionKey]" :key="key" :label="label" class="bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
                       <template v-if="editingSections.includes(sectionKey)">
-                        <el-input 
-                          v-if="sectionKey === 'basic'"
-                          v-model="(formData.products[key as keyof Product])" 
-                          :placeholder="`请输入${label}`"
-                          class="w-full !h-[38px]" 
-                        />
-                        <el-input 
-                          v-else
-                          v-model="formData[sectionKey][key]" 
-                          :placeholder="`请输入${label}`"
-                          class="w-full !h-[38px]" 
-                        />
+                        <el-input v-if="sectionKey === 'basic'" v-model="formData.products[key]" :placeholder="`请输入${label}`" class="w-full !h-[38px]" />
+                        <el-input v-else v-model="formData[sectionKey][key]" :placeholder="`请输入${label}`" class="w-full !h-[38px]" />
                       </template>
                       <template v-else>
                         <div class="w-full text-gray-700 bg-gray-50 p-2 rounded h-[38px] leading-[22px]">
-                          {{ sectionKey === 'basic' 
-                            ? (formData.products[key as keyof Product] || '-')
-                            : (formData[sectionKey][key] || '-') 
-                          }}
+                          {{ sectionKey === 'basic' ? formData.products[key] || '-' : formData[sectionKey][key] || '-' }}
                         </div>
                       </template>
                     </el-form-item>
@@ -136,50 +113,69 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { Document, Edit, Check, Close, Picture, Back, ZoomIn, Delete } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { exportToWord } from '../../../utils/exportToWord'
-import { getProductDTOById, saveData } from '@/api/product'
-import type { Product, CartonDetail, ProductDimension, ProductionLogistics, SeatInnerComponent, BackInnerComponent, BackOuterComponent, SeatOuterComponent, Arm, FoamDetail, Castor, Base, GasLift, GasLiftCover, Mechanism, Fitting, ProductImage, Upholstery } from '@/api/product.d'
-import { ElImageViewer } from 'element-plus'
+import {Products, CartonDetails, ProductDimensions, ProductionLogistics, SeatInnerComponents, BackInnerComponents, BackOuterComponents, SeatOuterComponents, Arms, FoamDetails, Castors, Bases, GasLift, GasLiftCover, Mechanism, Fittings, ProductImages, Upholstery} from '@/api'
+import {
+  getProductDtoGetById,
+  putProductsUpdate,
+  putCartonDetailsUpdate,
+  putProductDimensionsUpdate,
+  putProductionLogisticsUpdate,
+  putSeatInnerComponentsUpdate,
+  putBackInnerComponentsUpdate,
+  putSeatOuterComponentsUpdate,
+  putBackOuterComponentsUpdate,
+  putArmsUpdate,
+  putFoamDetailsUpdate,
+  putCastorsUpdate,
+  putBasesUpdate,
+  putGasLiftUpdate,
+  putGasLiftCoverUpdate,
+  putMechanismUpdate,
+  putFittingsUpdate,
+  putProductImagesUpdate,
+  putUpholsteryUpdate,
+  getFilesRemove,
+  postFilesUpload
+} from '@/api'
 import ImageHandler from '@/components/ImageHandler.vue'
-import http from '@/axios'
-import type { UploadFile } from 'element-plus'
+import {Back, Check, Close, Document, Edit} from '@element-plus/icons-vue'
+import {ElMessage} from 'element-plus'
+import {onMounted, ref} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {exportToWord} from '../../../utils/exportToWord'
 
 interface FormData {
-  products: Product;
-  packaging: CartonDetail;
-  dimensions: ProductDimension;
-  logistics: ProductionLogistics;
-  seatInner: SeatInnerComponent;
-  backInner: BackInnerComponent;
-  backOuter: BackOuterComponent;
-  seatOuter: SeatOuterComponent;
-  arms: Arm;
-  foam: FoamDetail;
-  castors: Castor;
-  base: Base;
-  gasLift: GasLift;
-  gasLiftCover: GasLiftCover;
-  mechanism: Mechanism;
-  fittings: Fitting;
-  images: ProductImage;
-  upholstery: Upholstery;
-  [key: string]: any;
+  products: Products & {[key: string]: any}
+  packaging: CartonDetails & {[key: string]: any}
+  dimensions: ProductDimensions & {[key: string]: any}
+  logistics: ProductionLogistics & {[key: string]: any}
+  seatInner: SeatInnerComponents & {[key: string]: any}
+  backInner: BackInnerComponents & {[key: string]: any}
+  seatOuter: SeatOuterComponents & {[key: string]: any}
+  backOuter: BackOuterComponents & {[key: string]: any}
+  arms: Arms & {[key: string]: any}
+  foam: FoamDetails & {[key: string]: any}
+  castors: Castors & {[key: string]: any}
+  base: Bases & {[key: string]: any}
+  gasLift: GasLift & {[key: string]: any}
+  gasLiftCover: GasLiftCover & {[key: string]: any}
+  mechanism: Mechanism & {[key: string]: any}
+  fittings: Fittings & {[key: string]: any}
+  images: ProductImages & {[key: string]: any}
+  upholstery: Upholstery & {[key: string]: any}
+  [key: string]: any
 }
 
 interface BasicField {
-  [key: string]: string;
-  tccode: string;
-  supplier: string;
-  supplierCode: string;
-  supplierName: string;
-  fireStandard: string;
-  fob20ContainerPrice: string;
-  fob40ContainerPrice: string;
-  shippingPort: string;
+  [key: string]: string
+  tccode: string
+  supplier: string
+  supplierCode: string
+  supplierName: string
+  fireStandard: string
+  fob20ContainerPrice: string
+  fob40ContainerPrice: string
+  shippingPort: string
 }
 
 interface SpecSection {
@@ -510,505 +506,183 @@ const fetchData = async () => {
     }
 
     console.log('正在获取产品数据，ID:', id)
-    const response = await getProductDTOById(id)
-
-    if (response?.data) {
-      console.log('获取到的产品数据:', response.data)
-      // 重新组织数据结构
-      const data = response.data
+    const response = await getProductDtoGetById({id})
+    console.log('获取到的数据:', response)
+    if (response) {
+      // 使用类型断言处理API返回的数据
+      const responseData = response.data as any
       formData.value = {
         ...formData.value,
         products: {
-          id: data.products?.id || '',
-          tccode: data.products?.tccode || '',
-          supplier: data.products?.supplier || '',
-          supplierCode: data.products?.supplierCode || '',
-          supplierName: data.products?.supplierName || '',
-          fireStandard: data.products?.fireStandard || '',
-          fob20ContainerPrice: Number(data.products?.fob20ContainerPrice) || 0,
-          fob40ContainerPrice: Number(data.products?.fob40ContainerPrice) || 0,
-          shippingPort: data.products?.shippingPort || ''
+          id: responseData.products?.id || '',
+          tccode: responseData.products?.tccode || '',
+          supplier: responseData.products?.supplier || '',
+          supplierCode: responseData.products?.supplierCode || '',
+          supplierName: responseData.products?.supplierName || '',
+          fireStandard: responseData.products?.fireStandard || '',
+          fob20ContainerPrice: Number(responseData.products?.fob20ContainerPrice) || 0,
+          fob40ContainerPrice: Number(responseData.products?.fob40ContainerPrice) || 0,
+          shippingPort: responseData.products?.shippingPort || ''
         },
         packaging: {
-          id: data.cartonDetails?.id || '',
-          productId: data.cartonDetails?.productId || '',
-          width: Number(data.cartonDetails?.width) || 0,
-          depth: Number(data.cartonDetails?.depth) || 0,
-          height: Number(data.cartonDetails?.height) || 0,
-          boardType: data.cartonDetails?.boardType || '',
-          itemsPerCarton: Number(data.cartonDetails?.itemsPerCarton) || 0,
-          cartonVolume: Number(data.cartonDetails?.cartonVolume) || 0
+          id: responseData.cartonDetails?.id || '',
+          productId: responseData.cartonDetails?.productId || '',
+          width: Number(responseData.cartonDetails?.width) || 0,
+          depth: Number(responseData.cartonDetails?.depth) || 0,
+          height: Number(responseData.cartonDetails?.height) || 0,
+          boardType: responseData.cartonDetails?.boardType || '',
+          itemsPerCarton: Number(responseData.cartonDetails?.itemsPerCarton) || 0,
+          cartonVolume: Number(responseData.cartonDetails?.cartonVolume) || 0
         },
         dimensions: {
-          id: data.productDimensions?.id || '',
-          productId: data.productDimensions?.productId || '',
-          seatWidth: data.productDimensions?.seatWidth || 0,
-          seatDepth: data.productDimensions?.seatDepth || 0,
-          seatHeightMin: data.productDimensions?.seatHeightMin || 0,
-          seatHeightMax: data.productDimensions?.seatHeightMax || 0,
-          backWidth: data.productDimensions?.backWidth || 0,
-          backHeight: data.productDimensions?.backHeight || 0,
-          backHeightFromSeat: data.productDimensions?.backHeightFromSeat || 0,
-          overallWidth: data.productDimensions?.overallWidth || 0,
-          overallDepth: data.productDimensions?.overallDepth || 0,
-          overallHeightMin: data.productDimensions?.overallHeightMin || 0,
-          overallHeightMax: data.productDimensions?.overallHeightMax || 0
+          id: responseData.productDimensions?.id || '',
+          productId: responseData.productDimensions?.productId || '',
+          seatWidth: responseData.productDimensions?.seatWidth || 0,
+          seatDepth: responseData.productDimensions?.seatDepth || 0,
+          seatHeightMin: responseData.productDimensions?.seatHeightMin || 0,
+          seatHeightMax: responseData.productDimensions?.seatHeightMax || 0,
+          backWidth: responseData.productDimensions?.backWidth || 0,
+          backHeight: responseData.productDimensions?.backHeight || 0,
+          backHeightFromSeat: responseData.productDimensions?.backHeightFromSeat || 0,
+          overallWidth: responseData.productDimensions?.overallWidth || 0,
+          overallDepth: responseData.productDimensions?.overallDepth || 0,
+          overallHeightMin: responseData.productDimensions?.overallHeightMin || 0,
+          overallHeightMax: responseData.productDimensions?.overallHeightMax || 0
         },
         logistics: {
-          id: data.productionLogistics?.id || '',
-          productId: data.productionLogistics?.productId || '',
-          productionTime: data.productionLogistics?.productionTime || 0,
-          effectiveVolume: data.productionLogistics?.effectiveVolume || 0,
-          loadingQuantity20gp: data.productionLogistics?.loadingQuantity20gp || 0,
-          loadingQuantity40hc: data.productionLogistics?.loadingQuantity40hc || 0,
-          netWeight: data.productionLogistics?.netWeight || 0,
-          grossWeight: data.productionLogistics?.grossWeight || 0
+          id: responseData.productionLogistics?.id || '',
+          productId: responseData.productionLogistics?.productId || '',
+          productionTime: responseData.productionLogistics?.productionTime || 0,
+          effectiveVolume: responseData.productionLogistics?.effectiveVolume || 0,
+          loadingQuantity20gp: responseData.productionLogistics?.loadingQuantity20gp || 0,
+          loadingQuantity40hc: responseData.productionLogistics?.loadingQuantity40hc || 0,
+          netWeight: responseData.productionLogistics?.netWeight || 0,
+          grossWeight: responseData.productionLogistics?.grossWeight || 0
         },
         seatInner: {
-          id: data.seatInnerComponents?.id || '',
-          productId: data.seatInnerComponents?.productId || '',
-          materialCode: data.seatInnerComponents?.materialCode || '',
-          thickness: data.seatInnerComponents?.thickness || 0,
-          layersCount: data.seatInnerComponents?.layersCount || 0,
-          dimensions: data.seatInnerComponents?.dimensions || ''
+          id: responseData.seatInnerComponents?.id || '',
+          productId: responseData.seatInnerComponents?.productId || '',
+          materialCode: responseData.seatInnerComponents?.materialCode || '',
+          thickness: responseData.seatInnerComponents?.thickness || 0,
+          layersCount: responseData.seatInnerComponents?.layersCount || 0,
+          dimensions: responseData.seatInnerComponents?.dimensions || ''
         },
         backInner: {
-          id: data.backInnerComponents?.id || '',
-          productId: data.backInnerComponents?.productId || '',
-          materialCode: data.backInnerComponents?.materialCode || '',
-          thickness: data.backInnerComponents?.thickness || 0,
-          layersCount: data.backInnerComponents?.layersCount || 0,
-          dimensions: data.backInnerComponents?.dimensions || ''
+          id: responseData.backInnerComponents?.id || '',
+          productId: responseData.backInnerComponents?.productId || '',
+          materialCode: responseData.backInnerComponents?.materialCode || '',
+          thickness: responseData.backInnerComponents?.thickness || 0,
+          layersCount: responseData.backInnerComponents?.layersCount || 0,
+          dimensions: responseData.backInnerComponents?.dimensions || ''
         },
         backOuter: {
-          id: data.backOuterComponents?.id || '',
-          productId: data.backOuterComponents?.productId || '',
-          material: data.backOuterComponents?.material || '',
-          dimensions: data.backOuterComponents?.dimensions || '',
-          manufacturerName: data.backOuterComponents?.manufacturerName || ''
+          id: responseData.backOuterComponents?.id || '',
+          productId: responseData.backOuterComponents?.productId || '',
+          material: responseData.backOuterComponents?.material || '',
+          dimensions: responseData.backOuterComponents?.dimensions || '',
+          manufacturerName: responseData.backOuterComponents?.manufacturerName || ''
         },
         seatOuter: {
-          id: data.seatOuterComponents?.id || '',
-          productId: data.seatOuterComponents?.productId || '',
-          material: data.seatOuterComponents?.material || '',
-          dimensions: data.seatOuterComponents?.dimensions || '',
-          manufacturerName: data.seatOuterComponents?.manufacturerName || ''
+          id: responseData.seatOuterComponents?.id || '',
+          productId: responseData.seatOuterComponents?.productId || '',
+          material: responseData.seatOuterComponents?.material || '',
+          dimensions: responseData.seatOuterComponents?.dimensions || '',
+          manufacturerName: responseData.seatOuterComponents?.manufacturerName || ''
         },
         arms: {
-          id: data.arms?.id || '',
-          productId: data.arms?.productId || '',
-          material: data.arms?.material || '',
-          type: data.arms?.type || '',
-          manufacturer: data.arms?.manufacturer || '',
-          description: data.arms?.description || '',
-          armHeightFromSeat: data.arms?.armHeightFromSeat || 0,
-          armHeightFromFloor: data.arms?.armHeightFromFloor || 0
+          id: responseData.arms?.id || '',
+          productId: responseData.arms?.productId || '',
+          material: responseData.arms?.material || '',
+          type: responseData.arms?.type || '',
+          manufacturer: responseData.arms?.manufacturer || '',
+          description: responseData.arms?.description || '',
+          armHeightFromSeat: responseData.arms?.armHeightFromSeat || 0,
+          armHeightFromFloor: responseData.arms?.armHeightFromFloor || 0
         },
         foam: {
-          id: data.foamDetails?.id || '',
-          productId: data.foamDetails?.productId || '',
-          description: data.foamDetails?.description || '',
-          seatDensity: data.foamDetails?.seatDensity || 0,
-          backDensity: data.foamDetails?.backDensity || 0,
-          seatThickness: data.foamDetails?.seatThickness || 0,
-          backThickness: data.foamDetails?.backThickness || 0
+          id: responseData.foamDetails?.id || '',
+          productId: responseData.foamDetails?.productId || '',
+          description: responseData.foamDetails?.description || '',
+          seatDensity: responseData.foamDetails?.seatDensity || 0,
+          backDensity: responseData.foamDetails?.backDensity || 0,
+          seatThickness: responseData.foamDetails?.seatThickness || 0,
+          backThickness: responseData.foamDetails?.backThickness || 0
         },
         castors: {
-          id: data.castors?.id || '',
-          productId: data.castors?.productId || '',
-          description: data.castors?.description || '',
-          pinThickness: data.castors?.pinThickness || 0,
-          wheelDiameter: data.castors?.wheelDiameter || 0
+          id: responseData.castors?.id || '',
+          productId: responseData.castors?.productId || '',
+          description: responseData.castors?.description || '',
+          pinThickness: responseData.castors?.pinThickness || 0,
+          wheelDiameter: responseData.castors?.wheelDiameter || 0
         },
         base: {
-          id: data.bases?.id || '',
-          productId: data.bases?.productId || '',
-          description: data.bases?.description || '',
-          sizeDiameter: data.bases?.sizeDiameter || 0,
-          material: data.bases?.material || '',
-          type: data.bases?.type || ''
+          id: responseData.bases?.id || '',
+          productId: responseData.bases?.productId || '',
+          description: responseData.bases?.description || '',
+          sizeDiameter: responseData.bases?.sizeDiameter || 0,
+          material: responseData.bases?.material || '',
+          type: responseData.bases?.type || ''
         },
         gasLift: {
-          id: data.gasLift?.id || '',
-          productId: data.gasLift?.productId || '',
-          description: data.gasLift?.description || '',
-          gasLiftClass: data.gasLift?.gasLiftClass || '',
-          casingLength: data.gasLift?.casingLength || 0,
-          extensionSize: data.gasLift?.extensionSize || 0,
-          taper: data.gasLift?.taper || 0
+          id: responseData.gasLift?.id || '',
+          productId: responseData.gasLift?.productId || '',
+          description: responseData.gasLift?.description || '',
+          gasLiftClass: responseData.gasLift?.gasLiftClass || '',
+          casingLength: responseData.gasLift?.casingLength || 0,
+          extensionSize: responseData.gasLift?.extensionSize || 0,
+          taper: responseData.gasLift?.taper || 0
         },
         gasLiftCover: {
-          id: data.gasLiftCover?.id || '',
-          productId: data.gasLiftCover?.productId || '',
-          description: data.gasLiftCover?.description || '',
-          material: data.gasLiftCover?.material || '',
-          colour: data.gasLiftCover?.colour || ''
+          id: responseData.gasLiftCover?.id || '',
+          productId: responseData.gasLiftCover?.productId || '',
+          description: responseData.gasLiftCover?.description || '',
+          material: responseData.gasLiftCover?.material || '',
+          colour: responseData.gasLiftCover?.colour || ''
         },
         mechanism: {
-          id: data.mechanism?.id || '',
-          productId: data.mechanism?.productId || '',
-          description: data.mechanism?.description || '',
-          leversCount: data.mechanism?.leversCount || 0,
-          lockingPositions: data.mechanism?.lockingPositions || '',
-          modelNo: data.mechanism?.modelNo || '',
-          supplierName: data.mechanism?.supplierName || ''
+          id: responseData.mechanism?.id || '',
+          productId: responseData.mechanism?.productId || '',
+          description: responseData.mechanism?.description || '',
+          leversCount: responseData.mechanism?.leversCount || 0,
+          lockingPositions: responseData.mechanism?.lockingPositions || '',
+          modelNo: responseData.mechanism?.modelNo || '',
+          supplierName: responseData.mechanism?.supplierName || ''
         },
         fittings: {
-          id: data.fittings?.id || '',
-          productId: data.fittings?.productId || '',
-          fittingNumber: data.fittings?.fittingNumber || 0,
-          description: data.fittings?.description || '',
-          quantity: data.fittings?.quantity || 0,
-          material: data.fittings?.material || ''
+          id: responseData.fittings?.id || '',
+          productId: responseData.fittings?.productId || '',
+          fittingNumber: responseData.fittings?.fittingNumber || 0,
+          description: responseData.fittings?.description || '',
+          quantity: responseData.fittings?.quantity || 0,
+          material: responseData.fittings?.material || ''
         },
         images: {
-          id: data.productImages?.id || '',
-          prodId: data.productImages?.productId || '',
-          frontImgPath: data.productImages?.frontImgPath || '',
-          sideImgPath: data.productImages?.sideImgPath || '',
-          backImgPath: data.productImages?.backImgPath || '',
-          angleImgPath: data.productImages?.angleImgPath || ''
+          id: responseData.productImages?.id || '',
+          prodId: responseData.productImages?.productId || '',
+          frontImgPath: responseData.productImages?.frontImgPath || '',
+          sideImgPath: responseData.productImages?.sideImgPath || '',
+          backImgPath: responseData.productImages?.backImgPath || '',
+          angleImgPath: responseData.productImages?.angleImgPath || ''
         },
         upholstery: {
-          id: data.upholstery?.id || '',
-          productId: data.upholstery?.productId || '',
-          fabricManufacturer: data.upholstery?.fabricManufacturer || '',
-          colourCode: data.upholstery?.colourCode || '',
-          leatherGrade: data.upholstery?.leatherGrade || '',
-          usagePerChair: Number(data.upholstery?.usagePerChair) || 0
+          id: responseData.upholstery?.id || '',
+          productId: responseData.upholstery?.productId || '',
+          fabricManufacturer: responseData.upholstery?.fabricManufacturer || '',
+          colourCode: responseData.upholstery?.colourCode || '',
+          leatherGrade: responseData.upholstery?.leatherGrade || '',
+          usagePerChair: Number(responseData.upholstery?.usagePerChair) || 0
         }
       }
+
       // 创建数据备份
       formDataBackup.value = JSON.parse(JSON.stringify(formData.value))
     } else {
       console.warn('未获取到产品数据')
       ElMessage.warning('未找到产品数据')
-      formData.value = {
-        products: {
-          id: '',
-          tccode: '',
-          supplier: '',
-          supplierCode: '',
-          supplierName: '',
-          fireStandard: '',
-          fob20ContainerPrice: 0,
-          fob40ContainerPrice: 0,
-          shippingPort: ''
-        },
-        packaging: {
-          id: '',
-          productId: '',
-          width: 0,
-          depth: 0,
-          height: 0,
-          boardType: '',
-          itemsPerCarton: 0,
-          cartonVolume: 0
-        },
-        dimensions: {
-          id: '',
-          productId: '',
-          seatWidth: 0,
-          seatDepth: 0,
-          seatHeightMin: 0,
-          seatHeightMax: 0,
-          backWidth: 0,
-          backHeight: 0,
-          backHeightFromSeat: 0,
-          overallWidth: 0,
-          overallDepth: 0,
-          overallHeightMin: 0,
-          overallHeightMax: 0
-        },
-        logistics: {
-          id: '',
-          productId: '',
-          productionTime: 0,
-          effectiveVolume: 0,
-          loadingQuantity20gp: 0,
-          loadingQuantity40hc: 0,
-          netWeight: 0,
-          grossWeight: 0
-        },
-        seatInner: {
-          id: '',
-          productId: '',
-          materialCode: '',
-          thickness: 0,
-          layersCount: 0,
-          dimensions: ''
-        },
-        backInner: {
-          id: '',
-          productId: '',
-          materialCode: '',
-          thickness: 0,
-          layersCount: 0,
-          dimensions: ''
-        },
-        backOuter: {
-          id: '',
-          productId: '',
-          material: '',
-          dimensions: '',
-          manufacturerName: ''
-        },
-        seatOuter: {
-          id: '',
-          productId: '',
-          material: '',
-          dimensions: '',
-          manufacturerName: ''
-        },
-        arms: {
-          id: '',
-          productId: '',
-          material: '',
-          type: '',
-          manufacturer: '',
-          description: '',
-          armHeightFromSeat: 0,
-          armHeightFromFloor: 0
-        },
-        foam: {
-          id: '',
-          productId: '',
-          description: '',
-          seatDensity: 0,
-          backDensity: 0,
-          seatThickness: 0,
-          backThickness: 0
-        },
-        castors: {
-          id: '',
-          productId: '',
-          description: '',
-          pinThickness: 0,
-          wheelDiameter: 0
-        },
-        base: {
-          id: '',
-          productId: '',
-          description: '',
-          sizeDiameter: 0,
-          material: '',
-          type: ''
-        },
-        gasLift: {
-          id: '',
-          productId: '',
-          description: '',
-          gasLiftClass: '',
-          casingLength: 0,
-          extensionSize: 0,
-          taper: 0
-        },
-        gasLiftCover: {
-          id: '',
-          productId: '',
-          description: '',
-          material: '',
-          colour: ''
-        },
-        mechanism: {
-          id: '',
-          productId: '',
-          description: '',
-          leversCount: 0,
-          lockingPositions: '',
-          modelNo: '',
-          supplierName: ''
-        },
-        fittings: {
-          id: '',
-          productId: '',
-          fittingNumber: 0,
-          description: '',
-          quantity: 0,
-          material: ''
-        },
-        images: {
-          id: '',
-          prodId: '',
-          frontImgPath: '',
-          sideImgPath: '',
-          backImgPath: '',
-          angleImgPath: ''
-        },
-        upholstery: {
-          id: '',
-          productId: '',
-          fabricManufacturer: '',
-          colourCode: '',
-          leatherGrade: '',
-          usagePerChair: 0
-        }
-      }
     }
   } catch (error) {
     console.error('获取数据失败:', error)
     ElMessage.error('获取数据失败')
-    formData.value = {
-      products: {
-        id: '',
-        tccode: '',
-        supplier: '',
-        supplierCode: '',
-        supplierName: '',
-        fireStandard: '',
-        fob20ContainerPrice: 0,
-        fob40ContainerPrice: 0,
-        shippingPort: ''
-      },
-      packaging: {
-        id: '',
-        productId: '',
-        width: 0,
-        depth: 0,
-        height: 0,
-        boardType: '',
-        itemsPerCarton: 0,
-        cartonVolume: 0
-      },
-      dimensions: {
-        id: '',
-        productId: '',
-        seatWidth: 0,
-        seatDepth: 0,
-        seatHeightMin: 0,
-        seatHeightMax: 0,
-        backWidth: 0,
-        backHeight: 0,
-        backHeightFromSeat: 0,
-        overallWidth: 0,
-        overallDepth: 0,
-        overallHeightMin: 0,
-        overallHeightMax: 0
-      },
-      logistics: {
-        id: '',
-        productId: '',
-        productionTime: 0,
-        effectiveVolume: 0,
-        loadingQuantity20gp: 0,
-        loadingQuantity40hc: 0,
-        netWeight: 0,
-        grossWeight: 0
-      },
-      seatInner: {
-        id: '',
-        productId: '',
-        materialCode: '',
-        thickness: 0,
-        layersCount: 0,
-        dimensions: ''
-      },
-      backInner: {
-        id: '',
-        productId: '',
-        materialCode: '',
-        thickness: 0,
-        layersCount: 0,
-        dimensions: ''
-      },
-      backOuter: {
-        id: '',
-        productId: '',
-        material: '',
-        dimensions: '',
-        manufacturerName: ''
-      },
-      seatOuter: {
-        id: '',
-        productId: '',
-        material: '',
-        dimensions: '',
-        manufacturerName: ''
-      },
-      arms: {
-        id: '',
-        productId: '',
-        material: '',
-        type: '',
-        manufacturer: '',
-        description: '',
-        armHeightFromSeat: 0,
-        armHeightFromFloor: 0
-      },
-      foam: {
-        id: '',
-        productId: '',
-        description: '',
-        seatDensity: 0,
-        backDensity: 0,
-        seatThickness: 0,
-        backThickness: 0
-      },
-      castors: {
-        id: '',
-        productId: '',
-        description: '',
-        pinThickness: 0,
-        wheelDiameter: 0
-      },
-      base: {
-        id: '',
-        productId: '',
-        description: '',
-        sizeDiameter: 0,
-        material: '',
-        type: ''
-      },
-      gasLift: {
-        id: '',
-        productId: '',
-        description: '',
-        gasLiftClass: '',
-        casingLength: 0,
-        extensionSize: 0,
-        taper: 0
-      },
-      gasLiftCover: {
-        id: '',
-        productId: '',
-        description: '',
-        material: '',
-        colour: ''
-      },
-      mechanism: {
-        id: '',
-        productId: '',
-        description: '',
-        leversCount: 0,
-        lockingPositions: '',
-        modelNo: '',
-        supplierName: ''
-      },
-      fittings: {
-        id: '',
-        productId: '',
-        fittingNumber: 0,
-        description: '',
-        quantity: 0,
-        material: ''
-      },
-      images: {
-        id: '',
-        prodId: '',
-        frontImgPath: '',
-        sideImgPath: '',
-        backImgPath: '',
-        angleImgPath: ''
-      },
-      upholstery: {
-        id: '',
-        productId: '',
-        fabricManufacturer: '',
-        colourCode: '',
-        leatherGrade: '',
-        usagePerChair: 0
-      }
-    }
   } finally {
     loading.value = false
   }
@@ -1017,14 +691,10 @@ const fetchData = async () => {
 // 处理编辑按钮点击
 const handleEdit = (section: string): void => {
   console.log('编辑按钮被点击:', section)
-  // 创建当前部分的数据备份
-  if (section === 'basic') {
-    formDataBackup.value = {
-      ...formDataBackup.value,
-      products: JSON.parse(JSON.stringify(formData.value.products || {}))
-    }
-  } else {
-    formDataBackup.value[section] = JSON.parse(JSON.stringify(formData.value[section] || {}))
+  // 创建完整数据快照
+  formDataBackup.value = {
+    ...formDataBackup.value,
+    ...JSON.parse(JSON.stringify(formData.value))
   }
   editingSections.value = [...editingSections.value, section]
 }
@@ -1049,8 +719,8 @@ const handleSaveData = async (section: string) => {
         fob20ContainerPrice: Number(formData.value.products.fob20ContainerPrice),
         fob40ContainerPrice: Number(formData.value.products.fob40ContainerPrice)
       }
-      // 调用 API 的 saveData 函数，使用 'products' 作为 section
-      await saveData('products', sectionData)
+      // 调用 products 的更新 API
+      await putProductsUpdate(sectionData)
     } else {
       // 其他部分的处理
       sectionData = {
@@ -1128,7 +798,34 @@ const handleSaveData = async (section: string) => {
       }
 
       console.log('准备保存的数据:', section, sectionData)
-      await saveData(section, sectionData)
+
+      // 根据 section 调用对应的 API
+      const apiMap: Record<string, (data: any) => Promise<any>> = {
+        packaging: putCartonDetailsUpdate,
+        dimensions: putProductDimensionsUpdate,
+        logistics: putProductionLogisticsUpdate,
+        seatInner: putSeatInnerComponentsUpdate,
+        backInner: putBackInnerComponentsUpdate,
+        seatOuter: putSeatOuterComponentsUpdate,
+        backOuter: putBackOuterComponentsUpdate,
+        arms: putArmsUpdate,
+        foam: putFoamDetailsUpdate,
+        castors: putCastorsUpdate,
+        base: putBasesUpdate,
+        gasLift: putGasLiftUpdate,
+        gasLiftCover: putGasLiftCoverUpdate,
+        mechanism: putMechanismUpdate,
+        fittings: putFittingsUpdate,
+        images: putProductImagesUpdate,
+        upholstery: putUpholsteryUpdate
+      }
+
+      const apiFunction = apiMap[section]
+      if (!apiFunction) {
+        throw new Error(`未找到对应的 API 函数: ${section}`)
+      }
+
+      await apiFunction(sectionData)
     }
 
     return true
@@ -1138,32 +835,196 @@ const handleSaveData = async (section: string) => {
   }
 }
 
+// 存储临时上传的图片路径，用于取消时删除
+const tempUploadedImages = ref<{[key: string]: string[]}>({})
+
+// 修复 updateSingleImage 函数
+// 已修复类型错误，确保正确处理API响应中的不同类型的code值
+const updateSingleImage = async (sectionKey: string, imageKey: string, val: any[]) => {
+  try {
+    // 如果没有文件，清空图片路径
+    if (!val || val.length === 0) {
+      if (formData.value && formData.value[sectionKey]) {
+        // 记录原始值，用于取消时恢复
+        const originalValue = formData.value[sectionKey][imageKey]
+        if (originalValue) {
+          // 初始化临时存储
+          if (!tempUploadedImages.value[sectionKey]) {
+            tempUploadedImages.value[sectionKey] = []
+          }
+          // 记录被删除的图片路径
+          tempUploadedImages.value[sectionKey].push(originalValue)
+          console.log('记录需要删除的图片路径:', originalValue)
+        }
+
+        // 清空当前值
+        formData.value[sectionKey][imageKey] = ''
+      }
+      return
+    }
+
+    const file = val[0]
+    // 如果是字符串，说明是已有的图片路径，直接赋值
+    if (typeof file === 'string') {
+      // 获取原始值
+      const originalValue = formData.value[sectionKey][imageKey]
+
+      // 如果原始值存在且与新值不同，记录原始值用于可能的删除
+      if (originalValue && originalValue !== file) {
+        // 初始化临时存储
+        if (!tempUploadedImages.value[sectionKey]) {
+          tempUploadedImages.value[sectionKey] = []
+        }
+        // 记录被替换的图片路径
+        tempUploadedImages.value[sectionKey].push(originalValue)
+        console.log('记录被替换的图片路径:', originalValue)
+      }
+
+      // 检查这个字符串是否是新上传的图片（在newUploads中）
+      const newUploads = tempUploadedImages.value['newUploads'] || []
+      if (file.startsWith('http') && !newUploads.includes(file)) {
+        // 如果是新的http链接但不在newUploads中，也添加到newUploads
+        if (!tempUploadedImages.value['newUploads']) {
+          tempUploadedImages.value['newUploads'] = []
+        }
+        tempUploadedImages.value['newUploads'].push(file)
+        console.log('记录新的图片URL到newUploads:', file)
+      }
+
+      formData.value[sectionKey][imageKey] = file
+      return
+    }
+
+    // 如果是文件对象，需要上传
+    if (file.raw) {
+      try {
+        console.log('开始上传文件:', file.raw.name)
+        // 调用API上传文件
+        const response = await postFilesUpload({file: file.raw})
+        console.log('文件上传响应:', response)
+
+        // 检查响应状态和数据结构
+        let imageUrl = ''
+
+        // 使用类型断言处理响应
+        const responseData = response as any
+
+        if (responseData && responseData.data) {
+          if (typeof responseData.data === 'string') {
+            // 直接返回字符串URL
+            imageUrl = responseData.data
+          } else if (responseData.code === '200' && responseData.data) {
+            // 标准成功响应
+            imageUrl = responseData.data
+          } else if (responseData.data && responseData.data.data) {
+            // 嵌套的data字段
+            imageUrl = responseData.data.data
+          }
+        }
+
+        // 确保获取到了图片URL
+        if (!imageUrl) {
+          console.error('无法从响应中获取图片URL:', response)
+          throw new Error('上传成功但无法获取图片地址')
+        }
+
+        // 检查URL长度，防止数据库截断错误
+        const MAX_URL_LENGTH = 255 // 数据库字段长度为255
+        if (imageUrl.length > MAX_URL_LENGTH) {
+          console.warn(`图片URL长度(${imageUrl.length})超过数据库限制(${MAX_URL_LENGTH})，进行截断处理`)
+          ElMessage.warning('图片URL过长，已进行截断处理，可能影响图片显示')
+
+          // 截断URL，保留最后的文件名部分
+          const urlParts = imageUrl.split('/')
+          const fileName = urlParts[urlParts.length - 1]
+          const baseUrl = urlParts.slice(0, -1).join('/')
+
+          // 计算可用长度
+          const availableLength = MAX_URL_LENGTH - fileName.length - 1 // 减1是为了斜杠
+
+          if (availableLength > 0) {
+            // 保留文件名，截断中间部分
+            imageUrl = baseUrl.substring(0, availableLength) + '/' + fileName
+          } else {
+            // 如果文件名都超过限制，则只保留文件名的一部分
+            imageUrl = fileName.substring(0, MAX_URL_LENGTH)
+          }
+
+          console.log('截断后的URL:', imageUrl)
+        }
+
+        // 获取原始值
+        const originalValue = formData.value[sectionKey][imageKey]
+
+        // 如果有原始值，记录到临时存储中
+        if (originalValue) {
+          // 初始化临时存储
+          if (!tempUploadedImages.value[sectionKey]) {
+            tempUploadedImages.value[sectionKey] = []
+          }
+          // 记录被替换的图片路径
+          tempUploadedImages.value[sectionKey].push(originalValue)
+          console.log('记录被替换的图片路径:', originalValue)
+        }
+
+        // 更新图片路径
+        formData.value[sectionKey][imageKey] = imageUrl
+
+        // 记录新上传的图片路径
+        if (!tempUploadedImages.value['newUploads']) {
+          tempUploadedImages.value['newUploads'] = []
+        }
+        tempUploadedImages.value['newUploads'].push(imageUrl)
+        console.log('记录新上传的图片到newUploads:', imageUrl)
+
+        ElMessage.success('图片上传成功')
+      } catch (error) {
+        console.error('上传失败:', error)
+        ElMessage.error('图片上传失败')
+      }
+    }
+  } catch (error) {
+    console.error('处理图片失败:', error)
+    ElMessage.error('处理图片失败')
+  }
+}
+
 // 修改 handleSave 函数
 const handleSave = async (section: string): Promise<void> => {
   try {
-    // 获取该部分所有图片字段的当前值和备份值
-    const currentData = formData.value[section]
-    const backupData = formDataBackup.value[section]
+    // 保存数据
+    await handleSaveData(section)
 
-    // 找出所有需要从服务器删除的图片
-    for (const key in backupData) {
-      if (isImagePath(key)) {
-        const currentPath = currentData[key]
-        const backupPath = backupData[key]
+    // 保存成功后，处理需要删除的图片
+    if (tempUploadedImages.value[section] && tempUploadedImages.value[section].length > 0) {
+      console.log(`保存成功，开始删除${section}部分记录的需要删除的图片:`, tempUploadedImages.value[section])
 
-        // 如果备份中有图片但当前没有，说明是被删除的，需要从服务器删除
-        if (backupPath && !currentPath) {
+      // 删除所有记录的需要删除的图片
+      for (const path of tempUploadedImages.value[section]) {
+        if (path && path.startsWith('http')) {
           try {
-            await http.get(`/files/remove?filePath=${backupPath}`)
+            await getFilesRemove({filePath: path})
+            console.log('已从服务器删除图片:', path)
           } catch (error) {
-            console.error('删除服务器图片失败:', error)
+            console.error('从服务器删除图片失败:', error)
           }
         }
       }
+
+      // 清空该部分的临时图片记录
+      tempUploadedImages.value[section] = []
     }
 
-    // 保存数据
-    await handleSaveData(section)
+    // 如果是图片部分，还需要清理newUploads中的相关记录
+    if (section === 'images' && tempUploadedImages.value['newUploads']) {
+      // 找出该部分使用的图片
+      const usedImages = Object.values(formData.value[section]).filter(val => typeof val === 'string' && val.startsWith('http')) as string[]
+
+      // 从newUploads中移除已保存的图片
+      tempUploadedImages.value['newUploads'] = tempUploadedImages.value['newUploads'].filter(path => !usedImages.includes(path))
+
+      console.log('保存后清理临时上传记录，剩余:', tempUploadedImages.value['newUploads'])
+    }
 
     // 保存成功后，更新备份数据
     if (section === 'basic') {
@@ -1180,44 +1041,81 @@ const handleSave = async (section: string): Promise<void> => {
   }
 }
 
-// 存储临时文件路径
-const tempFiles = ref<string[]>([])
-
-// 处理临时文件
-const handleTempFile = (filePath: string) => {
-  tempFiles.value.push(filePath)
-}
-
 // 修改取消编辑函数
 const handleCancel = async (section: string) => {
   try {
+    console.log(`取消编辑${section}部分`)
+
+    // 如果是图片部分，需要特殊处理
     if (section === 'images') {
-      // 图片部分的处理
-      const currentData = formData.value[section]
-      const backupData = formDataBackup.value[section]
+      // 获取当前编辑状态下的图片
+      const currentImages = formData.value[section]
+      // 获取备份的原始图片
+      const originalImages = formDataBackup.value[section]
 
-      // 找出所有需要删除的临时上传图片
-      for (const key in currentData) {
+      // 找出所有需要删除的图片（当前值与原始值不同的图片）
+      const imagesToDelete = []
+
+      // 检查每个图片字段
+      for (const key in currentImages) {
         if (isImagePath(key)) {
-          const currentPath = currentData[key]
-          const backupPath = backupData[key]
+          const currentValue = currentImages[key]
+          const originalValue = originalImages[key]
 
-          // 如果当前有图片但与备份不同，说明是临时上传的，需要删除
-          if (currentPath && currentPath !== backupPath) {
-            await http.get(`/files/remove?filePath=${currentPath}`)
+          // 如果当前值与原始值不同，且当前值是http开头的URL，则需要删除
+          // 这里不再检查是否在newUploads中，因为我们要删除所有编辑过程中上传的图片
+          if (currentValue && currentValue !== originalValue && typeof currentValue === 'string' && currentValue.startsWith('http')) {
+            imagesToDelete.push(currentValue)
           }
         }
       }
+
+      console.log(`取消编辑时需要删除的图片:`, imagesToDelete)
+
+      // 删除所有需要删除的图片
+      for (const path of imagesToDelete) {
+        try {
+          await getFilesRemove({filePath: path})
+          console.log('已删除编辑过程中上传的图片:', path)
+        } catch (error) {
+          console.error('删除图片失败:', error)
+        }
+      }
+
+      // 获取临时上传的图片列表
+      const newUploads = tempUploadedImages.value['newUploads'] || []
+
+      // 删除所有临时上传的图片，确保没有遗漏
+      for (const path of newUploads) {
+        if (path && path.startsWith('http') && !imagesToDelete.includes(path)) {
+          try {
+            await getFilesRemove({filePath: path})
+            console.log('已删除临时上传的图片:', path)
+          } catch (error) {
+            console.error('删除临时上传图片失败:', error)
+          }
+        }
+      }
+
+      // 清空临时上传列表
+      tempUploadedImages.value['newUploads'] = []
     }
 
-    // 恢复原始数据
+    // 恢复数据
     if (section === 'basic') {
       formData.value.products = JSON.parse(JSON.stringify(formDataBackup.value.products))
     } else {
       formData.value[section] = JSON.parse(JSON.stringify(formDataBackup.value[section]))
     }
 
+    // 清空该部分的临时图片记录
+    if (tempUploadedImages.value[section]) {
+      tempUploadedImages.value[section] = []
+    }
+
+    // 移除编辑状态
     editingSections.value = editingSections.value.filter(s => s !== section)
+
     ElMessage.success('已取消编辑')
   } catch (error) {
     console.error('取消编辑失败:', error)
@@ -1278,58 +1176,6 @@ const previewImageUrl = ref('')
 const handlePreviewImage = (imageUrl: string) => {
   previewImageUrl.value = imageUrl
   showImageViewer.value = true
-}
-
-// 修改 handleImageDelete 函数，移除确认对话框
-const handleImageDelete = async (sectionKey: string, imageKey: string) => {
-  try {
-    // 清空对应的图片路径
-    formData.value[sectionKey][imageKey] = ''
-    // 自动保存更改
-    await handleSaveData(sectionKey)
-    ElMessage.success('图片删除成功')
-  } catch (error) {
-    console.error('删除图片失败:', error)
-    ElMessage.error('删除图片失败')
-  }
-}
-
-// 添加图片上传处理函数
-const handleImageUpload = async (sectionKey: string, imageKey: string, file: File) => {
-  try {
-    // 创建 FormData
-    const formData = new FormData()
-    formData.append('file', file)
-
-    // 调用上传 API
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData
-    })
-
-    if (!response.ok) {
-      throw new Error('上传失败')
-    }
-
-    const result = await response.json()
-    if (result.code === 200) {
-      // 更新图片路径
-      formData.value[sectionKey][imageKey] = result.data
-      // 自动保存更改
-      await handleSaveData(sectionKey)
-      ElMessage.success('上传成功')
-    } else {
-      throw new Error(result.message || '上传失败')
-    }
-  } catch (error) {
-    console.error('上传失败:', error)
-    ElMessage.error('上传失败')
-  }
-}
-
-// 添加新的更新单个图片的函数
-const updateSingleImage = (sectionKey: string, imageKey: string, value: string[]) => {
-  formData.value[sectionKey][imageKey] = value[0] || ''
 }
 
 // 确保组件可以被正确导入
@@ -1398,4 +1244,3 @@ defineOptions({
   }
 }
 </style>
-@/api/bak/product@/api/bak/product@/api/bak/product

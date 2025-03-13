@@ -1,0 +1,14 @@
+import request from "@/api/request";
+import { type ResultVo, type DeepRequired } from "../../interface";
+import { type AxiosRequestConfig } from "axios";
+
+/**
+ * /upholstery/getInfo/{id}
+ */
+export function getUpholsteryGetInfoById(params: GetUpholsteryGetInfoByIdParams, config?: AxiosRequestConfig) {
+    return request.get<DeepRequired<ResultVo>>(`/upholstery/getInfo/${params.id}`, config);
+}
+
+export interface GetUpholsteryGetInfoByIdParams {
+    id: string;
+}

@@ -7,13 +7,11 @@
           <div class="left-actions w-[200px]">
             <h2 class="text-2xl font-bold text-gray-800">产品规格列表</h2>
           </div>
-          <div class="flex items-center ml-8 w-[450px] ">
+          <div class="flex items-center ml-8 w-[450px]">
             <el-input v-model="searchQuery" placeholder="搜索产品代码/供应商..." class="w-[350px] h-8 mt-1" clearable @keyup.enter="handleSearch">
               <template #append>
-                <el-button @click="handleSearch" class=" w-[50px]">
-                  <el-icon>
-                    <Search />
-                  </el-icon>
+                <el-button @click="handleSearch" class="w-[50px]">
+                  <el-icon><Search /></el-icon>
                 </el-button>
               </template>
             </el-input>
@@ -21,23 +19,16 @@
         </div>
 
         <div class="right-actions flex gap-4">
-          <el-button type="primary" :loading="exporting" :disabled="!selectedRows.length" @click="handleBatchExport"
-            class="w-24">
-            <el-icon>
-              <Document />
-            </el-icon>
+          <el-button type="primary" :loading="exporting" :disabled="!selectedRows.length" @click="handleBatchExport" class="w-24">
+            <el-icon><Document /></el-icon>
             {{ exporting ? '导出中...' : '批量导出' }}
           </el-button>
           <el-button type="danger" :disabled="!selectedRows.length" @click="handleBatchDelete" class="min-w-[120px]">
-            <el-icon class="mr-2">
-              <Delete />
-            </el-icon>
+            <el-icon class="mr-2"><Delete /></el-icon>
             批量删除
           </el-button>
           <el-button type="info" :disabled="!selectedRows.length" @click="handleSendEmail">
-            <el-icon class="mr-2">
-              <Message />
-            </el-icon>
+            <el-icon class="mr-2"><Message /></el-icon>
             发送邮件
           </el-button>
         </div>
@@ -65,9 +56,8 @@
       </el-dialog>
 
       <!-- 表格区域 -->
-      <div class="overflow-auto mt-16 ">
-        <el-table :data="tableData" border class="w-full" :style="{ height: 'calc(100vh - 340px)' }" v-loading="loading"
-          :empty-text="loading ? '加载中...' : '暂无数据'" @selection-change="handleSelectionChange">
+      <div class="overflow-auto mt-16">
+        <el-table :data="tableData" border class="w-full" :style="{height: 'calc(100vh - 340px)'}" v-loading="loading" :empty-text="loading ? '加载中...' : '暂无数据'" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="55" fixed="left" />
           <el-table-column prop="id" label="ID" width="170" fixed="left" />
           <el-table-column prop="tccode" label="产品代码" min-width="120" show-overflow-tooltip />
@@ -76,57 +66,25 @@
           <el-table-column prop="supplierName" label="供应商名称" min-width="150" show-overflow-tooltip />
           <el-table-column prop="fireStandard" label="防火标准" min-width="120" show-overflow-tooltip />
           <el-table-column label="20尺柜FOB价格" min-width="140" align="right">
-            <template #default="scope">
-              ¥{{ scope.row.fob20ContainerPrice?.toLocaleString('zh-CN', {
-                minimumFractionDigits: 2,
-              maximumFractionDigits: 2 }) }}
-            </template>
+            <template #default="scope">¥{{ scope.row.fob20ContainerPrice?.toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}</template>
           </el-table-column>
           <el-table-column label="40尺柜FOB价格" min-width="140" align="right">
-            <template #default="scope">
-              ¥{{ scope.row.fob40ContainerPrice?.toLocaleString('zh-CN', {
-                minimumFractionDigits: 2,
-              maximumFractionDigits: 2 }) }}
-            </template>
+            <template #default="scope">¥{{ scope.row.fob40ContainerPrice?.toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}</template>
           </el-table-column>
           <el-table-column prop="shippingPort" label="发货港口" min-width="120" show-overflow-tooltip />
           <el-table-column label="操作" width="170" fixed="right">
             <template #default="scope">
               <div class="flex items-center justify-center space-x-3">
-                <el-button 
-                  type="primary" 
-                  link 
-                  size="small" 
-                  style="padding: 0; min-width: 35px;"
-                  @click="handleView(scope.row)"
-                >
-                  <el-icon>
-                    <View />
-                  </el-icon>
+                <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleView(scope.row)">
+                  <el-icon><View /></el-icon>
                   查看
                 </el-button>
-                <el-button 
-                  type="primary" 
-                  link 
-                  size="small" 
-                  style="padding: 0; min-width: 35px;"
-                  @click="handleEdit(scope.row)"
-                >
-                  <el-icon>
-                    <Edit />
-                  </el-icon>
+                <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleEdit(scope.row)">
+                  <el-icon><Edit /></el-icon>
                   编辑
                 </el-button>
-                <el-button 
-                  type="danger" 
-                  link 
-                  size="small" 
-                  style="padding: 0; min-width: 35px;"
-                  @click="handleDelete(scope.row.id)"
-                >
-                  <el-icon>
-                    <Delete />
-                  </el-icon>
+                <el-button type="danger" link size="small" style="padding: 0; min-width: 35px" @click="handleDelete(scope.row.id)">
+                  <el-icon><Delete /></el-icon>
                   删除
                 </el-button>
               </div>
@@ -137,25 +95,21 @@
 
       <!-- 分页区域 -->
       <div class="flex justify-center mt-4">
-        <el-pagination v-model:current-page="pagination.pageNumber" v-model:page-size="pagination.pageSize"
-          :total="total" :page-sizes="[10, 20, 50, 100]" layout="sizes, prev, pager, next, total"
-          @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+        <el-pagination v-model:current-page="pagination.pageNumber" v-model:page-size="pagination.pageSize" :total="total" :page-sizes="[10, 20, 50, 100]" layout="sizes, prev, pager, next, total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
-import { Search, Message, Download, Delete, View, Edit, Document } from '@element-plus/icons-vue'
-import { ElMessageBox, ElMessage } from 'element-plus'
-import { useRouter } from 'vue-router'
-import { exportToWord } from '@/utils/exportToWord'
+import {getProductsPage, PageProducts, Products, deleteProductDtoDeleteById} from '@/api'
+import {exportToWord} from '@/utils/exportToWord'
+import {Delete, Document, Edit, Message, Search, View} from '@element-plus/icons-vue'
+import {ElMessage, ElMessageBox} from 'element-plus'
+import {saveAs} from 'file-saver'
 import JSZip from 'jszip'
-import { saveAs } from 'file-saver'
-import type { Product, ProductParams } from '@/api/product.d'
-import { getProductPage, removeProductDto } from '@/api/product'
-import ImageHandler from '@/components/ImageHandler.vue'
+import {onMounted, ref} from 'vue'
+import {useRouter} from 'vue-router'
 
 const router = useRouter()
 const searchQuery = ref('')
@@ -172,19 +126,27 @@ const emailForm = ref({
 })
 
 // 表格数据
-const tableData = ref<Product[]>([])
+const tableData = ref<Products[]>([])
 
 // 添加导出状态
 const exporting = ref(false)
 
 // 分页参数
-const pagination = ref<ProductParams>({
+const pagination = ref<PageProducts>({
   pageNumber: 1,
   pageSize: 10
 })
 
+interface IPageProducts extends PageProducts {
+  tccode?: string
+  supplier?: string
+  supplierCode?: string
+  startDate?: string
+  endDate?: string
+}
+
 // 查询参数
-const queryParams = ref<ProductParams>({
+const queryParams = ref<IPageProducts>({
   tccode: '',
   supplier: '',
   supplierCode: '',
@@ -205,25 +167,22 @@ interface ProdData {
   [key: string]: any
 }
 
-interface TableRow {
-  id: number
-  tccode: string
-  status: number
-  [key: string]: any
-}
-
 // 获取表格数据
+
 const fetchTableData = async () => {
   loading.value = true
   try {
     const params = {
       ...pagination.value,
-      ...queryParams.value
+      ...queryParams.value,
+      orders: [{column: 'id', asc: false}]
     }
-    const res = await getProductPage(params)
+    const res = await getProductsPage({page: pagination.value})
     console.log(res)
-    tableData.value = res.data.records
-    total.value = res.data.totalRow
+    // 从 ResultVo 的 data 字段中提取数据
+    const pageData = res.data as PageProducts
+    tableData.value = pageData?.records || []
+    total.value = pageData?.totalRow || 0
   } catch (error) {
     console.error('获取数据失败:', error)
     ElMessage.error('获取数据失败')
@@ -332,7 +291,7 @@ const handleBatchExport = async () => {
         const doc = await exportToWord(formData)
         // 将文档添加到 zip
         const fileName = `产品规格书_${formData.tccode || 'Unknown'}.docx`
-        return { fileName, doc }
+        return {fileName, doc}
       } catch (error) {
         console.error(`导出失败: ${item.id}`, error)
         ElMessage.error(`导出 ${item.tccode || '未知产品'} 失败`)
@@ -343,9 +302,7 @@ const handleBatchExport = async () => {
     const results = await Promise.all(exportTasks)
 
     // 过滤掉失败的导出
-    const successfulResults = results.filter((result): result is { fileName: string; doc: Blob } =>
-      result !== null && result.doc instanceof Blob
-    )
+    const successfulResults = results.filter((result): result is {fileName: string; doc: Blob} => result !== null && result.doc instanceof Blob)
 
     if (successfulResults.length === 0) {
       ElMessage.error('所有文档导出失败')
@@ -357,7 +314,7 @@ const handleBatchExport = async () => {
       zip.file(result.fileName, result.doc)
     })
 
-    const zipContent = await zip.generateAsync({ type: 'blob' })
+    const zipContent = await zip.generateAsync({type: 'blob'})
     const timestamp = new Date().getTime()
     saveAs(zipContent, `产品规格书_${timestamp}.zip`)
 
@@ -383,18 +340,14 @@ const handleBatchDelete = async () => {
   }
 
   try {
-    await ElMessageBox.confirm(
-      `确定要删除选中的 ${selectedRows.value.length} 条数据吗？`,
-      '警告',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
+    await ElMessageBox.confirm(`确定要删除选中的 ${selectedRows.value.length} 条数据吗？`, '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
 
     // 调用批量删除API
-    const deletePromises = selectedRows.value.map(row => removeProductDto(row.id))
+    const deletePromises = selectedRows.value.map(row => deleteProductDtoDeleteById({id: row.id.toString()}))
     await Promise.all(deletePromises)
 
     ElMessage.success('批量删除成功')
@@ -416,9 +369,7 @@ const handleSendEmail = () => {
 
   // 预设邮件内容
   emailForm.value.subject = `产品信息 - ${selectedRows.value.map(row => row.tccode).join(', ')}`
-  emailForm.value.content = selectedRows.value.map(row =>
-    `产品代码: ${row.tccode}\n供应商: ${row.supplier_name}\n价格: ¥${row.fob_20_container_price}`
-  ).join('\n\n')
+  emailForm.value.content = selectedRows.value.map(row => `产品代码: ${row.tccode}\n供应商: ${row.supplier_name}\n价格: ¥${row.fob_20_container_price}`).join('\n\n')
 
   showEmailDialog.value = true
 }
@@ -457,15 +408,15 @@ const confirmSendEmail = async () => {
 const handleView = (row: any) => {
   router.push({
     name: 'productInfo',
-    params: { id: row.id }
+    params: {id: row.id}
   })
 }
 
 const handleEdit = (row: any) => {
   router.push({
     name: 'productInfo',
-    params: { id: row.id },
-    query: { mode: 'edit' }
+    params: {id: row.id},
+    query: {edit: 'true'}
   })
 }
 
@@ -474,7 +425,7 @@ const handleDelete = async (id: string) => {
     await ElMessageBox.confirm('确定要删除该产品吗？', '提示', {
       type: 'warning'
     })
-    await removeProductDto(id)
+    await deleteProductDtoDeleteById({id})
     ElMessage.success('删除成功')
     fetchTableData()
   } catch (error) {
@@ -490,4 +441,3 @@ onMounted(() => {
   fetchTableData()
 })
 </script>
-@/api/bak/product@/api/bak/product@/api/bak/product

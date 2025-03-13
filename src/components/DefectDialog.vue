@@ -17,94 +17,38 @@
   >
     <el-form :model="formData" label-width="100px">
       <div class="grid grid-cols-1 gap-4">
-        <el-form-item 
-          label="缺陷标题" 
-          class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" 
-          label-position="left"
-        >
-          <el-input 
-            v-model="formData.defectTitle" 
-            placeholder="请输入缺陷标题"
-            class="w-full !h-[38px]"
-          />
+        <el-form-item label="缺陷标题" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+          <el-input v-model="formData.defectTitle" placeholder="请输入缺陷标题" class="w-full !h-[38px]" />
         </el-form-item>
 
-        <el-form-item 
-          label="检查人员" 
-          class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" 
-          label-position="left"
-        >
-          <el-input 
-            v-model="formData.inspector" 
-            placeholder="请输入检查人员"
-            class="w-full !h-[38px]"
-          />
+        <el-form-item label="检查人员" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+          <el-input v-model="formData.inspector" placeholder="请输入检查人员" class="w-full !h-[38px]" />
         </el-form-item>
 
-        <el-form-item 
-          label="缺陷描述" 
-          class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" 
-          label-position="left"
-        >
-          <el-input
-            v-model="formData.defectDescription"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入缺陷描述"
-            class="w-full"
-          />
+        <el-form-item label="缺陷描述" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+          <el-input v-model="formData.defectDescription" type="textarea" :rows="3" placeholder="请输入缺陷描述" class="w-full" />
         </el-form-item>
 
-        <el-form-item 
-          label="改进建议" 
-          class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" 
-          label-position="left"
-        >
-          <el-input
-            v-model="formData.improvementSuggestion"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入改进建议"
-            class="w-full"
-          />
+        <el-form-item label="改进建议" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+          <el-input v-model="formData.improvementSuggestion" type="textarea" :rows="3" placeholder="请输入改进建议" class="w-full" />
         </el-form-item>
-        
+
         <!-- 缺陷图片 -->
-        <el-form-item 
-          label="缺陷图片" 
-          class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" 
-          label-position="left"
-        >
+        <el-form-item label="缺陷图片" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
           <div class="w-full">
-            <ImageHandler
-              v-model="imageUrls"
-              :editable="true"
-              :size="120"
-              :limit="2"
-              @preview="handlePreview"
-            />
+            <ImageHandler v-model="imageUrls" :editable="true" :size="120" :limit="5" :custom-upload="props.customUpload" @preview="handlePreview" />
           </div>
         </el-form-item>
       </div>
     </el-form>
-    
+
     <template #footer>
       <div class="flex justify-end gap-4">
-        <el-button 
-          type="success" 
-          class="bg-green-500 hover:bg-green-600 border-0 shadow-sm" 
-          @click="handleSave"
-          :loading="loading"
-        >
+        <el-button type="success" class="bg-green-500 hover:bg-green-600 border-0 shadow-sm" @click="handleSave" :loading="loading">
           <el-icon><Check /></el-icon>
           确定
         </el-button>
-        <el-button 
-          class="bg-gray-200 hover:bg-gray-300 border-0 shadow-sm" 
-          @click="handleClose"
-        >
-          取消
-        </el-button>
+        <el-button class="bg-gray-200 hover:bg-gray-300 border-0 shadow-sm" @click="handleClose">取消</el-button>
       </div>
     </template>
   </el-dialog>
@@ -123,20 +67,21 @@
     }"
     align-center
   >
-    <img 
-      :src="previewUrl" 
-      class="max-h-[300px] w-auto object-contain"
-    />
+    <img :src="previewUrl" class="max-h-[300px] w-auto object-contain" />
   </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, defineEmits, watch } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Check } from '@element-plus/icons-vue'
+import {ref, defineProps, defineEmits, watch} from 'vue'
+import {ElMessage} from 'element-plus'
+import {Check} from '@element-plus/icons-vue'
 import ImageHandler from '@/components/ImageHandler.vue'
-import type { DefectImage } from '@/types/qcReport'
-import { getId } from '@/utils/idUtils'
+import {DefectImages} from '@/api'
+import {getId} from '@/utils/idUtils'
+
+defineOptions({
+  name: 'DefectDialog'
+})
 
 interface DefectFormData {
   id: string
@@ -145,7 +90,7 @@ interface DefectFormData {
   defectDescription: string
   improvementSuggestion: string
   inspector: string
-  images?: DefectImage[]
+  images?: DefectImages[]
   createdAt?: string
   updatedAt?: string
 }
@@ -155,6 +100,7 @@ const props = defineProps<{
   title?: string
   initialData?: DefectFormData
   loading?: boolean
+  customUpload?: (params: any) => Promise<string>
 }>()
 
 const emit = defineEmits<{
@@ -183,20 +129,24 @@ const formData = ref<DefectFormData>({
 const imageUrls = ref<string[]>([])
 
 // 监听visible属性变化
-watch(() => props.visible, (newVal) => {
-  dialogVisible.value = newVal
-  if (newVal && props.initialData) {
-    // 如果是编辑模式，填充表单数据
-    formData.value = { ...props.initialData }
-    imageUrls.value = props.initialData.images?.map(img => img.imagePath) || []
-  } else {
-    // 如果是新建模式，重置表单
-    resetForm()
+watch(
+  () => props.visible,
+  newVal => {
+    dialogVisible.value = newVal
+    if (newVal && props.initialData) {
+      // 如果是编辑模式，填充表单数据
+      formData.value = {...props.initialData}
+      // 确保图片路径是字符串数组
+      imageUrls.value = props.initialData.images?.map(img => img.imagePath || '').filter(Boolean) || []
+    } else {
+      // 如果是新建模式，重置表单
+      resetForm()
+    }
   }
-})
+)
 
 // 监听dialogVisible变化
-watch(dialogVisible, (newVal) => {
+watch(dialogVisible, newVal => {
   emit('update:visible', newVal)
   if (!newVal) {
     emit('close')
@@ -267,4 +217,4 @@ const resetForm = () => {
   }
   imageUrls.value = []
 }
-</script> 
+</script>

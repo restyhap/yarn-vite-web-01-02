@@ -8,14 +8,7 @@
             <h2 class="text-2xl font-bold text-gray-800">质检报告列表</h2>
           </div>
           <div class="flex items-center ml-8 w-[450px]">
-            <el-input
-              v-model="searchQuery"
-              placeholder="搜索型号代码/工厂代码/供应商..."
-              class="w-[350px] h-8 mt-1"
-              clearable
-              @keyup.enter="handleSearch"
-              @clear="handleClearSearch"
-            >
+            <el-input v-model="searchQuery" placeholder="搜索型号代码/工厂代码/供应商..." class="w-[350px] h-8 mt-1" clearable @keyup.enter="handleSearch" @clear="handleClearSearch">
               <template #append>
                 <el-button @click="handleSearch" class="w-[50px]">
                   <el-icon><Search /></el-icon>
@@ -25,31 +18,15 @@
           </div>
         </div>
         <div class="right-actions flex gap-4">
-          <el-button 
-            type="primary" 
-            :loading="exporting" 
-            :disabled="!selectedRows.length" 
-            @click="handleBatchExport"
-            class="w-24"
-          >
+          <el-button type="primary" :loading="exporting" :disabled="!selectedRows.length" @click="handleBatchExport" class="w-24">
             <el-icon><Document /></el-icon>
             {{ exporting ? '导出中...' : '批量导出' }}
           </el-button>
-          <el-button 
-            type="danger" 
-            :disabled="!selectedRows.length" 
-            @click="handleBatchDelete"
-            class="min-w-[120px]"
-          >
+          <el-button type="danger" :disabled="!selectedRows.length" @click="handleBatchDelete" class="min-w-[120px]">
             <el-icon class="mr-2"><Delete /></el-icon>
             批量删除
           </el-button>
-          <el-button 
-            type="info" 
-            :disabled="!selectedRows.length" 
-            @click="handleSendEmail"
-            class="min-w-[120px]"
-          >
+          <el-button type="info" :disabled="!selectedRows.length" @click="handleSendEmail" class="min-w-[120px]">
             <el-icon class="mr-2"><Message /></el-icon>
             发送邮件
           </el-button>
@@ -66,12 +43,7 @@
             <el-input v-model="emailForm.subject" placeholder="请输入邮件主题" />
           </el-form-item>
           <el-form-item label="正文">
-            <el-input
-              v-model="emailForm.content"
-              type="textarea"
-              :rows="6"
-              placeholder="请输入邮件内容"
-            />
+            <el-input v-model="emailForm.content" type="textarea" :rows="6" placeholder="请输入邮件内容" />
           </el-form-item>
         </el-form>
         <template #footer>
@@ -84,15 +56,7 @@
 
       <!-- 表格区域 -->
       <div class="overflow-auto mt-16">
-        <el-table
-          :data="tableData"
-          border
-          class="w-full"
-          height="calc(100vh - 340px)"
-          v-loading="loading"
-          :empty-text="loading ? '加载中...' : '暂无数据'"
-          @selection-change="handleSelectionChange"
-        >
+        <el-table :data="tableData" border class="w-full" height="calc(100vh - 340px)" v-loading="loading" :empty-text="loading ? '加载中...' : '暂无数据'" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="55" fixed="left" />
           <el-table-column prop="id" label="ID" width="170" fixed="left" />
           <el-table-column prop="modelCode" label="型号代码" min-width="150" show-overflow-tooltip />
@@ -102,11 +66,15 @@
           <el-table-column prop="poNumber" label="PO编号" min-width="120" show-overflow-tooltip />
           <el-table-column prop="inspectionDate" label="检验日期" min-width="120" show-overflow-tooltip>
             <template #default="scope">
-              {{ new Date(scope.row.inspectionDate).toLocaleDateString('zh-CN', { 
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-              }).replace(/\//g, '-') }}
+              {{
+                new Date(scope.row.inspectionDate)
+                  .toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                  })
+                  .replace(/\//g, '-')
+              }}
             </template>
           </el-table-column>
           <el-table-column prop="orderQty" label="订单数量" min-width="100" align="right" />
@@ -121,49 +89,35 @@
           </el-table-column>
           <el-table-column prop="createdAt" label="创建时间" min-width="160" show-overflow-tooltip>
             <template #default="scope">
-              {{ new Date(scope.row.createdAt).toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-              }).replace(/\//g, '-') }}
+              {{
+                new Date(scope.row.createdAt)
+                  .toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })
+                  .replace(/\//g, '-')
+              }}
             </template>
           </el-table-column>
           <el-table-column label="操作" width="170" fixed="right">
             <template #default="scope">
               <div class="flex items-center justify-center space-x-3">
-                <el-button 
-                  type="primary" 
-                  link 
-                  size="small" 
-                  style="padding: 0; min-width: 35px;"
-                  @click="handleView(scope.row)"
-                >
+                <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleView(scope.row)">
                   <el-icon>
                     <View />
                   </el-icon>
                   查看
                 </el-button>
-                <el-button 
-                  type="primary" 
-                  link 
-                  size="small" 
-                  style="padding: 0; min-width: 35px;"
-                  @click="handleEdit(scope.row)"
-                >
+                <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleEdit(scope.row)">
                   <el-icon>
                     <Edit />
                   </el-icon>
                   编辑
                 </el-button>
-                <el-button 
-                  type="danger" 
-                  link 
-                  size="small" 
-                  style="padding: 0; min-width: 35px;"
-                  @click="handleDelete(scope.row)"
-                >
+                <el-button type="danger" link size="small" style="padding: 0; min-width: 35px" @click="handleDelete(scope.row)">
                   <el-icon>
                     <Delete />
                   </el-icon>
@@ -177,31 +131,22 @@
 
       <!-- 分页区域 -->
       <div class="flex justify-center mt-4">
-        <el-pagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :total="total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="sizes, prev, pager, next, total"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
+        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" :page-sizes="[10, 20, 50, 100]" layout="sizes, prev, pager, next, total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
-import { ElMessageBox, ElMessage } from 'element-plus'
-import { useRouter } from 'vue-router'
-import { exportQCReport } from '@/utils/exportQCReport'
-import type { QCReportData } from '@/utils/exportQCReport'
+import {ref} from 'vue'
+import {ElMessageBox, ElMessage} from 'element-plus'
+import {useRouter} from 'vue-router'
+import {exportQCReport} from '@/utils/exportQCReport'
+import type {QCReportData} from '@/utils/exportQCReport'
 import JSZip from 'jszip'
-import { saveAs } from 'file-saver'
-//@ts-ignore
-import { getSpecificationPage, searchSpecification , deleteSpecification} from '@/api'
-import type { IQCReport } from '@/api/specification.d'
+import {saveAs} from 'file-saver'
+import {getQcReportsPage, getQcReportsSearch, deleteQcReportsRemoveById} from '@/api'
+import type {QcReports} from '@/api'
 import ImageHandler from '@/components/ImageHandler.vue'
 
 const router = useRouter()
@@ -209,7 +154,7 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
-const selectedRows = ref<IQCReport[]>([])
+const selectedRows = ref<QcReports[]>([])
 const loading = ref(false)
 
 // 邮件相关
@@ -221,7 +166,7 @@ const emailForm = ref({
 })
 
 // 表格数据
-const tableData = ref<IQCReport[]>([])
+const tableData = ref<QcReports[]>([])
 
 // 导出状态
 const exporting = ref(false)
@@ -231,18 +176,69 @@ const fetchTableData = async (isSearch = false) => {
   loading.value = true
   try {
     // 根据是否搜索选择不同的 API
-    const apiFunc = isSearch ? searchSpecification : getSpecificationPage
-    const response = await apiFunc({
-      pageNumber: currentPage.value,
-      pageSize: pageSize.value,
-      keyword: searchQuery.value
-    })
-    
+    let response
+    if (isSearch) {
+      // 搜索 API 使用 config 参数
+      response = await getQcReportsSearch({
+        params: {
+          keyword: searchQuery.value,
+          currentPage: currentPage.value,
+          pageSize: pageSize.value
+        }
+      })
+    } else {
+      // 分页 API 使用 page 参数
+      response = await getQcReportsPage({
+        page: {
+          pageNumber: currentPage.value,
+          pageSize: pageSize.value
+        }
+      })
+    }
+
     if (response?.data) {
-      tableData.value = response.data.records || []
-      total.value = Number(response.data.totalRow) || 0
-      currentPage.value = Number(response.data.pageNumber) || currentPage.value
-      pageSize.value = Number(response.data.pageSize) || pageSize.value
+      // 处理返回的数据
+      const responseData = response.data
+
+      // 检查返回的数据结构
+      if (responseData && typeof responseData === 'object') {
+        // 尝试获取记录列表
+        let records = null
+        let totalCount = 0
+
+        if (Array.isArray(responseData)) {
+          // 如果直接返回数组
+          records = responseData
+          totalCount = responseData.length
+        } else if (responseData.records && Array.isArray(responseData.records)) {
+          // 标准分页结构
+          records = responseData.records
+          totalCount = Number(responseData.totalRow || 0)
+          currentPage.value = Number(responseData.pageNumber || currentPage.value)
+          pageSize.value = Number(responseData.pageSize || pageSize.value)
+        } else if (responseData.data) {
+          // 嵌套的 data 字段
+          const nestedData = responseData.data
+          if (Array.isArray(nestedData)) {
+            records = nestedData
+            totalCount = nestedData.length
+          } else if (nestedData.records && Array.isArray(nestedData.records)) {
+            records = nestedData.records
+            totalCount = Number(nestedData.totalRow || nestedData.total || 0)
+          }
+        }
+
+        if (records) {
+          tableData.value = records
+          total.value = totalCount
+        } else {
+          tableData.value = []
+          total.value = 0
+        }
+      } else {
+        tableData.value = []
+        total.value = 0
+      }
     } else {
       tableData.value = []
       total.value = 0
@@ -269,7 +265,7 @@ const fetchTableData = async (isSearch = false) => {
 fetchTableData()
 
 // 表格选择处理
-const handleSelectionChange = (rows: IQCReport[]) => {
+const handleSelectionChange = (rows: QcReports[]) => {
   selectedRows.value = rows
 }
 
@@ -280,20 +276,20 @@ const handleSearch = () => {
     return
   }
   currentPage.value = 1
-  fetchTableData(true)  // 传入 true 表示使用搜索 API
+  fetchTableData(true) // 传入 true 表示使用搜索 API
 }
 
 // 清空搜索
 const handleClearSearch = () => {
   searchQuery.value = ''
   currentPage.value = 1
-  fetchTableData(false)  // 传入 false 表示使用普通列表 API
+  fetchTableData(false) // 传入 false 表示使用普通列表 API
 }
 
 // 分页处理
 const handleSizeChange = (val: number) => {
   pageSize.value = val
-  currentPage.value = 1  // 切换每页显示数量时，重置为第一页
+  currentPage.value = 1 // 切换每页显示数量时，重置为第一页
   fetchTableData()
 }
 
@@ -303,19 +299,19 @@ const handleCurrentChange = (val: number) => {
 }
 
 // 处理编辑按钮点击
-const handleEdit = (row: IQCReport) => {
+const handleEdit = (row: QcReports) => {
   if (!row.id) {
     ElMessage.warning('无效的记录')
     return
   }
   router.push({
     path: `/spec/info/${row.id}`,
-    query: { edit: 'true' }  // 添加编辑状态查询参数
+    query: {edit: 'true'} // 添加编辑状态查询参数
   })
 }
 
 // 处理查看按钮点击
-const handleView = (row: IQCReport) => {
+const handleView = (row: QcReports) => {
   if (!row.id) {
     ElMessage.warning('无效的记录')
     return
@@ -324,25 +320,27 @@ const handleView = (row: IQCReport) => {
 }
 
 // 删除
-const handleDelete = async (row: IQCReport) => {
+const handleDelete = async (row: QcReports) => {
   if (!row || !row.id) {
     ElMessage.warning('无效的记录ID')
     return
   }
   try {
-    await ElMessageBox.confirm(
-      '确定要删除该记录吗？',
-      '警告',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    
+    await ElMessageBox.confirm('确定要删除该记录吗？', '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
     loading.value = true
     try {
-      await deleteSpecification(row.id)
+      // 确保 id 存在
+      if (typeof row.id !== 'string') {
+        ElMessage.error('无效的记录ID')
+        return
+      }
+
+      await deleteQcReportsRemoveById({id: row.id})
       ElMessage.success('删除成功')
       // 重新加载数据
       fetchTableData()
@@ -365,19 +363,24 @@ const handleBatchDelete = async () => {
   }
 
   try {
-    await ElMessageBox.confirm(
-      `确定要删除选中的 ${selectedRows.value.length} 条数据吗？`,
-      '警告',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
+    await ElMessageBox.confirm(`确定要删除选中的 ${selectedRows.value.length} 条数据吗？`, '警告', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
 
     loading.value = true
-    const deletePromises = selectedRows.value.map(row => deleteSpecification(row.id))
-    
+    // 过滤掉没有 id 的记录
+    const validRows = selectedRows.value.filter(row => row.id && typeof row.id === 'string')
+
+    if (validRows.length === 0) {
+      ElMessage.warning('所选记录均无有效ID')
+      loading.value = false
+      return
+    }
+
+    const deletePromises = validRows.map(row => deleteQcReportsRemoveById({id: row.id as string}))
+
     try {
       await Promise.all(deletePromises)
       ElMessage.success('批量删除成功')
@@ -477,31 +480,31 @@ const handleBatchExport = async () => {
           defectCount: row.passFail === 'Fail' ? 1 : 0,
 
           // 缺陷记录
-          defects: row.passFail === 'Fail' ? [
-            {
-              defectTitle: '缺陷记录',
-              defectDescription: '外箱角落有轻微破损',
-              improvementSuggestion: '建议加强包装材料',
-              inspector: row.qcOfficer,
-              images: [
-                row.stocksInWarehouse,
-                row.stocksInWarehouse
-              ]
-            }
-          ] : []
+          defects:
+            row.passFail === 'Fail'
+              ? [
+                  {
+                    defectTitle: '缺陷记录',
+                    defectDescription: '外箱角落有轻微破损',
+                    improvementSuggestion: '建议加强包装材料',
+                    inspector: row.qcOfficer,
+                    images: [row.stocksInWarehouse, row.stocksInWarehouse]
+                  }
+                ]
+              : []
         }
-        
+
         // 生成Excel文件
         const workbook = await exportQCReport(qcData)
         const buffer = await workbook.xlsx.writeBuffer()
         const fileName = `${qcData.modelCode}_${qcData.poNumber}_${new Date().getTime()}.xlsx`
-        
+
         // 添加到zip文件
         const zip = new JSZip()
         zip.file(fileName, buffer)
 
         // 生成并下载zip文件
-        const zipContent = await zip.generateAsync({ type: 'blob' })
+        const zipContent = await zip.generateAsync({type: 'blob'})
         const timestamp = new Date().getTime()
         saveAs(zipContent, `质检报告_${timestamp}.zip`)
 
@@ -528,10 +531,8 @@ const handleSendEmail = () => {
   showEmailDialog.value = true
   emailForm.value = {
     to: '',
-    subject: `质检报告 - ${selectedRows.value.map((row: IQCReport) => row.modelCode).join(', ')}`,
-    content: `请查收以下质检报告：\n${selectedRows.value.map((row: IQCReport) => 
-      `型号代码：${row.modelCode}\n最小订购量：${row.poNumber}\n样品交期：${row.inspectionDate}\n`
-    ).join('\n')}`
+    subject: `质检报告 - ${selectedRows.value.map((row: QcReports) => row.modelCode).join(', ')}`,
+    content: `请查收以下质检报告：\n${selectedRows.value.map((row: QcReports) => `型号代码：${row.modelCode}\n最小订购量：${row.poNumber}\n样品交期：${row.inspectionDate}\n`).join('\n')}`
   }
 }
 
@@ -548,4 +549,3 @@ const confirmSendEmail = async () => {
   }
 }
 </script>
-@/api/bak

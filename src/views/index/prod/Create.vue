@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-01-14 17:03:09
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-02-28 16:14:39
+ * @LastEditTime: 2025-03-12 11:45:28
  * @FilePath: /yarn-vite-web-01-02/src/views/index/prod/Create.vue
  * @Description: 产品规格创建表单
 -->
@@ -35,15 +35,10 @@
     </div>
 
     <!-- 可滚动的内容区域 -->
-    <div class="bg-white overflow-auto" style="height: calc(100vh - 116px - 64px);">
+    <div class="bg-white overflow-auto" style="height: calc(100vh - 116px - 64px)">
       <div class="p-6">
         <!-- 基本信息表单 -->
-        <el-form
-          v-if="activeStep === 0"
-          :model="basicForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 0" :model="basicForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="产品代码">
             <el-input v-model="basicForm.tccode" />
           </el-form-item>
@@ -71,12 +66,7 @@
         </el-form>
 
         <!-- 面料信息表单 -->
-        <el-form
-          v-if="activeStep === 1"
-          :model="upholsteryForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 1" :model="upholsteryForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="面料制造商">
             <el-input v-model="upholsteryForm.fabricManufacturer" />
           </el-form-item>
@@ -92,12 +82,7 @@
         </el-form>
 
         <!-- 包装信息表单 -->
-        <el-form
-          v-if="activeStep === 2"
-          :model="cartonForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 2" :model="cartonForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="包装箱宽度">
             <el-input-number v-model="cartonForm.width" class="w-full" />
           </el-form-item>
@@ -119,12 +104,7 @@
         </el-form>
 
         <!-- 生产物流信息表单 -->
-        <el-form
-          v-if="activeStep === 3"
-          :model="logisticsForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 3" :model="logisticsForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="生产时间">
             <el-input-number v-model="logisticsForm.productionTime" class="w-full" />
           </el-form-item>
@@ -146,12 +126,7 @@
         </el-form>
 
         <!-- 产品尺寸表单 -->
-        <el-form
-          v-if="activeStep === 4"
-          :model="dimensionsForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 4" :model="dimensionsForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="座位宽度">
             <el-input-number v-model="dimensionsForm.seatWidth" class="w-full" />
           </el-form-item>
@@ -188,12 +163,7 @@
         </el-form>
 
         <!-- 座椅内部结构表单 -->
-        <el-form
-          v-if="activeStep === 5"
-          :model="seatInnerForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 5" :model="seatInnerForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="材料代码">
             <el-input v-model="seatInnerForm.materialCode" />
           </el-form-item>
@@ -209,12 +179,7 @@
         </el-form>
 
         <!-- 背部内部结构表单 -->
-        <el-form
-          v-if="activeStep === 6"
-          :model="backInnerForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 6" :model="backInnerForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="材料代码">
             <el-input v-model="backInnerForm.materialCode" />
           </el-form-item>
@@ -230,12 +195,7 @@
         </el-form>
 
         <!-- 座椅外部结构表单 -->
-        <el-form
-          v-if="activeStep === 7"
-          :model="seatOuterForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 7" :model="seatOuterForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="材料">
             <el-input v-model="seatOuterForm.material" />
           </el-form-item>
@@ -248,12 +208,7 @@
         </el-form>
 
         <!-- 背部外部结构表单 -->
-        <el-form
-          v-if="activeStep === 8"
-          :model="backOuterForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 8" :model="backOuterForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="材料">
             <el-input v-model="backOuterForm.material" />
           </el-form-item>
@@ -266,12 +221,7 @@
         </el-form>
 
         <!-- 扶手信息表单 -->
-        <el-form
-          v-if="activeStep === 9"
-          :model="armsForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 9" :model="armsForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="材料">
             <el-input v-model="armsForm.material" />
           </el-form-item>
@@ -293,12 +243,7 @@
         </el-form>
 
         <!-- 泡棉信息表单 -->
-        <el-form
-          v-if="activeStep === 10"
-          :model="foamForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 10" :model="foamForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="描述">
             <el-input v-model="foamForm.description" type="textarea" />
           </el-form-item>
@@ -317,12 +262,7 @@
         </el-form>
 
         <!-- 脚轮信息表单 -->
-        <el-form
-          v-if="activeStep === 11"
-          :model="castorsForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 11" :model="castorsForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="描述">
             <el-input v-model="castorsForm.description" type="textarea" />
           </el-form-item>
@@ -335,12 +275,7 @@
         </el-form>
 
         <!-- 底座信息表单 -->
-        <el-form
-          v-if="activeStep === 12"
-          :model="baseForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 12" :model="baseForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="描述">
             <el-input v-model="baseForm.description" type="textarea" />
           </el-form-item>
@@ -356,12 +291,7 @@
         </el-form>
 
         <!-- 气压棒信息表单 -->
-        <el-form
-          v-if="activeStep === 13"
-          :model="gasLiftForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 13" :model="gasLiftForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="描述">
             <el-input v-model="gasLiftForm.description" type="textarea" />
           </el-form-item>
@@ -380,12 +310,7 @@
         </el-form>
 
         <!-- 气压罩信息表单 -->
-        <el-form
-          v-if="activeStep === 14"
-          :model="gasLiftCoverForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 14" :model="gasLiftCoverForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="描述">
             <el-input v-model="gasLiftCoverForm.description" type="textarea" />
           </el-form-item>
@@ -398,12 +323,7 @@
         </el-form>
 
         <!-- 机构信息表单 -->
-        <el-form
-          v-if="activeStep === 15"
-          :model="mechanismForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 15" :model="mechanismForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="描述">
             <el-input v-model="mechanismForm.description" type="textarea" />
           </el-form-item>
@@ -422,12 +342,7 @@
         </el-form>
 
         <!-- 配件信息表单 -->
-        <el-form
-          v-if="activeStep === 16"
-          :model="fittingsForm"
-          label-width="140px"
-          class="max-w-4xl mx-auto"
-        >
+        <el-form v-if="activeStep === 16" :model="fittingsForm" label-width="140px" class="max-w-4xl mx-auto">
           <el-form-item label="配件编号">
             <el-input-number v-model="fittingsForm.fittingNumber" class="w-full" />
           </el-form-item>
@@ -443,66 +358,37 @@
         </el-form>
 
         <!-- 产品图片表单 -->
-        <el-form
-          v-if="activeStep === 17"
-          :model="productImagesForm"
-          label-width="140px"
-          class="max-w-6xl mx-auto"
-        >
+        <el-form v-if="activeStep === 17" :model="productImagesForm" label-width="140px" class="max-w-6xl mx-auto">
           <div class="grid grid-cols-4 gap-6">
             <div class="w-full">
               <div class="flex flex-col">
                 <div class="text-sm text-gray-600 mb-2">正视图</div>
-                <ImageHandler
-                  v-model="productImagesForm.frontImgPath"
-                  class="aspect-square w-full"
-                  :limit="1"
-                  :editable="true"
-                  @preview="handlePreview"
-                />
+                <ImageHandler v-model="productImagesForm.frontImgPath" class="aspect-square w-full" :limit="1" :editable="true" @preview="handlePreview" />
               </div>
             </div>
             <div class="w-full">
               <div class="flex flex-col">
                 <div class="text-sm text-gray-600 mb-2">侧视图</div>
-                <ImageHandler
-                  v-model="productImagesForm.sideImgPath"
-                  class="aspect-square w-full"
-                  :limit="1"
-                  :editable="true"
-                  @preview="handlePreview"
-                />
+                <ImageHandler v-model="productImagesForm.sideImgPath" class="aspect-square w-full" :limit="1" :editable="true" @preview="handlePreview" />
               </div>
             </div>
             <div class="w-full">
               <div class="flex flex-col">
                 <div class="text-sm text-gray-600 mb-2">背视图</div>
-                <ImageHandler
-                  v-model="productImagesForm.backImgPath"
-                  class="aspect-square w-full"
-                  :limit="1"
-                  :editable="true"
-                  @preview="handlePreview"
-                />
+                <ImageHandler v-model="productImagesForm.backImgPath" class="aspect-square w-full" :limit="1" :editable="true" @preview="handlePreview" />
               </div>
             </div>
             <div class="w-full">
               <div class="flex flex-col">
                 <div class="text-sm text-gray-600 mb-2">角视图</div>
-                <ImageHandler
-                  v-model="productImagesForm.angleImgPath"
-                  class="aspect-square w-full"
-                  :limit="1"
-                  :editable="true"
-                  @preview="handlePreview"
-                />
+                <ImageHandler v-model="productImagesForm.angleImgPath" class="aspect-square w-full" :limit="1" :editable="true" @preview="handlePreview" />
               </div>
             </div>
           </div>
         </el-form>
 
         <!-- 步骤控制按钮 -->
-        <div class="fixed bottom-0 right-0 z-10 ps-1 min-w-0" style="width: calc(100% - 256px); margin-right: 0;">
+        <div class="fixed bottom-0 right-0 z-10 ps-1 min-w-0" style="width: calc(100% - 256px); margin-right: 0">
           <div class="bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)]">
             <div class="flex justify-center items-center gap-4 h-16 px-5 mx-auto max-w-4xl">
               <el-button @click="prevStep" :disabled="activeStep === 0">上一步</el-button>
@@ -519,20 +405,20 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import type { UploadProps, UploadFile } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
-import type { Product, Upholstery, CartonDetail, ProductionLogistics, ProductDimension, SeatInnerComponent, BackInnerComponent, SeatOuterComponent, BackOuterComponent, Arm, FoamDetail, Castor, Base, GasLift, GasLiftCover, Mechanism, Fitting, ProductImage, ProductDTO } from '@/api/product.d'
-import { getId } from '@/utils/idUtils'
-import { saveProductDTO } from '@/api/product'
-import { useRouter } from 'vue-router'
+import {ref, reactive, onMounted, onUnmounted} from 'vue'
+import {ElMessage} from 'element-plus'
+import type {UploadProps, UploadFile} from 'element-plus'
+import {Plus} from '@element-plus/icons-vue'
+import type {Products, Upholstery, CartonDetails, ProductionLogistics, ProductDimensions, SeatInnerComponents, BackInnerComponents, SeatOuterComponents, BackOuterComponents, Arms, FoamDetails, Castors, Bases, GasLift, GasLiftCover, Mechanism, Fittings, ProductImages, ProductDto} from '@/api'
+import {getId} from '@/utils/idUtils'
+import {postProductDtoSave} from '@/api'
+import {useRouter} from 'vue-router'
 import ImageHandler from '@/components/ImageHandler.vue'
 
 const activeStep = ref(0)
 
 // 表单数据
-const basicForm = reactive<Partial<Product>>({
+const basicForm = reactive<Partial<Products>>({
   tccode: '',
   supplier: '',
   supplierCode: '',
@@ -550,7 +436,7 @@ const upholsteryForm = reactive<Partial<Upholstery>>({
   usagePerChair: undefined
 })
 
-const cartonForm = reactive<Partial<CartonDetail>>({
+const cartonForm = reactive<Partial<CartonDetails>>({
   width: undefined,
   depth: undefined,
   height: undefined,
@@ -568,7 +454,7 @@ const logisticsForm = reactive<Partial<ProductionLogistics>>({
   grossWeight: undefined
 })
 
-const dimensionsForm = reactive<Partial<ProductDimension>>({
+const dimensionsForm = reactive<Partial<ProductDimensions>>({
   seatWidth: 0,
   seatDepth: 0,
   seatHeightMin: 0,
@@ -583,7 +469,7 @@ const dimensionsForm = reactive<Partial<ProductDimension>>({
 })
 
 // 座椅内部结构数据
-const seatInnerForm = reactive<Partial<SeatInnerComponent>>({
+const seatInnerForm = reactive<Partial<SeatInnerComponents>>({
   materialCode: '',
   thickness: 0,
   layersCount: 0,
@@ -591,7 +477,7 @@ const seatInnerForm = reactive<Partial<SeatInnerComponent>>({
 })
 
 // 背部内部结构数据
-const backInnerForm = reactive<Partial<BackInnerComponent>>({
+const backInnerForm = reactive<Partial<BackInnerComponents>>({
   materialCode: '',
   thickness: 0,
   layersCount: 0,
@@ -599,20 +485,20 @@ const backInnerForm = reactive<Partial<BackInnerComponent>>({
 })
 
 // 座椅外部结构数据
-const seatOuterForm = reactive<Partial<SeatOuterComponent>>({
+const seatOuterForm = reactive<Partial<SeatOuterComponents>>({
   material: '',
   dimensions: '',
   manufacturerName: ''
 })
 
 // 背部外部结构数据
-const backOuterForm = reactive<Partial<BackOuterComponent>>({
+const backOuterForm = reactive<Partial<BackOuterComponents>>({
   material: '',
   dimensions: '',
   manufacturerName: ''
 })
 
-const armsForm = reactive<Partial<Arm>>({
+const armsForm = reactive<Partial<Arms>>({
   material: '',
   type: '',
   manufacturer: '',
@@ -621,7 +507,7 @@ const armsForm = reactive<Partial<Arm>>({
   armHeightFromFloor: 0
 })
 
-const foamForm = reactive<Partial<FoamDetail>>({
+const foamForm = reactive<Partial<FoamDetails>>({
   description: '',
   seatDensity: 0,
   backDensity: 0,
@@ -629,13 +515,13 @@ const foamForm = reactive<Partial<FoamDetail>>({
   backThickness: 0
 })
 
-const castorsForm = reactive<Partial<Castor>>({
+const castorsForm = reactive<Partial<Castors>>({
   description: '',
   pinThickness: 0,
   wheelDiameter: 0
 })
 
-const baseForm = reactive<Partial<Base>>({
+const baseForm = reactive<Partial<Bases>>({
   description: '',
   sizeDiameter: 0,
   material: '',
@@ -665,7 +551,7 @@ const mechanismForm = reactive<Partial<Mechanism>>({
 })
 
 // 配件信息数据
-const fittingsForm = reactive<Partial<Fitting>>({
+const fittingsForm = reactive<Partial<Fittings>>({
   fittingNumber: 0,
   description: '',
   quantity: 0,
@@ -673,18 +559,23 @@ const fittingsForm = reactive<Partial<Fitting>>({
 })
 
 // 产品图片表单
-const productImagesForm = ref<Partial<ProductImage>>({
-  frontImgPath: '',
-  sideImgPath: '',
-  backImgPath: '',
-  angleImgPath: ''
+const productImagesForm = ref<{
+  frontImgPath: string[]
+  sideImgPath: string[]
+  backImgPath: string[]
+  angleImgPath: string[]
+}>({
+  frontImgPath: [],
+  sideImgPath: [],
+  backImgPath: [],
+  angleImgPath: []
 })
 
 // 修改 ImagePathKey 的类型定义
-type ImagePathKey = keyof Pick<ProductImage, 'frontImgPath' | 'sideImgPath' | 'backImgPath' | 'angleImgPath'>;
+type ImagePathKey = 'frontImgPath' | 'sideImgPath' | 'backImgPath' | 'angleImgPath'
 
 // 处理图片上传前的验证
-const beforeUpload: UploadProps['beforeUpload'] = (file) => {
+const beforeUpload: UploadProps['beforeUpload'] = file => {
   const isImage = file.type.startsWith('image/')
   const isLt2M = file.size / 1024 / 1024 < 2
 
@@ -709,7 +600,7 @@ const createHandleSuccess = (type: ImagePathKey) => {
 // 处理图片上传成功
 const handleSuccess = (response: any, uploadFile: UploadFile, type: ImagePathKey) => {
   if (uploadFile.raw) {
-    productImagesForm.value[type] = URL.createObjectURL(uploadFile.raw)
+    productImagesForm.value[type].push(URL.createObjectURL(uploadFile.raw))
     ElMessage.success('上传成功')
   }
 }
@@ -721,7 +612,7 @@ const handleError = () => {
 
 // 处理图片移除
 const handleRemove = (type: ImagePathKey) => {
-  productImagesForm.value[type] = ''
+  productImagesForm.value[type] = []
 }
 
 // 步骤控制
@@ -745,7 +636,17 @@ const submitForm = async () => {
   try {
     const productId = getId()
 
-    const formData: ProductDTO = {
+    // 转换图片数组为字符串
+    const processedImages = {
+      id: getId(),
+      prodId: productId,
+      frontImgPath: productImagesForm.value.frontImgPath[0] || '',
+      sideImgPath: productImagesForm.value.sideImgPath[0] || '',
+      backImgPath: productImagesForm.value.backImgPath[0] || '',
+      angleImgPath: productImagesForm.value.angleImgPath[0] || ''
+    }
+
+    const formData: ProductDto = {
       products: {
         id: productId,
         ...basicForm
@@ -830,22 +731,17 @@ const submitForm = async () => {
         productId,
         ...fittingsForm
       },
-      productImages: {
-        id: getId(),
-        prodId: productId,
-        ...productImagesForm.value
-      }
+      productImages: processedImages
     }
 
     // 在发送请求前打印数据，检查数据结构
     console.log('提交的表单数据：', JSON.stringify(formData, null, 2))
-    
-    await saveProductDTO(formData)
+
+    await postProductDtoSave(formData)
     ElMessage.success('提交成功')
-    
+
     // 提交成功后跳转到列表页面
     router.push('/prod/list')
-    
   } catch (error) {
     console.error('提交失败:', error)
     ElMessage.error('提交失败，请重试')
@@ -1109,10 +1005,10 @@ const generateMockData = () => {
   // 随机填充图片
   const shuffledImages = [...testImages].sort(() => Math.random() - 0.5)
   productImagesForm.value = {
-    frontImgPath: shuffledImages[0],
-    sideImgPath: shuffledImages[1],
-    backImgPath: shuffledImages[2],
-    angleImgPath: shuffledImages[3]
+    frontImgPath: [shuffledImages[0]],
+    sideImgPath: [shuffledImages[1]],
+    backImgPath: [shuffledImages[2]],
+    angleImgPath: [shuffledImages[3]]
   }
 
   // 生成数据后跳转到最后一步
@@ -1128,4 +1024,3 @@ const handlePreview = (imageUrl: string) => {
   console.log('预览图片:', imageUrl)
 }
 </script>
-@/api/bak/product@/api/bak/product@/api/bak/product
