@@ -7,7 +7,7 @@
     <div class="flex-1 rounded-md overflow-hidden bg-gray-50 flex items-center justify-center w-full h-full">
       <!-- 已上传的图片列表 -->
       <div class="flex gap-2 items-center">
-        <div v-for="(url, index) in modelValue" :key="index" class="relative flex items-center justify-center bg-gray-50 rounded-md overflow-hidden group" :style="{width: `${size}px`, height: `${size}px`}">
+        <div v-for="(url, index) in normalizedModelValue" :key="index" class="relative flex items-center justify-center bg-gray-50 rounded-md overflow-hidden group" :style="{width: `${size}px`, height: `${size}px`}">
           <img :src="url" :alt="label || '图片'" class="object-contain w-full h-full cursor-pointer" @click="handlePreview(url)" />
           <!-- 编辑状态显示预览和删除按钮 -->
           <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex justify-center items-center gap-4 transition-opacity">
@@ -66,12 +66,13 @@ defineOptions({
 })
 
 interface ImageHandlerProps {
-  modelValue: string[]
+  modelValue: string | string[]
   label?: string
   editable?: boolean
   size?: number
   limit?: number
   multiple?: boolean
+  customUpload?: (params: {file: File}) => Promise<string>
 }
 
 const props = withDefaults(defineProps<ImageHandlerProps>(), {
@@ -81,10 +82,7 @@ const props = withDefaults(defineProps<ImageHandlerProps>(), {
   multiple: false
 })
 
-const emit = defineEmits<{
-  'update:model-value': [value: string[]]
-  preview: [url: string]
-}>()
+const emit = defineEmits(['update:model-value', 'preview'])
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const previewVisible = ref(false)
@@ -122,9 +120,18 @@ const actualLimit = computed(() => {
 
 // 计算是否显示上传区域
 const showUploadArea = computed(() => {
-  const shouldShow = props.editable && Array.isArray(props.modelValue) && props.modelValue.length < actualLimit.value
-
+  const shouldShow = props.editable && normalizedModelValue.value.length < actualLimit.value
   return shouldShow
+})
+
+// 规范化modelValue，确保它始终是一个数组
+const normalizedModelValue = computed<string[]>(() => {
+  if (Array.isArray(props.modelValue)) {
+    return props.modelValue.filter(url => url && typeof url === 'string')
+  } else if (props.modelValue && typeof props.modelValue === 'string') {
+    return [props.modelValue]
+  }
+  return []
 })
 
 // 修改按钮样式计算属性
@@ -168,33 +175,42 @@ const handleFile = async (file: File) => {
   }
 
   try {
-    // 调用API上传文件
-    const response = await postFilesUpload({file})
-
-    // 检查响应状态和数据结构
     let imageUrl = ''
 
-    // 使用类型断言处理响应
-    const responseData = response as any
+    // 使用自定义上传函数或默认上传函数
+    if (props.customUpload) {
+      imageUrl = await props.customUpload({file})
+      console.log('自定义上传返回的图片URL:', imageUrl)
+    } else {
+      // 调用API上传文件
+      const response = await postFilesUpload({file})
+      console.log('默认上传返回的响应:', response)
 
-    if (responseData && responseData.data) {
-      if (typeof responseData.data === 'string') {
-        // 直接返回字符串URL
-        imageUrl = responseData.data
-      } else if (responseData.code === '200' && responseData.data) {
-        // 标准成功响应
-        imageUrl = responseData.data
-      } else if (responseData.data && responseData.data.data) {
-        // 嵌套的data字段
-        imageUrl = responseData.data.data
+      // 检查响应状态和数据结构
+      // 使用类型断言处理响应
+      const responseData = response as any
+
+      if (responseData && responseData.data) {
+        if (typeof responseData.data === 'string') {
+          // 直接返回字符串URL
+          imageUrl = responseData.data
+        } else if (responseData.code === '200' && responseData.data) {
+          // 标准成功响应
+          imageUrl = responseData.data
+        } else if (responseData.data && responseData.data.data) {
+          // 嵌套的data字段
+          imageUrl = responseData.data.data
+        }
       }
     }
 
     // 确保获取到了图片URL
     if (!imageUrl) {
-      console.error('无法从响应中获取图片URL:', response)
+      console.error('无法获取图片URL')
       throw new Error('上传成功但无法获取图片地址')
     }
+
+    console.log('最终使用的图片URL:', imageUrl)
 
     // 检查URL长度，防止数据库截断错误
     const MAX_URL_LENGTH = 255 // 数据库字段长度为255
@@ -220,17 +236,25 @@ const handleFile = async (file: File) => {
     }
 
     // 更新图片数组
-    const currentImages = Array.isArray(props.modelValue) ? props.modelValue : []
+    const currentImages = normalizedModelValue.value
 
     if (currentImages.length >= actualLimit.value) {
-      alert(`最多只能上传${actualLimit.value}张图片`)
+      ElMessage.warning(`最多只能上传${actualLimit.value}张图片`)
       return
     }
 
     const newImages = [...currentImages, imageUrl]
+    console.log('更新后的图片数组:', newImages)
 
     // 发送更新事件
-    emit('update:model-value', newImages)
+    if (props.multiple) {
+      emit('update:model-value', newImages)
+    } else {
+      // 单图模式下，直接使用新上传的图片URL
+      emit('update:model-value', [imageUrl])
+      console.log('单图模式，发送的值:', [imageUrl])
+    }
+
     ElMessage.success('图片上传成功')
   } catch (error) {
     console.error('上传失败:', error)
@@ -241,7 +265,7 @@ const handleFile = async (file: File) => {
     reader.onload = e => {
       const result = e.target?.result
       if (typeof result === 'string') {
-        const currentImages = Array.isArray(props.modelValue) ? props.modelValue : []
+        const currentImages = normalizedModelValue.value
 
         if (currentImages.length >= actualLimit.value) {
           ElMessage.warning(`最多只能上传${actualLimit.value}张图片`)
@@ -249,7 +273,17 @@ const handleFile = async (file: File) => {
         }
 
         const newImages = [...currentImages, result]
-        emit('update:model-value', newImages)
+        console.log('使用本地预览的图片数组:', newImages)
+
+        // 发送更新事件
+        if (props.multiple) {
+          emit('update:model-value', newImages)
+        } else {
+          // 单图模式下，直接使用新上传的图片
+          emit('update:model-value', [result])
+          console.log('单图模式(本地预览)，发送的值:', [result])
+        }
+
         ElMessage.info('已使用本地预览图片，但未能上传到服务器')
       }
     }
@@ -271,16 +305,18 @@ const closePreview = () => {
 
 // 处理删除
 const handleDelete = async (index: number) => {
-  if (!Array.isArray(props.modelValue) || index < 0 || index >= props.modelValue.length) {
+  if (index < 0 || index >= normalizedModelValue.value.length) {
     return
   }
 
-  const imageUrl = props.modelValue[index]
+  const imageUrl = normalizedModelValue.value[index]
 
   // 从数组中移除图片
-  const newImages = [...props.modelValue]
+  const newImages = [...normalizedModelValue.value]
   newImages.splice(index, 1)
-  emit('update:model-value', newImages)
+
+  // 根据multiple属性决定返回数组还是单个字符串
+  emit('update:model-value', props.multiple ? newImages : newImages.length > 0 ? newImages[0] : '')
 
   // 在编辑状态下，只从界面移除图片，不从服务器删除
   // 实际的删除操作会在父组件的保存或取消函数中处理

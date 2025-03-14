@@ -57,9 +57,16 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
                   <template v-for="(label, key) in basicFields" :key="key">
                     <el-form-item v-if="key !== 'comments'" :label="label" class="bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                      <div class="w-full text-gray-700 bg-gray-50 p-2 rounded h-[38px] leading-[22px]">
-                        {{ formData.qcReports?.[key] || '-' }}
-                      </div>
+                      <!-- 编辑状态显示输入框 -->
+                      <template v-if="editingSections.includes('basic')">
+                        <el-input v-model="tempFormData.qcReports[key]" :placeholder="`请输入${label}`" class="w-full !h-[38px]" />
+                      </template>
+                      <!-- 非编辑状态显示文本 -->
+                      <template v-else>
+                        <div class="w-full text-gray-700 bg-gray-50 p-2 rounded h-[38px] leading-[22px]">
+                          {{ formData.qcReports?.[key] || '-' }}
+                        </div>
+                      </template>
                     </el-form-item>
                   </template>
                 </div>
@@ -71,9 +78,16 @@
                       <div class="min-w-[140px] px-2 text-gray-600 font-medium">{{ basicFields.comments }}</div>
                     </div>
                     <div class="w-full px-2">
-                      <div class="w-full text-gray-700 bg-gray-50 p-2 rounded min-h-[38px] leading-[22px]">
-                        {{ formData.qcReports?.comments || '-' }}
-                      </div>
+                      <!-- 编辑状态显示文本域 -->
+                      <template v-if="editingSections.includes('basic')">
+                        <el-input v-model="tempFormData.qcReports.comments" type="textarea" :rows="3" placeholder="请输入评价内容" class="w-full" />
+                      </template>
+                      <!-- 非编辑状态显示文本 -->
+                      <template v-else>
+                        <div class="w-full text-gray-700 bg-gray-50 p-2 rounded min-h-[38px] leading-[22px]">
+                          {{ formData.qcReports?.comments || '-' }}
+                        </div>
+                      </template>
                     </div>
                   </div>
                 </div>
@@ -100,6 +114,8 @@
                             @update:model-value="val => updateImageValue(key, val)"
                             :editable="isEditing"
                             :size="200"
+                            :custom-upload="handleCustomUpload"
+                            :multiple="false"
                             class="!w-full !h-full [&_img]:w-auto [&_img]:h-auto [&_img]:max-w-full [&_img]:max-h-full [&_img]:object-contain [&_img]:m-auto [&_.el-upload]:w-full [&_.el-upload]:h-full [&_.el-upload]:flex [&_.el-upload]:items-center [&_.el-upload]:justify-center [&_.el-upload-dragger]:w-full [&_.el-upload-dragger]:h-full [&_.el-upload-dragger]:flex [&_.el-upload-dragger]:items-center [&_.el-upload-dragger]:justify-center [&_.el-upload-dragger]:border-2 [&_.el-upload-dragger]:border-dashed [&_.el-upload-dragger]:border-gray-300 hover:[&_.el-upload-dragger]:border-blue-500 [&_.el-upload__tip]:hidden"
                           />
                         </div>
@@ -447,21 +463,130 @@ onMounted(() => {
 const addDefectDialogVisible = ref(false)
 const isEditing = ref(false)
 
-// 处理图片值获取
+// 根据编辑状态获取图片值
 const getImageValue = (key: string) => {
-  if (!formData.value?.qcReports) return []
-  const value = formData.value.qcReports[key as keyof typeof formData.value.qcReports]
-  return value ? [value as string] : []
+  console.log(`获取图片值 - 键: ${key}`)
+
+  if (isEditing.value && tempFormData.value?.qcReports) {
+    // 编辑状态下从临时数据获取
+    const value = tempFormData.value.qcReports[key as keyof typeof tempFormData.value.qcReports]
+
+    // 处理不同类型的值
+    if (typeof value === 'string') {
+      // 如果是字符串，且不为空，则包装为数组返回
+      return value ? [value] : []
+    } else if (Array.isArray(value)) {
+      // 如果已经是数组，则直接返回
+      return value
+    } else if (value === null || value === undefined) {
+      // 如果是null或undefined，返回空数组
+      return []
+    } else {
+      // 其他类型（如数字等），转为字符串后包装为数组
+      return [String(value)]
+    }
+  } else if (formData.value?.qcReports) {
+    // 非编辑状态下从正式数据获取
+    const value = formData.value.qcReports[key as keyof typeof formData.value.qcReports]
+
+    // 处理不同类型的值
+    if (typeof value === 'string') {
+      // 如果是字符串，且不为空，则包装为数组返回
+      return value ? [value] : []
+    } else if (Array.isArray(value)) {
+      // 如果已经是数组，则直接返回
+      return value
+    } else if (value === null || value === undefined) {
+      // 如果是null或undefined，返回空数组
+      return []
+    } else {
+      // 其他类型（如数字等），转为字符串后包装为数组
+      return [String(value)]
+    }
+  }
+  return []
 }
 
 // 处理图片值更新
-const updateImageValue = (key: string, val: string[]) => {
-  if (!formData.value?.qcReports) return
-  if (formData.value.qcReports) {
+const updateImageValue = async (key: string, val: string | string[]) => {
+  console.log(`更新图片值 - 键: ${key}, 值:`, val)
+  console.log('当前编辑状态:', isEditing.value)
+
+  // 确保val是有效值
+  let newValue = ''
+
+  // 处理不同类型的输入值
+  if (Array.isArray(val)) {
+    // 如果是数组（图片URL数组）
+    if (val.length > 0) {
+      newValue = val[0]
+      console.log('处理数组值，使用第一个元素:', newValue)
+    }
+  } else if (typeof val === 'string') {
+    // 如果是字符串（直接是字符串值）
+    newValue = val
+    console.log('处理字符串值:', newValue)
+  }
+
+  // 根据编辑状态决定更新哪个数据对象
+  if (isEditing.value && tempFormData.value?.qcReports) {
+    // 编辑状态下更新临时数据
+    console.log('更新前的临时数据:', JSON.stringify(tempFormData.value.qcReports[key as keyof typeof tempFormData.value.qcReports]))
+
+    // 获取旧值，用于检查是否需要删除服务器上的图片
+    const oldValue = tempFormData.value.qcReports[key as keyof typeof tempFormData.value.qcReports]
+
+    // 检查是否是删除操作（旧值存在但新值为空）
+    if (oldValue && !newValue) {
+      console.log(`检测到删除操作 - 键: ${key}, 旧值:`, oldValue)
+
+      try {
+        // 从服务器删除图片文件
+        if (typeof oldValue === 'string' && oldValue.startsWith('http')) {
+          await getFilesRemove({filePath: oldValue})
+          console.log(`已从服务器删除图片文件: ${oldValue}`)
+        }
+      } catch (error) {
+        console.error(`删除服务器图片文件失败: ${oldValue}`, error)
+        ElMessage.warning('图片文件删除失败，但已从记录中移除')
+      }
+    }
+
+    tempFormData.value.qcReports = {
+      ...tempFormData.value.qcReports,
+      [key]: newValue
+    }
+
+    console.log('更新后的临时数据:', JSON.stringify(tempFormData.value.qcReports[key as keyof typeof tempFormData.value.qcReports]))
+  } else if (formData.value?.qcReports) {
+    // 非编辑状态下更新正式数据
+    console.log('更新前的正式数据:', JSON.stringify(formData.value.qcReports[key as keyof typeof formData.value.qcReports]))
+
+    // 获取旧值，用于检查是否需要删除服务器上的图片
+    const oldValue = formData.value.qcReports[key as keyof typeof formData.value.qcReports]
+
+    // 检查是否是删除操作（旧值存在但新值为空）
+    if (oldValue && !newValue) {
+      console.log(`检测到删除操作 - 键: ${key}, 旧值:`, oldValue)
+
+      try {
+        // 从服务器删除图片文件
+        if (typeof oldValue === 'string' && oldValue.startsWith('http')) {
+          await getFilesRemove({filePath: oldValue})
+          console.log(`已从服务器删除图片文件: ${oldValue}`)
+        }
+      } catch (error) {
+        console.error(`删除服务器图片文件失败: ${oldValue}`, error)
+        ElMessage.warning('图片文件删除失败，但已从记录中移除')
+      }
+    }
+
     formData.value.qcReports = {
       ...formData.value.qcReports,
-      [key]: val[0] || ''
+      [key]: newValue
     }
+
+    console.log('更新后的正式数据:', JSON.stringify(formData.value.qcReports[key as keyof typeof formData.value.qcReports]))
   }
 }
 
@@ -470,6 +595,12 @@ const handleEdit = (section: string) => {
   isEditing.value = true
   // 创建临时表单数据的深拷贝
   tempFormData.value = JSON.parse(JSON.stringify(formData.value))
+
+  // 确保tempFormData.qcReports存在
+  if (!tempFormData.value.qcReports) {
+    tempFormData.value.qcReports = {}
+  }
+
   editingSections.value.push(section)
 }
 
@@ -560,7 +691,7 @@ const handleCloseDialog = async () => {
 }
 
 // 自定义上传图片处理函数
-const handleCustomUpload = async (params: any) => {
+const handleCustomUpload = async (params: {file: File}) => {
   try {
     // 直接使用File对象
     const res = await postFilesUpload({file: params.file})
@@ -695,7 +826,40 @@ const handleSaveDefect = async (index: number, defect: any) => {
   }
 }
 
-const handleCancelDefect = (index: number) => {
+const handleCancelDefect = async (index: number) => {
+  // 检查是否有临时上传的缺陷图片需要删除
+  if (tempFormData.value?.defectsDTO?.[index]) {
+    const originalDefect = formData.value.defectsDTO?.[index]
+    const tempDefect = tempFormData.value.defectsDTO[index]
+
+    // 获取原始图片路径
+    const originalImagePaths = originalDefect?.defectImages?.map(img => img.imagePath).filter(Boolean) || []
+
+    // 获取临时图片路径
+    const tempImagePaths = tempDefect?.defectImages?.map(img => img.imagePath).filter(Boolean) || []
+
+    // 找出临时添加的图片路径（在临时数据中存在但在原始数据中不存在）
+    const newImagePaths = tempImagePaths.filter(path => !originalImagePaths.includes(path))
+
+    // 删除服务器上的临时图片文件
+    if (newImagePaths.length > 0) {
+      console.log(`检测到取消编辑缺陷记录时需要删除的临时图片:`, newImagePaths)
+
+      for (const imagePath of newImagePaths) {
+        try {
+          // 从服务器删除图片文件
+          if (imagePath && typeof imagePath === 'string' && imagePath.startsWith('http')) {
+            await getFilesRemove({filePath: imagePath})
+            console.log(`已从服务器删除临时缺陷图片文件: ${imagePath}`)
+          }
+        } catch (error) {
+          console.error(`删除服务器临时缺陷图片文件失败: ${imagePath}`, error)
+        }
+      }
+    }
+  }
+
+  // 移除编辑状态
   editingSections.value = editingSections.value.filter(item => item !== `defect-${index}`)
 }
 
@@ -745,11 +909,48 @@ const handleDeleteDefect = async (index: number) => {
   }
 }
 
-const handleDefectImageUpdate = (val: string[], defectId: string | undefined, index: number) => {
+const handleDefectImageUpdate = async (val: string | string[], defectId: string | undefined, index: number) => {
   if (!formData.value.defectsDTO?.[index]) return
 
+  console.log(`更新缺陷图片 - 索引: ${index}, 值:`, val)
+
+  // 处理不同类型的输入值
+  let imageArray: string[] = []
+  if (Array.isArray(val)) {
+    // 如果是数组，直接使用
+    imageArray = val
+  } else if (typeof val === 'string' && val) {
+    // 如果是非空字符串，包装为数组
+    imageArray = [val]
+  }
+
+  // 获取当前缺陷图片，用于检查是否有图片被删除
+  const currentImages = formData.value.defectsDTO[index].defectImages || []
+  const currentImagePaths = currentImages.map(img => img.imagePath).filter(Boolean) as string[]
+
+  // 找出被删除的图片路径
+  const deletedImagePaths = currentImagePaths.filter(path => !imageArray.includes(path))
+
+  // 删除服务器上的图片文件
+  if (deletedImagePaths.length > 0) {
+    console.log(`检测到删除的缺陷图片:`, deletedImagePaths)
+
+    for (const imagePath of deletedImagePaths) {
+      try {
+        // 从服务器删除图片文件
+        if (imagePath && imagePath.startsWith('http')) {
+          await getFilesRemove({filePath: imagePath})
+          console.log(`已从服务器删除缺陷图片文件: ${imagePath}`)
+        }
+      } catch (error) {
+        console.error(`删除服务器缺陷图片文件失败: ${imagePath}`, error)
+        ElMessage.warning('缺陷图片文件删除失败，但已从记录中移除')
+      }
+    }
+  }
+
   // 更新图片路径
-  const images = val.map(path => ({
+  const images = imageArray.map(path => ({
     defectId,
     imagePath: path
   }))
@@ -765,7 +966,7 @@ const handleDefectImageUpdate = (val: string[], defectId: string | undefined, in
   }
 }
 
-const handleDefectCustomUpload = async (params: any, defectId: string | undefined, index: number) => {
+const handleDefectCustomUpload = async (params: {file: File}, defectId: string | undefined, index: number) => {
   // 使用通用的上传函数
   const imagePath = await handleCustomUpload(params)
   return imagePath
@@ -774,7 +975,18 @@ const handleDefectCustomUpload = async (params: any, defectId: string | undefine
 // 添加计算属性处理缺陷图片
 const getDefectImages = (defectDto: DefectsDto) => {
   if (!defectDto.defectImages) return []
-  return defectDto.defectImages.map(img => img.imagePath || '').filter(path => path !== '')
+
+  // 处理图片路径数组
+  const imagePaths: string[] = []
+
+  // 遍历缺陷图片
+  for (const img of defectDto.defectImages) {
+    if (img.imagePath && typeof img.imagePath === 'string') {
+      imagePaths.push(img.imagePath)
+    }
+  }
+
+  return imagePaths
 }
 
 const handleExport = async () => {
@@ -885,10 +1097,33 @@ const handleSave = async () => {
 
     // 保存基本信息
     if (isEditing.value && tempFormData.value?.qcReports) {
+      console.log('保存前的临时数据:', JSON.stringify(tempFormData.value.qcReports))
+
+      // 检查图片字段是否有更改
+      const imageFields = Object.keys(imageSections).flatMap(sectionKey => Object.keys(imageSections[sectionKey as keyof typeof imageSections].fields))
+
+      console.log('需要检查的图片字段:', imageFields)
+
+      // 记录所有图片字段的变化
+      for (const field of imageFields) {
+        const oldValue = formData.value.qcReports?.[field as keyof typeof formData.value.qcReports]
+        const newValue = tempFormData.value.qcReports[field as keyof typeof tempFormData.value.qcReports]
+
+        if (oldValue !== newValue) {
+          console.log(`图片字段 ${field} 发生变化:`)
+          console.log(`  旧值类型: ${typeof oldValue}, 值: ${oldValue}`)
+          console.log(`  新值类型: ${typeof newValue}, 值: ${newValue}`)
+        }
+      }
+
+      // 调用API保存更改
       await putQcReportsUpdate(tempFormData.value.qcReports)
 
       // 更新本地数据
       formData.value = JSON.parse(JSON.stringify(tempFormData.value))
+
+      // 使用可选链操作符避免undefined错误
+      console.log('保存后的正式数据:', JSON.stringify(formData.value?.qcReports || {}))
 
       // 重置编辑状态
       isEditing.value = false
@@ -904,7 +1139,34 @@ const handleSave = async () => {
   }
 }
 
-const handleCancel = () => {
+const handleCancel = async () => {
+  // 检查是否有临时上传的图片需要删除
+  if (isEditing.value && tempFormData.value?.qcReports) {
+    // 获取所有图片字段
+    const imageFields = Object.keys(imageSections).flatMap(sectionKey => Object.keys(imageSections[sectionKey as keyof typeof imageSections].fields))
+
+    // 检查每个图片字段，找出临时添加的图片
+    for (const field of imageFields) {
+      const originalValue = formData.value.qcReports?.[field as keyof typeof formData.value.qcReports]
+      const tempValue = tempFormData.value.qcReports[field as keyof typeof tempFormData.value.qcReports]
+
+      // 如果临时值存在但与原始值不同，可能是新上传的图片
+      if (tempValue && tempValue !== originalValue) {
+        console.log(`检测到取消编辑时需要删除的临时图片 - 字段: ${field}, 值:`, tempValue)
+
+        try {
+          // 从服务器删除图片文件
+          if (typeof tempValue === 'string' && tempValue.startsWith('http')) {
+            await getFilesRemove({filePath: tempValue})
+            console.log(`已从服务器删除临时图片文件: ${tempValue}`)
+          }
+        } catch (error) {
+          console.error(`删除服务器临时图片文件失败: ${tempValue}`, error)
+        }
+      }
+    }
+  }
+
   // 重置编辑状态
   isEditing.value = false
   editingSections.value = []

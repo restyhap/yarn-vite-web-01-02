@@ -36,7 +36,7 @@
         <!-- 缺陷图片 -->
         <el-form-item label="缺陷图片" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
           <div class="w-full">
-            <ImageHandler v-model="imageUrls" :editable="true" :size="120" :limit="5" :custom-upload="props.customUpload" @preview="handlePreview" />
+            <ImageHandler v-model="imageUrls" :editable="true" :size="120" :limit="5" :custom-upload="customUpload" @preview="handlePreview" />
           </div>
         </el-form-item>
       </div>
@@ -71,17 +71,13 @@
   </el-dialog>
 </template>
 
-<script setup lang="ts">
-import {ref, defineProps, defineEmits, watch} from 'vue'
+<script lang="ts">
+import {defineComponent, ref, watch, PropType} from 'vue'
 import {ElMessage} from 'element-plus'
 import {Check} from '@element-plus/icons-vue'
 import ImageHandler from '@/components/ImageHandler.vue'
 import {DefectImages} from '@/api'
 import {getId} from '@/utils/idUtils'
-
-defineOptions({
-  name: 'DefectDialog'
-})
 
 interface DefectFormData {
   id: string
@@ -95,126 +91,156 @@ interface DefectFormData {
   updatedAt?: string
 }
 
-const props = defineProps<{
-  visible: boolean
-  title?: string
-  initialData?: DefectFormData
-  loading?: boolean
-  customUpload?: (params: any) => Promise<string>
-}>()
+export default defineComponent({
+  name: 'DefectDialog',
+  components: {
+    ImageHandler,
+    Check
+  },
+  props: {
+    visible: {
+      type: Boolean,
+      default: false
+    },
+    title: {
+      type: String,
+      default: '添加缺陷记录'
+    },
+    initialData: {
+      type: Object as PropType<DefectFormData>,
+      default: null
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    customUpload: {
+      type: Function as PropType<(params: {file: File}) => Promise<string>>,
+      default: null
+    }
+  },
+  emits: ['update:visible', 'save', 'close'],
+  setup(props, {emit}) {
+    // 弹窗显示状态
+    const dialogVisible = ref(false)
+    const previewVisible = ref(false)
+    const previewUrl = ref('')
 
-const emit = defineEmits<{
-  (e: 'update:visible', value: boolean): void
-  (e: 'save', data: DefectFormData): void
-  (e: 'close'): void
-}>()
+    // 表单数据
+    const formData = ref<DefectFormData>({
+      id: getId(),
+      reportId: '',
+      defectTitle: '',
+      defectDescription: '',
+      improvementSuggestion: '',
+      inspector: '',
+      images: []
+    })
 
-// 弹窗显示状态
-const dialogVisible = ref(false)
-const previewVisible = ref(false)
-const previewUrl = ref('')
+    // 图片URL数组
+    const imageUrls = ref<string[]>([])
 
-// 表单数据
-const formData = ref<DefectFormData>({
-  id: getId(),
-  reportId: '',
-  defectTitle: '',
-  defectDescription: '',
-  improvementSuggestion: '',
-  inspector: '',
-  images: []
-})
+    // 监听visible属性变化
+    watch(
+      () => props.visible,
+      newVal => {
+        dialogVisible.value = newVal
+        if (newVal && props.initialData) {
+          // 如果是编辑模式，填充表单数据
+          formData.value = {...props.initialData}
+          // 确保图片路径是字符串数组
+          imageUrls.value = props.initialData.images?.map(img => img.imagePath || '').filter(Boolean) || []
+        } else {
+          // 如果是新建模式，重置表单
+          resetForm()
+        }
+      }
+    )
 
-// 图片URL数组
-const imageUrls = ref<string[]>([])
+    // 监听dialogVisible变化
+    watch(dialogVisible, newVal => {
+      emit('update:visible', newVal)
+      if (!newVal) {
+        emit('close')
+      }
+    })
 
-// 监听visible属性变化
-watch(
-  () => props.visible,
-  newVal => {
-    dialogVisible.value = newVal
-    if (newVal && props.initialData) {
-      // 如果是编辑模式，填充表单数据
-      formData.value = {...props.initialData}
-      // 确保图片路径是字符串数组
-      imageUrls.value = props.initialData.images?.map(img => img.imagePath || '').filter(Boolean) || []
-    } else {
-      // 如果是新建模式，重置表单
-      resetForm()
+    // 处理图片预览
+    const handlePreview = (url: string) => {
+      previewUrl.value = url
+      previewVisible.value = true
+    }
+
+    // 处理保存
+    const handleSave = () => {
+      // 验证必填字段
+      if (!formData.value.defectTitle) {
+        ElMessage.warning('请输入缺陷标题')
+        return
+      }
+      if (!formData.value.defectDescription) {
+        ElMessage.warning('请输入缺陷描述')
+        return
+      }
+      if (!formData.value.improvementSuggestion) {
+        ElMessage.warning('请输入改进建议')
+        return
+      }
+      if (!formData.value.inspector) {
+        ElMessage.warning('请输入检查人员')
+        return
+      }
+      if (imageUrls.value.length === 0) {
+        ElMessage.warning('请至少上传一张缺陷图片')
+        return
+      }
+
+      // 构建保存数据
+      const saveData: DefectFormData = {
+        ...formData.value,
+        images: imageUrls.value.map(url => ({
+          id: getId(),
+          defectId: formData.value.id,
+          imagePath: url,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }))
+      }
+
+      // 发送保存事件
+      emit('save', saveData)
+    }
+
+    // 处理关闭
+    const handleClose = () => {
+      dialogVisible.value = false
+    }
+
+    // 重置表单
+    const resetForm = () => {
+      formData.value = {
+        id: getId(),
+        reportId: '',
+        defectTitle: '',
+        defectDescription: '',
+        improvementSuggestion: '',
+        inspector: '',
+        images: []
+      }
+      imageUrls.value = []
+    }
+
+    return {
+      dialogVisible,
+      previewVisible,
+      previewUrl,
+      formData,
+      imageUrls,
+      handlePreview,
+      handleSave,
+      handleClose,
+      customUpload: props.customUpload
     }
   }
-)
-
-// 监听dialogVisible变化
-watch(dialogVisible, newVal => {
-  emit('update:visible', newVal)
-  if (!newVal) {
-    emit('close')
-  }
 })
-
-// 处理图片预览
-const handlePreview = (url: string) => {
-  previewUrl.value = url
-  previewVisible.value = true
-}
-
-// 处理保存
-const handleSave = () => {
-  // 验证必填字段
-  if (!formData.value.defectTitle) {
-    ElMessage.warning('请输入缺陷标题')
-    return
-  }
-  if (!formData.value.defectDescription) {
-    ElMessage.warning('请输入缺陷描述')
-    return
-  }
-  if (!formData.value.improvementSuggestion) {
-    ElMessage.warning('请输入改进建议')
-    return
-  }
-  if (!formData.value.inspector) {
-    ElMessage.warning('请输入检查人员')
-    return
-  }
-  if (imageUrls.value.length === 0) {
-    ElMessage.warning('请至少上传一张缺陷图片')
-    return
-  }
-
-  // 构建保存数据
-  const saveData: DefectFormData = {
-    ...formData.value,
-    images: imageUrls.value.map(url => ({
-      id: getId(),
-      defectId: formData.value.id,
-      imagePath: url,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }))
-  }
-
-  // 发送保存事件
-  emit('save', saveData)
-}
-
-// 处理关闭
-const handleClose = () => {
-  dialogVisible.value = false
-}
-
-// 重置表单
-const resetForm = () => {
-  formData.value = {
-    id: getId(),
-    reportId: '',
-    defectTitle: '',
-    defectDescription: '',
-    improvementSuggestion: '',
-    inspector: '',
-    images: []
-  }
-  imageUrls.value = []
-}
 </script>
