@@ -507,6 +507,9 @@ const getImageValue = (key: string) => {
   return []
 }
 
+// 临时存储上传的图片路径，用于取消时删除
+const tempUploadedImages = ref<{[key: string]: string[]}>({})
+
 // 处理图片值更新
 const updateImageValue = async (key: string, val: string | string[]) => {
   console.log(`更新图片值 - 键: ${key}, 值:`, val)
@@ -540,15 +543,36 @@ const updateImageValue = async (key: string, val: string | string[]) => {
     if (oldValue && !newValue) {
       console.log(`检测到删除操作 - 键: ${key}, 旧值:`, oldValue)
 
-      try {
-        // 从服务器删除图片文件
-        if (typeof oldValue === 'string' && oldValue.startsWith('http')) {
-          await getFilesRemove({filePath: oldValue})
-          console.log(`已从服务器删除图片文件: ${oldValue}`)
+      // 初始化临时存储
+      if (!tempUploadedImages.value['basic']) {
+        tempUploadedImages.value['basic'] = []
+      }
+
+      // 记录被删除的图片路径
+      if (typeof oldValue === 'string' && oldValue.startsWith('http')) {
+        tempUploadedImages.value['basic'].push(oldValue)
+        console.log(`记录需要删除的图片路径: ${oldValue} 到 basic`)
+      }
+    } else if (newValue && oldValue !== newValue) {
+      // 如果是新上传的图片，记录旧图片路径用于可能的删除
+      if (oldValue && typeof oldValue === 'string' && oldValue.startsWith('http')) {
+        // 初始化临时存储
+        if (!tempUploadedImages.value['basic']) {
+          tempUploadedImages.value['basic'] = []
         }
-      } catch (error) {
-        console.error(`删除服务器图片文件失败: ${oldValue}`, error)
-        ElMessage.warning('图片文件删除失败，但已从记录中移除')
+
+        // 记录被替换的图片路径
+        tempUploadedImages.value['basic'].push(oldValue)
+        console.log(`记录被替换的图片路径: ${oldValue} 到 basic`)
+      }
+
+      // 记录新上传的图片路径
+      if (newValue.startsWith('http')) {
+        if (!tempUploadedImages.value['newUploads']) {
+          tempUploadedImages.value['newUploads'] = []
+        }
+        tempUploadedImages.value['newUploads'].push(newValue)
+        console.log(`记录新上传的图片到 newUploads: ${newValue}`)
       }
     }
 
@@ -588,6 +612,50 @@ const updateImageValue = async (key: string, val: string | string[]) => {
 
     console.log('更新后的正式数据:', JSON.stringify(formData.value.qcReports[key as keyof typeof formData.value.qcReports]))
   }
+}
+
+// 自定义上传图片处理函数
+const handleCustomUpload = async (params: {file: File}) => {
+  try {
+    // 直接使用File对象
+    const res = await postFilesUpload({file: params.file})
+    const imagePath = res.data
+
+    // 初始化临时存储
+    if (!tempUploadedImages.value['newDefect']) {
+      tempUploadedImages.value['newDefect'] = []
+    }
+
+    // 添加到临时上传图片列表
+    tempUploadedImages.value['newDefect'].push(imagePath)
+    console.log(`已添加临时图片: ${imagePath} 到 newDefect`)
+
+    return imagePath
+  } catch (error) {
+    console.error('上传图片失败', error)
+    ElMessage.error('上传图片失败')
+    return ''
+  }
+}
+
+const handleCloseDialog = async () => {
+  // 如果有临时上传的图片，需要删除
+  if (tempUploadedImages.value['newDefect'] && tempUploadedImages.value['newDefect'].length > 0) {
+    try {
+      // 删除已上传的图片
+      for (const imagePath of tempUploadedImages.value['newDefect']) {
+        if (imagePath && imagePath.startsWith('http')) {
+          await getFilesRemove({filePath: imagePath})
+          console.log(`已从服务器删除临时图片: ${imagePath}`)
+        }
+      }
+      tempUploadedImages.value['newDefect'] = [] // 清空临时图片列表
+    } catch (error) {
+      console.error('删除临时图片失败', error)
+    }
+  }
+
+  addDefectDialogVisible.value = false
 }
 
 // 处理编辑
@@ -670,54 +738,24 @@ const handleSaveNewDefect = async (defect: any) => {
   }
 }
 
-// 临时存储上传的图片路径，用于取消时删除
-const tempUploadedImages = ref<string[]>([])
-
-const handleCloseDialog = async () => {
-  // 如果有临时上传的图片，需要删除
-  if (tempUploadedImages.value.length > 0) {
-    try {
-      // 删除已上传的图片
-      for (const imagePath of tempUploadedImages.value) {
-        await getFilesRemove({filePath: imagePath})
-      }
-      tempUploadedImages.value = [] // 清空临时图片列表
-    } catch (error) {
-      console.error('删除临时图片失败', error)
-    }
-  }
-
-  addDefectDialogVisible.value = false
-}
-
-// 自定义上传图片处理函数
-const handleCustomUpload = async (params: {file: File}) => {
-  try {
-    // 直接使用File对象
-    const res = await postFilesUpload({file: params.file})
-    const imagePath = res.data
-
-    // 添加到临时上传图片列表
-    tempUploadedImages.value.push(imagePath)
-
-    return imagePath
-  } catch (error) {
-    console.error('上传图片失败', error)
-    ElMessage.error('上传图片失败')
-    return ''
-  }
-}
-
 const handleEditDefect = (index: number) => {
   if (!tempFormData.value) {
     tempFormData.value = JSON.parse(JSON.stringify(formData.value))
   }
-  editingSections.value.push(`defect-${index}`)
+
+  // 初始化该缺陷记录的临时图片存储
+  const defectKey = `defect-${index}`
+  if (!tempUploadedImages.value[defectKey]) {
+    tempUploadedImages.value[defectKey] = []
+  }
+
+  editingSections.value.push(defectKey)
 }
 
 const handleSaveDefect = async (index: number, defect: any) => {
   try {
     loading.value = true
+    const defectKey = `defect-${index}`
 
     // 1. 更新缺陷基本信息
     await putDefectsUpdate(defect)
@@ -808,6 +846,26 @@ const handleSaveDefect = async (index: number, defect: any) => {
         })
       }
 
+      // 保存成功后，处理需要删除的图片
+      if (tempUploadedImages.value[defectKey] && tempUploadedImages.value[defectKey].length > 0) {
+        console.log(`保存成功，开始删除${defectKey}部分记录的需要删除的图片:`, tempUploadedImages.value[defectKey])
+
+        // 删除所有记录的需要删除的图片
+        for (const path of tempUploadedImages.value[defectKey]) {
+          if (path && path.startsWith('http')) {
+            try {
+              await getFilesRemove({filePath: path})
+              console.log('已从服务器删除图片:', path)
+            } catch (error) {
+              console.error('从服务器删除图片失败:', error)
+            }
+          }
+        }
+
+        // 清空该部分的临时图片记录
+        tempUploadedImages.value[defectKey] = []
+      }
+
       // 4. 更新本地数据
       // 使用深拷贝确保数据独立
       if (formData.value.defectsDTO) {
@@ -816,7 +874,7 @@ const handleSaveDefect = async (index: number, defect: any) => {
     }
 
     // 5. 退出编辑模式
-    editingSections.value = editingSections.value.filter(item => item !== `defect-${index}`)
+    editingSections.value = editingSections.value.filter(item => item !== defectKey)
     ElMessage.success('保存成功')
   } catch (error) {
     console.error('保存失败', error)
@@ -827,6 +885,8 @@ const handleSaveDefect = async (index: number, defect: any) => {
 }
 
 const handleCancelDefect = async (index: number) => {
+  const defectKey = `defect-${index}`
+
   // 检查是否有临时上传的缺陷图片需要删除
   if (tempFormData.value?.defectsDTO?.[index]) {
     const originalDefect = formData.value.defectsDTO?.[index]
@@ -857,10 +917,30 @@ const handleCancelDefect = async (index: number) => {
         }
       }
     }
+
+    // 检查临时存储的图片
+    if (tempUploadedImages.value[defectKey] && tempUploadedImages.value[defectKey].length > 0) {
+      console.log(`取消编辑，删除${defectKey}部分记录的临时图片:`, tempUploadedImages.value[defectKey])
+
+      // 删除所有记录的临时图片
+      for (const path of tempUploadedImages.value[defectKey]) {
+        if (path && path.startsWith('http')) {
+          try {
+            await getFilesRemove({filePath: path})
+            console.log('已从服务器删除临时图片:', path)
+          } catch (error) {
+            console.error('从服务器删除临时图片失败:', error)
+          }
+        }
+      }
+
+      // 清空该部分的临时图片记录
+      tempUploadedImages.value[defectKey] = []
+    }
   }
 
   // 移除编辑状态
-  editingSections.value = editingSections.value.filter(item => item !== `defect-${index}`)
+  editingSections.value = editingSections.value.filter(item => item !== defectKey)
 }
 
 const handleDeleteDefect = async (index: number) => {
@@ -911,6 +991,7 @@ const handleDeleteDefect = async (index: number) => {
 
 const handleDefectImageUpdate = async (val: string | string[], defectId: string | undefined, index: number) => {
   if (!formData.value.defectsDTO?.[index]) return
+  const defectKey = `defect-${index}`
 
   console.log(`更新缺陷图片 - 索引: ${index}, 值:`, val)
 
@@ -931,20 +1012,20 @@ const handleDefectImageUpdate = async (val: string | string[], defectId: string 
   // 找出被删除的图片路径
   const deletedImagePaths = currentImagePaths.filter(path => !imageArray.includes(path))
 
-  // 删除服务器上的图片文件
+  // 记录被删除的图片路径
   if (deletedImagePaths.length > 0) {
     console.log(`检测到删除的缺陷图片:`, deletedImagePaths)
 
+    // 初始化临时存储
+    if (!tempUploadedImages.value[defectKey]) {
+      tempUploadedImages.value[defectKey] = []
+    }
+
+    // 记录被删除的图片路径
     for (const imagePath of deletedImagePaths) {
-      try {
-        // 从服务器删除图片文件
-        if (imagePath && imagePath.startsWith('http')) {
-          await getFilesRemove({filePath: imagePath})
-          console.log(`已从服务器删除缺陷图片文件: ${imagePath}`)
-        }
-      } catch (error) {
-        console.error(`删除服务器缺陷图片文件失败: ${imagePath}`, error)
-        ElMessage.warning('缺陷图片文件删除失败，但已从记录中移除')
+      if (imagePath && imagePath.startsWith('http')) {
+        tempUploadedImages.value[defectKey].push(imagePath)
+        console.log(`记录需要删除的缺陷图片路径: ${imagePath} 到 ${defectKey}`)
       }
     }
   }
@@ -967,9 +1048,28 @@ const handleDefectImageUpdate = async (val: string | string[], defectId: string 
 }
 
 const handleDefectCustomUpload = async (params: {file: File}, defectId: string | undefined, index: number) => {
-  // 使用通用的上传函数
-  const imagePath = await handleCustomUpload(params)
-  return imagePath
+  const defectKey = `defect-${index}`
+
+  try {
+    // 直接使用File对象
+    const res = await postFilesUpload({file: params.file})
+    const imagePath = res.data
+
+    // 初始化临时存储
+    if (!tempUploadedImages.value[defectKey]) {
+      tempUploadedImages.value[defectKey] = []
+    }
+
+    // 添加到临时上传图片列表
+    tempUploadedImages.value[defectKey].push(imagePath)
+    console.log(`已添加临时图片: ${imagePath} 到 ${defectKey}`)
+
+    return imagePath
+  } catch (error) {
+    console.error('上传图片失败', error)
+    ElMessage.error('上传图片失败')
+    return ''
+  }
 }
 
 // 添加计算属性处理缺陷图片
@@ -1119,6 +1219,42 @@ const handleSave = async () => {
       // 调用API保存更改
       await putQcReportsUpdate(tempFormData.value.qcReports)
 
+      // 保存成功后，处理需要删除的图片
+      if (tempUploadedImages.value['basic'] && tempUploadedImages.value['basic'].length > 0) {
+        console.log(`保存成功，开始删除basic部分记录的需要删除的图片:`, tempUploadedImages.value['basic'])
+
+        // 删除所有记录的需要删除的图片
+        for (const path of tempUploadedImages.value['basic']) {
+          if (path && path.startsWith('http')) {
+            try {
+              await getFilesRemove({filePath: path})
+              console.log('已从服务器删除图片:', path)
+            } catch (error) {
+              console.error('从服务器删除图片失败:', error)
+            }
+          }
+        }
+
+        // 清空该部分的临时图片记录
+        tempUploadedImages.value['basic'] = []
+      }
+
+      // 清理newUploads中的相关记录
+      if (tempUploadedImages.value['newUploads']) {
+        // 找出所有使用的图片
+        const usedImages: string[] = []
+        for (const field of imageFields) {
+          const value = tempFormData.value.qcReports[field as keyof typeof tempFormData.value.qcReports]
+          if (typeof value === 'string' && value.startsWith('http')) {
+            usedImages.push(value)
+          }
+        }
+
+        // 从newUploads中移除已保存的图片
+        tempUploadedImages.value['newUploads'] = tempUploadedImages.value['newUploads'].filter(path => !usedImages.includes(path))
+        console.log('保存后清理临时上传记录，剩余:', tempUploadedImages.value['newUploads'])
+      }
+
       // 更新本地数据
       formData.value = JSON.parse(JSON.stringify(tempFormData.value))
 
@@ -1165,6 +1301,25 @@ const handleCancel = async () => {
         }
       }
     }
+
+    // 获取临时上传的图片列表
+    const newUploads = tempUploadedImages.value['newUploads'] || []
+
+    // 删除所有临时上传的图片，确保没有遗漏
+    for (const path of newUploads) {
+      if (path && path.startsWith('http')) {
+        try {
+          await getFilesRemove({filePath: path})
+          console.log('已删除临时上传的图片:', path)
+        } catch (error) {
+          console.error('删除临时上传图片失败:', error)
+        }
+      }
+    }
+
+    // 清空临时上传列表
+    tempUploadedImages.value['newUploads'] = []
+    tempUploadedImages.value['basic'] = []
   }
 
   // 重置编辑状态

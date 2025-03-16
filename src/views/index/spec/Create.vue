@@ -208,7 +208,7 @@
                 <!-- 缺陷图片 -->
                 <el-form-item label="缺陷图片" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
                   <div class="w-full">
-                    <ImageHandler v-model="defectImageUrls" :editable="true" :size="120" :limit="2" />
+                    <ImageHandler v-model="defectImageUrls" :editable="true" :size="120" :limit="2" :multiple="true" />
                   </div>
                 </el-form-item>
               </div>
