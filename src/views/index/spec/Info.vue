@@ -64,7 +64,7 @@
                       <!-- 非编辑状态显示文本 -->
                       <template v-else>
                         <div class="w-full text-gray-700 bg-gray-50 p-2 rounded h-[38px] leading-[22px]">
-                          {{ formData.qcReports?.[key] || '-' }}
+                          {{ isEditing ? tempFormData.qcReports?.[key] || '-' : formData.qcReports?.[key] || '-' }}
                         </div>
                       </template>
                     </el-form-item>
@@ -85,7 +85,7 @@
                       <!-- 非编辑状态显示文本 -->
                       <template v-else>
                         <div class="w-full text-gray-700 bg-gray-50 p-2 rounded min-h-[38px] leading-[22px]">
-                          {{ formData.qcReports?.comments || '-' }}
+                          {{ isEditing ? tempFormData.qcReports?.comments || '-' : formData.qcReports?.comments || '-' }}
                         </div>
                       </template>
                     </div>
@@ -158,7 +158,7 @@
                             </template>
                             <template v-else>
                               <div class="w-full text-gray-700 bg-gray-50 p-2 rounded min-h-[38px] leading-[22px]">
-                                {{ defectDto.defects?.defectTitle || '-' }}
+                                {{ editingSections.includes(`defect-${index}`) && tempFormData.defectsDTO?.[index]?.defects ? tempFormData.defectsDTO[index].defects.defectTitle || '-' : defectDto.defects?.defectTitle || '-' }}
                               </div>
                             </template>
                           </div>
@@ -203,7 +203,7 @@
                           </template>
                           <template v-else>
                             <div class="w-full text-gray-700 bg-gray-50 p-2 rounded min-h-[38px] leading-[22px]">
-                              {{ defectDto.defects?.defectDescription || '-' }}
+                              {{ editingSections.includes(`defect-${index}`) && tempFormData.defectsDTO?.[index]?.defects ? tempFormData.defectsDTO[index].defects.defectDescription || '-' : defectDto.defects?.defectDescription || '-' }}
                             </div>
                           </template>
                         </div>
@@ -220,7 +220,7 @@
                           </template>
                           <template v-else>
                             <div class="w-full text-gray-700 bg-gray-50 p-2 rounded min-h-[38px] leading-[22px]">
-                              {{ defectDto.defects?.inspector || '-' }}
+                              {{ editingSections.includes(`defect-${index}`) && tempFormData.defectsDTO?.[index]?.defects ? tempFormData.defectsDTO[index].defects.inspector || '-' : defectDto.defects?.inspector || '-' }}
                             </div>
                           </template>
                         </div>
@@ -239,7 +239,7 @@
                           </template>
                           <template v-else>
                             <div class="w-full text-gray-700 bg-gray-50 p-2 rounded min-h-[38px] leading-[22px]">
-                              {{ defectDto.defects?.improvementSuggestion || '-' }}
+                              {{ editingSections.includes(`defect-${index}`) && tempFormData.defectsDTO?.[index]?.defects ? tempFormData.defectsDTO[index].defects.improvementSuggestion || '-' : defectDto.defects?.improvementSuggestion || '-' }}
                             </div>
                           </template>
                         </div>
@@ -252,7 +252,9 @@
                       <div class="w-full h-[200px] bg-white rounded-lg overflow-hidden">
                         <div class="w-full h-full flex items-center justify-center">
                           <ImageHandler
-                            :model-value="getDefectImages(defectDto)"
+                            :model-value="editingSections.includes(`defect-${index}`) 
+                              ? ([...new Set(tempFormData?.defectsDTO?.[index]?.defectImages?.map((img: any) => img.imagePath).filter(Boolean) || [])]) 
+                              : ([...new Set(getDefectImages(defectDto))])"
                             @update:model-value="val => handleDefectImageUpdate(val, defectDto.defects?.id, index)"
                             :editable="editingSections.includes(`defect-${index}`)"
                             :size="200"
@@ -465,8 +467,6 @@ const isEditing = ref(false)
 
 // 根据编辑状态获取图片值
 const getImageValue = (key: string) => {
-  console.log(`获取图片值 - 键: ${key}`)
-
   if (isEditing.value && tempFormData.value?.qcReports) {
     // 编辑状态下从临时数据获取
     const value = tempFormData.value.qcReports[key as keyof typeof tempFormData.value.qcReports]
@@ -510,6 +510,26 @@ const getImageValue = (key: string) => {
 // 临时存储上传的图片路径，用于取消时删除
 const tempUploadedImages = ref<{[key: string]: string[]}>({})
 
+// 存储待执行的操作（添加、删除、更新）
+const pendingOperations = ref<{
+  [key: string]: {
+    toDelete: {id?: string; path: string}[]
+    toAdd: {defectId?: string; path: string}[]
+    toUpdate: {id: string; defectId?: string; path: string}[]
+  }
+}>({})
+
+// 初始化待执行操作
+const initPendingOperations = (key: string) => {
+  if (!pendingOperations.value[key]) {
+    pendingOperations.value[key] = {
+      toDelete: [],
+      toAdd: [],
+      toUpdate: []
+    }
+  }
+}
+
 // 处理图片值更新
 const updateImageValue = async (key: string, val: string | string[]) => {
   console.log(`更新图片值 - 键: ${key}, 值:`, val)
@@ -539,35 +559,29 @@ const updateImageValue = async (key: string, val: string | string[]) => {
     // 获取旧值，用于检查是否需要删除服务器上的图片
     const oldValue = tempFormData.value.qcReports[key as keyof typeof tempFormData.value.qcReports]
 
+    // 初始化basic操作
+    initPendingOperations('basic')
+
     // 检查是否是删除操作（旧值存在但新值为空）
     if (oldValue && !newValue) {
       console.log(`检测到删除操作 - 键: ${key}, 旧值:`, oldValue)
 
-      // 初始化临时存储
-      if (!tempUploadedImages.value['basic']) {
-        tempUploadedImages.value['basic'] = []
-      }
-
       // 记录被删除的图片路径
       if (typeof oldValue === 'string' && oldValue.startsWith('http')) {
-        tempUploadedImages.value['basic'].push(oldValue)
+        pendingOperations.value['basic'].toDelete.push({path: oldValue})
         console.log(`记录需要删除的图片路径: ${oldValue} 到 basic`)
       }
     } else if (newValue && oldValue !== newValue) {
       // 如果是新上传的图片，记录旧图片路径用于可能的删除
       if (oldValue && typeof oldValue === 'string' && oldValue.startsWith('http')) {
-        // 初始化临时存储
-        if (!tempUploadedImages.value['basic']) {
-          tempUploadedImages.value['basic'] = []
-        }
-
         // 记录被替换的图片路径
-        tempUploadedImages.value['basic'].push(oldValue)
+        pendingOperations.value['basic'].toDelete.push({path: oldValue})
         console.log(`记录被替换的图片路径: ${oldValue} 到 basic`)
       }
 
       // 记录新上传的图片路径
       if (newValue.startsWith('http')) {
+        // 初始化临时存储
         if (!tempUploadedImages.value['newUploads']) {
           tempUploadedImages.value['newUploads'] = []
         }
@@ -743,11 +757,14 @@ const handleEditDefect = (index: number) => {
     tempFormData.value = JSON.parse(JSON.stringify(formData.value))
   }
 
-  // 初始化该缺陷记录的临时图片存储
+  // 初始化该缺陷记录的临时图片存储和操作
   const defectKey = `defect-${index}`
   if (!tempUploadedImages.value[defectKey]) {
     tempUploadedImages.value[defectKey] = []
   }
+
+  // 初始化待执行操作
+  initPendingOperations(defectKey)
 
   editingSections.value.push(defectKey)
 }
@@ -765,115 +782,82 @@ const handleSaveDefect = async (index: number, defect: any) => {
     const tempDefectDto = tempFormData.value.defectsDTO?.[index]
 
     if (currentDefectDto && tempDefectDto) {
-      // 3. 检查图片是否有变化
-      const currentImages = currentDefectDto.defectImages || []
-      const tempImages = tempDefectDto.defectImages || []
+      // 3. 执行待执行的操作
+      if (pendingOperations.value[defectKey]) {
+        const operations = pendingOperations.value[defectKey]
 
-      // 如果图片数量或内容有变化，则更新图片
-      if (JSON.stringify(currentImages) !== JSON.stringify(tempImages)) {
-        console.log('图片有变化，需要更新')
-
-        // 3.1 删除已移除的图片
-        // 使用类型断言解决类型问题
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const currentImageIds = new Set((currentImages as any[]).map(img => img.id).filter(Boolean))
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const tempImageIds = new Set((tempImages as any[]).map(img => img.id).filter(Boolean))
-
-        // 创建当前图片路径的映射，用于后续删除服务器文件
-        const currentImagePathMap = new Map<string, string>()
-        for (let i = 0; i < currentImages.length; i++) {
-          const img = currentImages[i] as DefectImages
-          if (img.id) {
-            currentImagePathMap.set(img.id, img.imagePath || '')
-          }
-        }
-
-        // 找出已删除的图片ID
-        const removedImageIds = [...currentImageIds].filter(id => !tempImageIds.has(id))
-
-        // 删除已移除的图片
-        for (const imageId of removedImageIds) {
-          if (imageId) {
-            // 1. 先从数据库中删除图片记录
-            await deleteDefectImagesRemoveById({id: imageId})
-            console.log(`已删除图片记录: ${imageId}`)
-
-            // 2. 从服务器删除图片文件
-            const imagePath = currentImagePathMap.get(imageId)
-            if (imagePath) {
-              try {
-                await getFilesRemove({filePath: imagePath})
-                console.log(`已从服务器删除图片文件: ${imagePath}`)
-              } catch (error) {
-                console.error(`删除服务器图片文件失败: ${imagePath}`, error)
-              }
+        // 3.1 执行删除操作
+        for (const item of operations.toDelete) {
+          try {
+            if (item.id) {
+              // 从数据库中删除图片记录
+              await deleteDefectImagesRemoveById({id: item.id})
+              console.log(`已从数据库删除图片记录: ${item.id}`)
             }
+
+            // 从服务器删除图片文件
+            if (item.path) {
+              await getFilesRemove({filePath: item.path})
+              console.log(`已从服务器删除图片文件: ${item.path}`)
+            }
+          } catch (error) {
+            console.error(`删除图片失败: ${item.path}`, error)
           }
         }
 
-        // 3.2 更新或添加图片
-        // 注意：这里有类型检查警告，但功能正常
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        tempImages.forEach((img: any) => {
-          if (img.id) {
+        // 3.2 执行添加操作
+        for (const item of operations.toAdd) {
+          try {
+            // 添加新图片到数据库
+            const imageData: DefectImages = {
+              id: getId(), // 使用getId()函数生成新的ID
+              defectId: defect.id,
+              imagePath: item.path
+            }
+            await postDefectImagesSave(imageData)
+            console.log(`已添加新图片: ${item.path}`)
+          } catch (error) {
+            console.error(`添加新图片失败: ${item.path}`, error)
+          }
+        }
+
+        // 3.3 执行更新操作
+        for (const item of operations.toUpdate) {
+          try {
             // 更新现有图片
-            putDefectImagesUpdate({
-              id: img.id,
+            await putDefectImagesUpdate({
+              id: item.id,
               defectId: defect.id,
-              imagePath: img.imagePath
+              imagePath: item.path
             })
-              .then(() => {
-                console.log(`已更新图片: ${img.id}`)
-              })
-              .catch(err => {
-                console.error('更新图片失败:', err)
-              })
-          } else if (img.imagePath) {
-            // 添加新图片
-            const newImage: DefectImages = {
-              defectId: defect.id,
-              imagePath: img.imagePath
-            }
-            postDefectImagesSave(newImage)
-              .then(() => {
-                console.log(`已添加新图片: ${img.imagePath}`)
-              })
-              .catch(err => {
-                console.error('添加图片失败:', err)
-              })
+            console.log(`已更新图片: ${item.id}`)
+          } catch (error) {
+            console.error(`更新图片失败: ${item.id}`, error)
           }
-        })
+        }
+
+        // 清空待执行操作
+        pendingOperations.value[defectKey] = {
+          toDelete: [],
+          toAdd: [],
+          toUpdate: []
+        }
       }
 
-      // 保存成功后，处理需要删除的图片
+      // 4. 清理临时上传的图片
       if (tempUploadedImages.value[defectKey] && tempUploadedImages.value[defectKey].length > 0) {
-        console.log(`保存成功，开始删除${defectKey}部分记录的需要删除的图片:`, tempUploadedImages.value[defectKey])
-
-        // 删除所有记录的需要删除的图片
-        for (const path of tempUploadedImages.value[defectKey]) {
-          if (path && path.startsWith('http')) {
-            try {
-              await getFilesRemove({filePath: path})
-              console.log('已从服务器删除图片:', path)
-            } catch (error) {
-              console.error('从服务器删除图片失败:', error)
-            }
-          }
-        }
-
         // 清空该部分的临时图片记录
         tempUploadedImages.value[defectKey] = []
       }
 
-      // 4. 更新本地数据
+      // 5. 更新本地数据
       // 使用深拷贝确保数据独立
       if (formData.value.defectsDTO) {
         formData.value.defectsDTO[index] = JSON.parse(JSON.stringify(tempDefectDto))
       }
     }
 
-    // 5. 退出编辑模式
+    // 6. 退出编辑模式
     editingSections.value = editingSections.value.filter(item => item !== defectKey)
     ElMessage.success('保存成功')
   } catch (error) {
@@ -893,13 +877,13 @@ const handleCancelDefect = async (index: number) => {
     const tempDefect = tempFormData.value.defectsDTO[index]
 
     // 获取原始图片路径
-    const originalImagePaths = originalDefect?.defectImages?.map(img => img.imagePath).filter(Boolean) || []
+    const originalImagePaths = originalDefect?.defectImages?.map((img: DefectImages) => img.imagePath).filter(Boolean) || []
 
     // 获取临时图片路径
-    const tempImagePaths = tempDefect?.defectImages?.map(img => img.imagePath).filter(Boolean) || []
+    const tempImagePaths = tempDefect?.defectImages?.map((img: DefectImages) => img.imagePath).filter(Boolean) || []
 
     // 找出临时添加的图片路径（在临时数据中存在但在原始数据中不存在）
-    const newImagePaths = tempImagePaths.filter(path => !originalImagePaths.includes(path))
+    const newImagePaths = tempImagePaths.filter((path: string) => !originalImagePaths.includes(path))
 
     // 删除服务器上的临时图片文件
     if (newImagePaths.length > 0) {
@@ -932,11 +916,32 @@ const handleCancelDefect = async (index: number) => {
             console.error('从服务器删除临时图片失败:', error)
           }
         }
+
+        // 清空该部分的临时图片记录
+        tempUploadedImages.value[defectKey] = []
       }
 
-      // 清空该部分的临时图片记录
-      tempUploadedImages.value[defectKey] = []
+      // 清空待执行操作
+      pendingOperations.value[defectKey] = {
+        toDelete: [],
+        toAdd: [],
+        toUpdate: []
+      }
     }
+  }
+
+  // 清空待执行操作
+  if (pendingOperations.value[defectKey]) {
+    pendingOperations.value[defectKey] = {
+      toDelete: [],
+      toAdd: [],
+      toUpdate: []
+    }
+  }
+
+  // 恢复原始数据
+  if (formData.value?.defectsDTO?.[index] && tempFormData.value?.defectsDTO?.[index]) {
+    tempFormData.value.defectsDTO[index] = JSON.parse(JSON.stringify(formData.value.defectsDTO[index]))
   }
 
   // 移除编辑状态
@@ -995,6 +1000,36 @@ const handleDefectImageUpdate = async (val: string | string[], defectId: string 
 
   console.log(`更新缺陷图片 - 索引: ${index}, 值:`, val)
 
+  // 确保tempFormData已初始化
+  if (!tempFormData.value) {
+    tempFormData.value = JSON.parse(JSON.stringify(formData.value))
+  }
+
+  // 确保tempFormData.defectsDTO[index]存在
+  if (!tempFormData.value.defectsDTO) {
+    tempFormData.value.defectsDTO = []
+  }
+
+  if (!tempFormData.value.defectsDTO[index]) {
+    // 使用可选链操作符安全地访问 formData.value.defectsDTO
+    const originalDefect = formData.value?.defectsDTO?.[index]
+    if (originalDefect) {
+      tempFormData.value.defectsDTO[index] = JSON.parse(JSON.stringify(originalDefect))
+    } else {
+      // 如果原始数据不存在，创建一个空对象
+      tempFormData.value.defectsDTO[index] = {
+        defects: {id: defectId},
+        defectImages: []
+      }
+    }
+  }
+
+  // 确保当前缺陷记录在编辑状态
+  if (!editingSections.value.includes(defectKey)) {
+    console.log(`缺陷记录 ${index} 不在编辑状态，添加到编辑状态`)
+    editingSections.value.push(defectKey)
+  }
+
   // 处理不同类型的输入值
   let imageArray: string[] = []
   if (Array.isArray(val)) {
@@ -1005,14 +1040,25 @@ const handleDefectImageUpdate = async (val: string | string[], defectId: string 
     imageArray = [val]
   }
 
+  // 确保defectImages已初始化
+  if (!tempFormData.value.defectsDTO[index].defectImages) {
+    tempFormData.value.defectsDTO[index].defectImages = []
+  }
+
   // 获取当前缺陷图片，用于检查是否有图片被删除
-  const currentImages = formData.value.defectsDTO[index].defectImages || []
-  const currentImagePaths = currentImages.map(img => img.imagePath).filter(Boolean) as string[]
+  const currentImages = tempFormData.value.defectsDTO[index].defectImages || []
+  const currentImagePaths = currentImages.map(img => img.imagePath).filter(Boolean)
+
+  // 初始化待执行操作
+  initPendingOperations(defectKey)
 
   // 找出被删除的图片路径
   const deletedImagePaths = currentImagePaths.filter(path => !imageArray.includes(path))
 
-  // 记录被删除的图片路径
+  // 找出新增的图片路径
+  const addedImagePaths = imageArray.filter(path => !currentImagePaths.includes(path))
+
+  // 处理被删除的图片
   if (deletedImagePaths.length > 0) {
     console.log(`检测到删除的缺陷图片:`, deletedImagePaths)
 
@@ -1021,36 +1067,92 @@ const handleDefectImageUpdate = async (val: string | string[], defectId: string 
       tempUploadedImages.value[defectKey] = []
     }
 
-    // 记录被删除的图片路径
+    // 处理每个被删除的图片
     for (const imagePath of deletedImagePaths) {
       if (imagePath && imagePath.startsWith('http')) {
-        tempUploadedImages.value[defectKey].push(imagePath)
-        console.log(`记录需要删除的缺陷图片路径: ${imagePath} 到 ${defectKey}`)
+        // 找到对应的图片对象
+        const imageObj = currentImages.find(img => img.imagePath === imagePath)
+
+        if (imageObj && imageObj.id) {
+          // 记录需要删除的图片
+          pendingOperations.value[defectKey].toDelete.push({
+            id: imageObj.id,
+            path: imagePath
+          })
+          console.log(`记录需要删除的图片: ID=${imageObj.id}, 路径=${imagePath}`)
+        } else {
+          // 如果没有ID（可能是新上传但未保存的图片），只记录路径
+          pendingOperations.value[defectKey].toDelete.push({
+            path: imagePath
+          })
+          console.log(`记录需要删除的图片: 路径=${imagePath}`)
+        }
       }
     }
   }
 
-  // 更新图片路径
+  // 处理新增的图片
+  if (addedImagePaths.length > 0) {
+    console.log(`检测到新增的缺陷图片:`, addedImagePaths)
+
+    for (const imagePath of addedImagePaths) {
+      if (imagePath && imagePath.startsWith('http')) {
+        // 记录需要添加的图片
+        pendingOperations.value[defectKey].toAdd.push({
+          defectId,
+          path: imagePath
+        })
+        console.log(`记录需要添加的图片: 路径=${imagePath}`)
+      }
+    }
+  }
+
+  // 更新临时数据中的图片路径
   const images = imageArray.map(path => ({
+    id: getId(), // 使用getId()函数生成新的ID
     defectId,
     imagePath: path
   }))
 
-  if (formData.value.defectsDTO[index].defectImages) {
-    formData.value.defectsDTO[index].defectImages = images.map(img => ({
-      id: undefined,
-      defectId: img.defectId,
-      imagePath: img.imagePath,
-      createdAt: undefined,
-      updatedAt: undefined
-    }))
+  // 保留原有图片的ID，只更新保留下来的图片
+  if (tempFormData.value.defectsDTO[index].defectImages) {
+    tempFormData.value.defectsDTO[index].defectImages = images.map(img => {
+      // 查找是否有匹配的现有图片（保留ID）
+      const existingImage = currentImages.find(existing => existing.imagePath === img.imagePath)
+      return {
+        id: existingImage?.id || getId(), // 如果存在现有ID则使用，否则生成新ID
+        defectId: img.defectId,
+        imagePath: img.imagePath,
+        createdAt: existingImage?.createdAt,
+        updatedAt: existingImage?.updatedAt
+      }
+    })
+  } else {
+    // 如果defectImages不存在，则创建它
+    tempFormData.value.defectsDTO[index].defectImages = images
   }
+
+  // 强制触发视图更新
+  tempFormData.value = JSON.parse(JSON.stringify(tempFormData.value))
+
+  console.log(`更新后的临时数据(完整):`, tempFormData.value.defectsDTO[index])
 }
 
 const handleDefectCustomUpload = async (params: {file: File}, defectId: string | undefined, index: number) => {
   const defectKey = `defect-${index}`
 
   try {
+    // 确保当前缺陷记录在编辑状态
+    if (!editingSections.value.includes(defectKey)) {
+      console.log(`缺陷记录 ${index} 不在编辑状态，添加到编辑状态`)
+      editingSections.value.push(defectKey)
+    }
+
+    // 确保tempFormData已初始化
+    if (!tempFormData.value) {
+      tempFormData.value = JSON.parse(JSON.stringify(formData.value))
+    }
+
     // 直接使用File对象
     const res = await postFilesUpload({file: params.file})
     const imagePath = res.data
@@ -1060,9 +1162,63 @@ const handleDefectCustomUpload = async (params: {file: File}, defectId: string |
       tempUploadedImages.value[defectKey] = []
     }
 
+    // 初始化待执行操作
+    initPendingOperations(defectKey)
+
     // 添加到临时上传图片列表
     tempUploadedImages.value[defectKey].push(imagePath)
     console.log(`已添加临时图片: ${imagePath} 到 ${defectKey}`)
+
+    // 确保临时数据中的defectsDTO[index]已初始化
+    if (!tempFormData.value.defectsDTO) {
+      tempFormData.value.defectsDTO = []
+    }
+
+    if (!tempFormData.value.defectsDTO[index]) {
+      if (formData.value?.defectsDTO?.[index]) {
+        tempFormData.value.defectsDTO[index] = JSON.parse(JSON.stringify(formData.value.defectsDTO[index]))
+      } else {
+        // 如果原始数据不存在，创建一个空对象
+        tempFormData.value.defectsDTO[index] = {
+          defects: {id: defectId},
+          defectImages: []
+        }
+      }
+    }
+
+    // 确保临时数据中的defectImages已初始化
+    if (!tempFormData.value.defectsDTO[index].defectImages) {
+      tempFormData.value.defectsDTO[index].defectImages = []
+    }
+
+    // 检查图片是否已存在，避免重复添加
+    const existingImagePaths = tempFormData.value.defectsDTO[index].defectImages.map(img => img.imagePath)
+    if (existingImagePaths.includes(imagePath)) {
+      console.log(`图片已存在，不重复添加: ${imagePath}`)
+      return imagePath
+    }
+
+    // 直接将新图片添加到临时数据中
+    const newImage = {
+      id: getId(),
+      defectId,
+      imagePath
+    }
+
+    // 将新图片添加到临时数据中
+    tempFormData.value.defectsDTO[index].defectImages.push(newImage)
+
+    // 记录需要添加的图片
+    pendingOperations.value[defectKey].toAdd.push({
+      defectId,
+      path: imagePath
+    })
+
+    console.log(`直接添加新图片到临时数据: ${imagePath}`)
+
+    // 强制更新视图
+    tempFormData.value = JSON.parse(JSON.stringify(tempFormData.value))
+    console.log(`更新后的临时数据(完整):`, tempFormData.value.defectsDTO[index])
 
     return imagePath
   } catch (error) {
@@ -1074,6 +1230,25 @@ const handleDefectCustomUpload = async (params: {file: File}, defectId: string |
 
 // 添加计算属性处理缺陷图片
 const getDefectImages = (defectDto: DefectsDto) => {
+  // 查找索引
+  const index = formData.value.defectsDTO?.findIndex(dto => dto.defects?.id === defectDto.defects?.id) || -1
+  const defectKey = `defect-${index}`
+
+  console.log(`获取缺陷图片 - 索引: ${index}, 编辑状态: ${editingSections.value.includes(defectKey)}`)
+
+  // 检查是否在编辑状态
+  if (editingSections.value.includes(defectKey) && tempFormData.value?.defectsDTO?.[index]) {
+    // 确保defectImages存在
+    if (tempFormData.value.defectsDTO[index].defectImages) {
+      // 编辑状态下从临时数据获取
+      const tempDefectImages = tempFormData.value.defectsDTO[index].defectImages || []
+      const imagePaths = tempDefectImages.map(img => img.imagePath).filter(Boolean)
+      console.log(`返回临时数据的图片路径:`, imagePaths)
+      return imagePaths
+    }
+  }
+
+  // 非编辑状态下使用原始数据
   if (!defectDto.defectImages) return []
 
   // 处理图片路径数组
@@ -1086,6 +1261,7 @@ const getDefectImages = (defectDto: DefectsDto) => {
     }
   }
 
+  console.log(`返回原始数据的图片路径:`, imagePaths)
   return imagePaths
 }
 
@@ -1199,48 +1375,39 @@ const handleSave = async () => {
     if (isEditing.value && tempFormData.value?.qcReports) {
       console.log('保存前的临时数据:', JSON.stringify(tempFormData.value.qcReports))
 
-      // 检查图片字段是否有更改
-      const imageFields = Object.keys(imageSections).flatMap(sectionKey => Object.keys(imageSections[sectionKey as keyof typeof imageSections].fields))
-
-      console.log('需要检查的图片字段:', imageFields)
-
-      // 记录所有图片字段的变化
-      for (const field of imageFields) {
-        const oldValue = formData.value.qcReports?.[field as keyof typeof formData.value.qcReports]
-        const newValue = tempFormData.value.qcReports[field as keyof typeof tempFormData.value.qcReports]
-
-        if (oldValue !== newValue) {
-          console.log(`图片字段 ${field} 发生变化:`)
-          console.log(`  旧值类型: ${typeof oldValue}, 值: ${oldValue}`)
-          console.log(`  新值类型: ${typeof newValue}, 值: ${newValue}`)
-        }
-      }
-
       // 调用API保存更改
       await putQcReportsUpdate(tempFormData.value.qcReports)
 
-      // 保存成功后，处理需要删除的图片
-      if (tempUploadedImages.value['basic'] && tempUploadedImages.value['basic'].length > 0) {
-        console.log(`保存成功，开始删除basic部分记录的需要删除的图片:`, tempUploadedImages.value['basic'])
+      // 执行待执行的操作
+      if (pendingOperations.value['basic']) {
+        const operations = pendingOperations.value['basic']
 
-        // 删除所有记录的需要删除的图片
-        for (const path of tempUploadedImages.value['basic']) {
-          if (path && path.startsWith('http')) {
-            try {
-              await getFilesRemove({filePath: path})
-              console.log('已从服务器删除图片:', path)
-            } catch (error) {
-              console.error('从服务器删除图片失败:', error)
+        // 执行删除操作
+        for (const item of operations.toDelete) {
+          try {
+            // 从服务器删除图片文件
+            if (item.path) {
+              await getFilesRemove({filePath: item.path})
+              console.log(`已从服务器删除图片文件: ${item.path}`)
             }
+          } catch (error) {
+            console.error(`删除图片失败: ${item.path}`, error)
           }
         }
 
-        // 清空该部分的临时图片记录
-        tempUploadedImages.value['basic'] = []
+        // 清空待执行操作
+        pendingOperations.value['basic'] = {
+          toDelete: [],
+          toAdd: [],
+          toUpdate: []
+        }
       }
 
       // 清理newUploads中的相关记录
       if (tempUploadedImages.value['newUploads']) {
+        // 获取所有图片字段
+        const imageFields = Object.keys(imageSections).flatMap(sectionKey => Object.keys(imageSections[sectionKey as keyof typeof imageSections].fields))
+
         // 找出所有使用的图片
         const usedImages: string[] = []
         for (const field of imageFields) {
@@ -1300,36 +1467,45 @@ const handleCancel = async () => {
           console.error(`删除服务器临时图片文件失败: ${tempValue}`, error)
         }
       }
-    }
 
-    // 获取临时上传的图片列表
-    const newUploads = tempUploadedImages.value['newUploads'] || []
+      // 获取临时上传的图片列表
+      const newUploads = tempUploadedImages.value['newUploads'] || []
 
-    // 删除所有临时上传的图片，确保没有遗漏
-    for (const path of newUploads) {
-      if (path && path.startsWith('http')) {
-        try {
-          await getFilesRemove({filePath: path})
-          console.log('已删除临时上传的图片:', path)
-        } catch (error) {
-          console.error('删除临时上传图片失败:', error)
+      // 删除所有临时上传的图片，确保没有遗漏
+      for (const path of newUploads) {
+        if (path && path.startsWith('http')) {
+          try {
+            await getFilesRemove({filePath: path})
+            console.log('已删除临时上传的图片:', path)
+          } catch (error) {
+            console.error('删除临时上传图片失败:', error)
+          }
+        }
+
+        // 清空临时上传列表
+        tempUploadedImages.value['newUploads'] = []
+        tempUploadedImages.value['basic'] = []
+
+        // 清空待执行操作
+        if (pendingOperations.value['basic']) {
+          pendingOperations.value['basic'] = {
+            toDelete: [],
+            toAdd: [],
+            toUpdate: []
+          }
         }
       }
+
+      // 重置编辑状态
+      isEditing.value = false
+      editingSections.value = []
+
+      // 重置临时数据
+      tempFormData.value = null
+
+      ElMessage.info('已取消编辑')
     }
-
-    // 清空临时上传列表
-    tempUploadedImages.value['newUploads'] = []
-    tempUploadedImages.value['basic'] = []
   }
-
-  // 重置编辑状态
-  isEditing.value = false
-  editingSections.value = []
-
-  // 重置临时数据
-  tempFormData.value = null
-
-  ElMessage.info('已取消编辑')
 }
 
 defineOptions({
