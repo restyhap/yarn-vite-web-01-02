@@ -18,16 +18,16 @@
     <el-menu class="border-0 flex-1" :default-active="activeMenu" @select="handleSelect" :router="true" :unique-opened="true">
       <el-sub-menu v-for="menu in menuItems" :key="menu.index" :index="menu.index">
         <template #title>
-          <el-icon>
-            <component :is="menu.icon" />
-          </el-icon>
-          <span>{{ menu.title }}</span>
+          <div class="flex items-center">
+            <component :is="menu.icon" class="menu-icon" />
+            <span>{{ menu.title }}</span>
+          </div>
         </template>
         <el-menu-item v-for="subMenu in menu.children" :key="subMenu.index" :index="subMenu.index">
-          <el-icon>
-            <component :is="subMenu.icon" />
-          </el-icon>
-          <span>{{ subMenu.title }}</span>
+          <div class="flex items-center">
+            <component :is="subMenu.icon" class="menu-icon" />
+            <span>{{ subMenu.title }}</span>
+          </div>
         </el-menu-item>
       </el-sub-menu>
     </el-menu>
@@ -35,9 +35,7 @@
     <!-- 底部操作区 -->
     <div class="p-4 border-t">
       <el-button link class="w-full flex items-center justify-center gap-2" @click="handleLogout">
-        <el-icon>
-          <SwitchButton />
-        </el-icon>
+        <SwitchButton class="menu-icon" />
         退出登录
       </el-button>
     </div>
@@ -45,9 +43,9 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, watch} from 'vue'
+import {ref, watch, computed, onMounted} from 'vue'
 import {useRouter, useRoute} from 'vue-router'
-import {Document, Setting, User, Lock, View, Plus, SwitchButton, Money} from '@element-plus/icons-vue'
+import {Document, Tools, User, Lock, View, Plus, SwitchButton, Money} from '@element-plus/icons-vue'
 import {ElMessageBox} from 'element-plus'
 import {useUserStore} from '@/pinia/user'
 import {storeToRefs} from 'pinia'
@@ -58,8 +56,8 @@ const userStore = useUserStore()
 const {userInfo} = storeToRefs(userStore)
 
 // 用户信息
-const userName = userInfo.value?.username
-const userRole = userInfo.value?.roleType === 0 ? '系统管理员' : userInfo.value?.roleType === 1 ? '供应商' : '员工'
+const userName = computed(() => userInfo.value?.username)
+const userRole = computed(() => (userInfo.value?.roleType === 0 ? '系统管理员' : userInfo.value?.roleType === 1 ? '供应商' : '员工'))
 
 // 当前激活的菜单项，使用 route.path
 const activeMenu = ref(route.path)
@@ -69,7 +67,8 @@ watch(
   () => route.path,
   newPath => {
     activeMenu.value = newPath
-  }
+  },
+  {immediate: true}
 )
 
 // 菜单配置数据
@@ -128,7 +127,7 @@ const menuItems = [
   {
     index: '/settings',
     title: '系统设置',
-    icon: Setting,
+    icon: Tools,
     children: [
       {
         index: '/settings/users',
@@ -159,6 +158,11 @@ const handleLogout = () => {
     })
     .catch(() => {})
 }
+
+// 确保在组件挂载后重新计算一次激活菜单
+onMounted(() => {
+  activeMenu.value = route.path
+})
 </script>
 
 <style scoped>
@@ -168,5 +172,57 @@ const handleLogout = () => {
 
 .el-menu-item.is-active {
   background-color: #f0f9ff;
+}
+
+/* 图标样式 */
+.menu-icon {
+  width: 1em;
+  height: 1em;
+  margin-right: 8px;
+  font-size: 18px;
+  color: #606266;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 激活状态下的图标样式 */
+.el-menu-item.is-active .menu-icon,
+:deep(.el-menu-item.is-active .menu-icon) {
+  color: var(--el-menu-active-color, #409eff);
+}
+
+/* 确保子菜单项正确对齐 */
+:deep(.el-menu-item) {
+  display: flex;
+  align-items: center;
+  padding-left: 20px !important;
+}
+
+/* 确保子菜单项内容正确对齐 */
+:deep(.el-sub-menu .el-menu-item) {
+  padding-left: 40px !important;
+}
+
+/* 修复子菜单标题样式 */
+:deep(.el-sub-menu__title) {
+  display: flex;
+  align-items: center;
+}
+
+/* 修复同时具有 is-active 和 is-opened 类时图标消失的问题 */
+:deep(.el-sub-menu.is-active.is-opened .el-sub-menu__title .menu-icon) {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 确保所有状态下图标都可见 */
+:deep(.el-sub-menu.is-opened .el-sub-menu__title .menu-icon),
+:deep(.el-sub-menu.is-active .el-sub-menu__title .menu-icon) {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: var(--el-menu-active-color, #409eff);
 }
 </style>
