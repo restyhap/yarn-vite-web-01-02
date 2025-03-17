@@ -1,97 +1,121 @@
 <template>
-  <div class="info-container">
-    <div class="content-wrapper">
-      <!-- 顶部操作栏 -->
-      <div class="top-actions">
-        <div class="left-actions">
-          <h2 class="page-title">质检报告详情</h2>
+  <div dir="ltr" class="flex-1 ps-1 min-w-0 overflow-y h-screen">
+    <el-skeleton :loading="loading" animated>
+      <template #template>
+        <div class="p-5">
+          <el-skeleton-item variant="text" class="w-[30%]" />
+          <el-skeleton-item variant="text" class="w-[40%]" />
+          <el-skeleton-item variant="text" class="w-full" />
         </div>
-        <div class="right-actions">
-          <template v-if="editingSections.includes('basic')">
-            <el-button type="success" @click="handleSave">
-              <el-icon><Check /></el-icon>
-              保存
-            </el-button>
-            <el-button type="danger" @click="handleCancel">
-              <el-icon><Close /></el-icon>
-              取消
-            </el-button>
-          </template>
-          <template v-else>
-            <el-button type="primary" @click="handleEdit('basic')">
-              <el-icon><Edit /></el-icon>
-              编辑
-            </el-button>
-          </template>
-          <el-button type="primary" :loading="exporting" @click="handleExport" style="min-width: 120px">
-            <el-icon><Document /></el-icon>
-            {{ exporting ? '导出中...' : '导出文档' }}
-          </el-button>
-          <el-button @click="router.back()">
-            <el-icon><Back /></el-icon>
-            返回
-          </el-button>
-        </div>
-      </div>
+      </template>
 
-      <!-- 内容区域 -->
-      <div class="tables-container">
-        <!-- 基本信息 -->
-        <div class="table-section" :class="{editing: editingSections.includes('basic')}">
-          <div class="section-header">
-            <h3 class="text-lg font-medium">基本信息</h3>
-          </div>
-
-          <el-form :model="formData" label-width="120px">
-            <!-- 基本信息表格 -->
-            <div class="form-grid">
-              <template v-for="(field, key) in basicFields" :key="key">
-                <template v-if="!isImageField(key)">
-                  <el-form-item :label="field">
-                    <template v-if="editingSections.includes('basic')">
-                      <template v-if="key === 'currency'">
-                        <el-select v-model="formData[key]" class="w-full">
-                          <el-option label="人民币" :value="0" />
-                          <el-option label="美元" :value="1" />
-                        </el-select>
-                      </template>
-                      <template v-else-if="key === 'bifmaTested' || key === 'cadBlockAvailable' || key === 'productDataAvailable' || key === 'productImagesAvailable'">
-                        <el-switch v-model="formData[key]" :active-value="1" :inactive-value="0" />
-                      </template>
-                      <template v-else-if="key === 'fobPrice'">
-                        <el-input-number v-model="formData[key]" :precision="2" :step="0.1" :min="0" class="w-full" />
-                      </template>
-                      <template v-else-if="key === 'sampleLeadTime' || key === 'createTime'">
-                        <el-date-picker v-model="formData[key]" type="datetime" placeholder="选择日期时间" class="w-full" />
-                      </template>
-                      <template v-else-if="key === 'remark'">
-                        <el-input v-model="formData[key]" type="textarea" :rows="3" placeholder="请输入备注" />
-                      </template>
-                      <template v-else>
-                        <el-input v-model="formData[key]" />
-                      </template>
-                    </template>
-                    <template v-else>
-                      <span class="form-text">{{ formatFieldValue(key, formData[key]) }}</span>
-                    </template>
-                  </el-form-item>
-                </template>
+      <template #default>
+        <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
+          <!-- 顶部操作栏 -->
+          <div class="flex justify-between items-center py-3 px-6">
+            <div class="flex-1">
+              <h2 class="text-lg font-semibold text-gray-800">质检报告详情</h2>
+            </div>
+            <div class="flex gap-2">
+              <template v-if="editingSections.includes('basic')">
+                <el-button type="success" @click="handleSave">
+                  <el-icon><Check /></el-icon>
+                  保存
+                </el-button>
+                <el-button type="danger" @click="handleCancel">
+                  <el-icon><Close /></el-icon>
+                  取消
+                </el-button>
               </template>
+              <template v-else>
+                <el-button type="primary" @click="handleEdit('basic')">
+                  <el-icon><Edit /></el-icon>
+                  编辑
+                </el-button>
+              </template>
+              <el-button type="primary" :loading="exporting" @click="handleExport" class="min-w-[120px]">
+                <el-icon><Document /></el-icon>
+                {{ exporting ? '导出中...' : '导出文档' }}
+              </el-button>
+              <el-button @click="router.back()">
+                <el-icon><Back /></el-icon>
+                返回
+              </el-button>
             </div>
-            <br />
-
-            <!-- 图片上传 -->
-            <div class="image-section">
-              <el-form-item label="产品图片">
-                <div class="image-container">
-                  <ImageHandler v-model="imageArray" alt="产品图片" :editable="editingSections.includes('basic')" @temp-file="handleTempFile" />
-                </div>
-              </el-form-item>
-            </div>
-          </el-form>
+          </div>
         </div>
-      </div>
-    </div>
+
+        <div class="bg-white overflow-auto" style="height: calc(100vh - 64px); padding-bottom: 72px">
+          <div class="p-6">
+            <!-- 基本信息 -->
+            <div class="mb-8">
+              <div class="flex items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-800 w-full border-b pb-2 flex justify-between items-center">
+                  <span>基本信息</span>
+                </h3>
+              </div>
+
+              <el-form :model="formData" label-width="140px" class="[&_.el-form-item__label]:text-gray-600 [&_.el-form-item__label]:font-medium [&_.el-input__wrapper]:shadow-none [&_.el-input__inner]:h-[38px]">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
+                  <template v-for="(field, key) in basicFields" :key="key">
+                    <template v-if="!isImageField(key)">
+                      <el-form-item :label="field" class="bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                        <template v-if="editingSections.includes('basic')">
+                          <template v-if="key === 'currency'">
+                            <el-select v-model="formData[key]" class="w-full !h-[38px]">
+                              <el-option label="人民币" :value="0" />
+                              <el-option label="美元" :value="1" />
+                            </el-select>
+                          </template>
+                          <template v-else-if="key === 'bifmaTested' || key === 'cadBlockAvailable' || key === 'productDataAvailable' || key === 'productImagesAvailable'">
+                            <el-switch v-model="formData[key]" :active-value="1" :inactive-value="0" />
+                          </template>
+                          <template v-else-if="key === 'fobPrice'">
+                            <el-input-number v-model="formData[key]" :precision="2" :step="0.1" :min="0" class="w-full" />
+                          </template>
+                          <template v-else-if="key === 'sampleLeadTime' || key === 'createTime'">
+                            <el-date-picker v-model="formData[key]" type="datetime" placeholder="选择日期时间" class="w-full" />
+                          </template>
+                          <template v-else-if="key === 'remark'">
+                            <el-input v-model="formData[key]" type="textarea" :rows="3" placeholder="请输入备注" />
+                          </template>
+                          <template v-else>
+                            <el-input v-model="formData[key]" class="w-full !h-[38px]" />
+                          </template>
+                        </template>
+                        <template v-else>
+                          <div class="w-full text-gray-700 bg-gray-50 p-2 rounded h-[38px] leading-[22px]">
+                            {{ formatFieldValue(key, formData[key]) || '-' }}
+                          </div>
+                        </template>
+                      </el-form-item>
+                    </template>
+                  </template>
+                </div>
+
+                <!-- 图片上传 -->
+                <div class="mt-4">
+                  <div class="bg-gray-100 p-4 rounded">
+                    <div class="text-center text-sm text-gray-600 mb-2 font-medium">产品图片</div>
+                    <div class="w-full h-[240px] bg-white rounded-lg overflow-hidden">
+                      <div class="w-full h-full flex items-center justify-center">
+                        <ImageHandler
+                          v-model="imageArray"
+                          :editable="editingSections.includes('basic')"
+                          @temp-file="handleTempFile"
+                          class="!w-full !h-full [&_img]:w-auto [&_img]:h-auto [&_img]:max-w-full [&_img]:max-h-full [&_img]:object-contain [&_img]:m-auto [&_.el-upload]:w-full [&_.el-upload]:h-full [&_.el-upload]:flex [&_.el-upload]:items-center [&_.el-upload]:justify-center [&_.el-upload-dragger]:w-full [&_.el-upload-dragger]:h-full [&_.el-upload-dragger]:flex [&_.el-upload-dragger]:items-center [&_.el-upload-dragger]:justify-center [&_.el-upload-dragger]:border-2 [&_.el-upload-dragger]:border-dashed [&_.el-upload-dragger]:border-gray-300 hover:[&_.el-upload-dragger]:border-blue-500 [&_.el-upload__tip]:hidden"
+                          :size="260"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </el-form>
+            </div>
+          </div>
+        </div>
+      </template>
+    </el-skeleton>
 
     <!-- 图片预览对话框 -->
     <el-dialog v-model="dialogVisible" title="图片预览" width="800px" align-center>
@@ -514,344 +538,63 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
-/* 复用 Info.vue 的样式 */
-.info-container {
-  height: 100vh;
-  overflow: hidden;
-  padding: 20px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  background: var(--page-background);
-}
-
-.content-wrapper {
-  flex: 1;
-  overflow-y: auto;
-  width: 100%;
-  padding-right: 10px;
-  padding-top: 10px;
-}
-
-.tables-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding-bottom: 20px;
-}
-
-.table-section {
-  padding: 16px;
-  width: 100%;
-  margin-bottom: 24px;
-  border: none;
-  box-shadow: none;
-  background: var(--section-background);
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.section-header h3 {
-  margin: 0;
-  font-size: 16px;
-  color: #303133;
-  font-weight: 600;
-}
-
-.top-actions {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  width: 100%;
-  padding: 16px 24px;
-  background-color: var(--section-background);
-  border-radius: 8px;
-  box-shadow: var(--el-box-shadow-lighter);
-}
-
-.left-actions {
-  flex: 1;
-}
-
-.right-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 20px;
-  color: var(--el-text-color-primary);
-  font-weight: 600;
-  line-height: 28px;
-}
-
-/* 修改表单布局样式 */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2列布局 */
-  gap: 16px;
-  width: 100%;
-}
-
-/* 修改表单项样式 */
-:deep(.el-form-item) {
-  margin: 0;
-  width: 100%;
-  display: flex;
-  align-items: center;
-}
-
-/* 非编辑状态的样式 */
+<style>
+/* 移除所有样式，直接在模板中使用 Tailwind 类名 */
 :deep(.el-form-item__label) {
+  color: rgb(75 85 99);
   font-weight: 500;
-  color: #606266;
-  background-color: #f8f9fb;
-  padding: 0;
-  height: 32px;
-  line-height: 32px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px 0 0 4px;
-  width: 30% !important;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 10px 0 0;
-}
-
-:deep(.el-form-item__content) {
-  flex: none;
-  width: 61.8% !important;
-  min-height: 32px;
-  line-height: 32px;
-  padding: 0 12px;
-  background-color: #fff;
-  border: 1px solid #dcdfe6;
-  border-radius: 0 4px 4px 0;
-  display: flex;
-  align-items: center;
-}
-
-/* 图片上传样式 */
-.image-section {
-  margin-bottom: 24px;
-  width: 100%;
-}
-
-.image-section :deep(.el-form-item) {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.image-section :deep(.el-form-item__label) {
-  width: 100% !important;
-  justify-content: flex-start;
-  border-radius: 4px;
-  margin-bottom: 8px;
-  border: 1px solid #dcdfe6;
-  background-color: #f5f7fa;
-  height: 24px;
-  line-height: 24px;
-  font-size: 13px;
-}
-
-.image-section :deep(.el-form-item__content) {
-  width: 100% !important;
-  border: none;
-  padding: 0;
-  background: none;
-  height: 200px;
-}
-
-.image-container {
-  width: 100%;
-  height: 100%;
-}
-
-:deep(.el-upload--picture-card) {
-  display: inline-flex;
-  width: 148px;
-  height: 148px;
-  margin: 0;
-}
-
-:deep(.el-upload-list--picture-card .el-upload-list__item) {
-  width: 148px;
-  height: 148px;
-}
-
-:deep(.el-upload-list--picture-card .el-upload-list__item-thumbnail) {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* 响应式布局 */
-@media screen and (max-width: 1400px) {
-  .form-grid {
-    grid-template-columns: repeat(2, 1fr); /* 保持2列布局 */
-  }
-}
-
-@media screen and (max-width: 1000px) {
-  .form-grid {
-    grid-template-columns: 1fr; /* 在更小的屏幕上切换为单列布局 */
-  }
-}
-
-/* 底部提交按钮样式 */
-.bottom-actions {
-  display: flex;
-  justify-content: center;
-  margin-top: 24px;
-  margin-bottom: 24px;
-  padding: 16px;
-}
-
-.bottom-actions :deep(.el-button) {
-  min-width: 200px;
-  height: 48px;
-  font-size: 16px;
-}
-
-:root {
-  --page-background: #f5f7fa; /* 页面背景色 */
-  --section-background: #ffffff; /* 表格区域背景色 */
-  --section-header-background: #ffffff; /* 表格头部背景色 */
-  --section-editing-background: #fafcff; /* 编辑状态背景色 */
-}
-
-/* 非编辑状态下的文本显示样式 */
-.form-text {
-  color: var(--el-text-color-regular);
-  padding: 0 12px;
-}
-
-/* 编辑状态下的输入框样式 */
-:deep(.el-input__inner) {
-  height: 32px;
-  line-height: 32px;
-}
-
-/* 编辑状态的样式 */
-.table-section.editing {
-  background-color: var(--section-editing-background);
-  border: 2px solid #409eff;
-  box-shadow: 0 0 10px rgba(64, 158, 255, 0.1);
-}
-
-.table-section.editing .section-header {
-  border-bottom-color: #409eff;
-  background-color: #ecf5ff;
-  margin: -16px -16px 16px -16px;
-  padding: 16px;
-}
-
-.table-section.editing .section-header h3 {
-  color: #409eff;
-}
-
-.table-section.editing :deep(.el-form-item__label) {
-  background-color: #f0f7ff;
-  border-color: #a3d0ff;
-  color: #409eff;
-  font-weight: 600;
-}
-
-.table-section.editing :deep(.el-form-item__content) {
-  border-color: #a3d0ff;
-  background-color: #fff;
-}
-
-/* 输入框焦点状态 */
-:deep(.el-form-item:has(.el-input__wrapper:focus-within)) .el-form-item__content {
-  border-color: #409eff;
-  box-shadow: 0 0 0 1px #409eff;
 }
 
 :deep(.el-input__wrapper) {
-  box-shadow: none !important;
-  border: none !important;
-  padding: 0;
-}
-
-:deep(.el-input__wrapper:hover) {
-  background-color: #f5f7fa;
+  box-shadow: none;
 }
 
 :deep(.el-input__inner) {
-  height: 32px;
-  line-height: 32px;
+  height: 38px;
 }
 
-:deep(.el-form-item__content:has(.el-input__wrapper:focus-within)) {
-  border-color: #409eff;
-}
-
-/* 自定义滚动条样式 */
-.content-wrapper::-webkit-scrollbar {
-  width: 6px;
-}
-
-.content-wrapper::-webkit-scrollbar-thumb {
-  background: #dcdfe6;
-  border-radius: 3px;
-}
-
-.content-wrapper::-webkit-scrollbar-track {
-  background: var(--page-background);
-}
-
-/* 图片预览样式 */
-.preview-image {
-  width: 148px;
-  height: 148px;
-  border: 1px solid #dcdfe6;
-  border-radius: 6px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.preview-image:hover {
-  border-color: #409eff;
-  transform: scale(1.02);
-}
-
-.preview-image img {
+:deep(.image-handler) {
   width: 100%;
   height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+:deep(.image-handler img) {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
+  margin: auto;
 }
 
-.no-image {
-  width: 148px;
-  height: 148px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: #f5f7fa;
-  border: 1px dashed #dcdfe6;
-  border-radius: 6px;
-  color: #909399;
+:deep(.el-upload) {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
 }
 
-.no-image .el-icon {
-  margin-bottom: 8px;
+:deep(.el-upload-dragger) {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border: 2px dashed rgb(209 213 219);
+}
+
+:deep(.el-upload-dragger:hover) {
+  border-color: rgb(59 130 246);
+}
+
+:deep(.el-upload__tip) {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .image-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 </style>
