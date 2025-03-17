@@ -1,15 +1,20 @@
 <template>
-  <div class="flex-1 p-8">
-    <div class="bg-white rounded-lg shadow p-6">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">用户管理</h2>
-        <el-button type="success" class="bg-green-500 hover:bg-green-600 border-0 shadow-sm" @click="handleAdd">
-          <el-icon class="mr-2"><Plus /></el-icon>
-          新增用户
-        </el-button>
+  <div dir="ltr" class="flex-1 ps-1 min-w-0">
+    <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
+      <div class="flex justify-between items-center py-2 px-6">
+        <div class="flex-1">
+          <h2 class="text-xl font-bold text-gray-800">用户管理</h2>
+        </div>
+        <div class="flex gap-2">
+          <el-button type="success" class="bg-green-500 hover:bg-green-600 border-0 shadow-sm" @click="handleAdd">
+            <el-icon class="mr-2"><Plus /></el-icon>
+            新增用户
+          </el-button>
+        </div>
       </div>
-
-      <el-table :data="tableData" border style="width: 100%">
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+      <el-table :data="tableData" border style="width: 100%" :max-height="450">
         <el-table-column prop="username" label="用户名" />
         <el-table-column prop="realName" label="真实姓名" />
         <el-table-column prop="email" label="邮箱" />
@@ -52,8 +57,9 @@
         </el-table-column>
       </el-table>
 
-      <div class="flex justify-end mt-4">
-        <el-pagination v-model:current-page="queryParams.pageNum" v-model:page-size="queryParams.pageSize" :total="total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <!-- 分页区域 -->
+      <div class="flex justify-center mt-4">
+        <el-pagination v-model:current-page="queryParams.pageNum" v-model:page-size="queryParams.pageSize" :total="total" :page-sizes="[10, 15, 20, 50, 100]" layout="sizes, prev, pager, next, total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
       </div>
     </div>
 
