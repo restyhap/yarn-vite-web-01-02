@@ -19,6 +19,7 @@ const pinia = createPinia()
 
 import axios from 'axios'
 import VueAxios from 'vue-axios'
+import permission from './directives/permission'
 
 const app = createApp(App)
 app.use(ElementPlus)
@@ -32,6 +33,9 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 app.use(router)
 // 注册仓库
 app.use(pinia)
+
+// 注册权限指令
+app.directive('permission', permission)
 
 // 挂载实例
 app.mount('#app')

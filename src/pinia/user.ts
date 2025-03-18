@@ -8,22 +8,25 @@
  */
 import {defineStore} from 'pinia' ;
 import {ref} from "vue";
-import type { User } from '@/api/generated';
+import type { User } from '@/api';
+import { getUserPermissions, clearPermissionCache } from '@/utils/permissionUtils';
+import type { Permissions } from '@/api';
 
 export const useUserStore = defineStore('user', {
   state: () => ({
     userInfo: JSON.parse(localStorage.getItem('userInfo') || '{}') as User,
     token: localStorage.getItem('token') || '',
-    // permissions: [] as { moduleId: ModuleType, actions: PermissionAction[] }[] // 注释掉权限相关代码
+    permissions: null as Permissions | null
   }),
   
   actions: {
     setUserInfo(user: User) {
       this.userInfo = user;
       localStorage.setItem('userInfo', JSON.stringify(user));
-      // if (user.roleType !== undefined) {
-      //   this.setPermissions(user.roleType);
-      // }
+      // 加载用户权限
+      if (user.roleType !== undefined) {
+        this.loadPermissions();
+      }
     },
     
     setToken(token: string) {
@@ -34,13 +37,21 @@ export const useUserStore = defineStore('user', {
     clearUserInfo() {
       this.userInfo = {} as User;
       this.token = '';
-      // this.permissions = [];
+      this.permissions = null;
+      // 清除权限缓存
+      clearPermissionCache();
       localStorage.removeItem('userInfo');
       localStorage.removeItem('token');
-    }
+    },
 
-    // 注释掉权限相关方法
-    // checkPermission(moduleId: ModuleType, action: PermissionAction): boolean {...}
-    // setPermissions(roleType: UserRoleType) {...}
+    // 加载用户权限
+    async loadPermissions() {
+      try {
+        this.permissions = await getUserPermissions();
+      } catch (error) {
+        console.error('加载权限失败:', error);
+        this.permissions = null;
+      }
+    }
   }
 })

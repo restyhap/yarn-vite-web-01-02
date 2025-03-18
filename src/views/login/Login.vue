@@ -25,7 +25,6 @@
           </el-form-item>
           <div class="flex items-center justify-between">
             <el-checkbox v-model="loginForm.remember">记住密码</el-checkbox>
-            <a href="#" class="text-sm text-blue-600 hover:text-blue-800">忘记密码？</a>
           </div>
           <el-button type="primary" class="w-full !rounded-button" @click="handleLogin">登录</el-button>
         </el-form>
@@ -104,7 +103,13 @@ const handleLogin = () => {
       // 登录逻辑
       try {
         let user = await login(loginForm.value.username, loginForm.value.password)
+        // 设置用户信息
         userStore.setUserInfo(user)
+        // 设置token（假设后端返回了token，如果没有，可以使用用户ID作为临时token）
+        userStore.setToken(user.id || `token_${Date.now()}`)
+        // 加载用户权限
+        await userStore.loadPermissions()
+        // 登录成功后跳转
         router.push('/index')
       } catch (e) {
         console.log(e)

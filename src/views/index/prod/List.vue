@@ -31,6 +31,12 @@
             <el-icon class="mr-2"><Message /></el-icon>
             发送邮件
           </el-button>
+          <div class="flex gap-2">
+            <el-button v-permission="{module: 'prod', action: 'Create'}" type="primary" @click="router.push('/prod/create')">
+              <el-icon><Plus /></el-icon>
+              创建规格表
+            </el-button>
+          </div>
         </div>
       </div>
 
@@ -57,9 +63,19 @@
 
       <!-- 表格区域 -->
       <div class="overflow-auto mt-16">
-        <el-table :data="tableData" border class="w-full" :style="{height: 'calc(100vh - 340px)'}" v-loading="loading" :empty-text="loading ? '加载中...' : '暂无数据'" @selection-change="handleSelectionChange">
+        <el-table
+          :data="tableData"
+          border
+          class="w-full"
+          :style="{height: 'calc(100vh - 340px)'}"
+          v-loading="loading"
+          :empty-text="loading ? '加载中...' : '暂无数据'"
+          @selection-change="handleSelectionChange"
+          :cell-style="{padding: '8px'}"
+          :header-cell-style="{background: '#f5f7fa', color: '#606266', fontWeight: 'bold'}"
+        >
           <el-table-column type="selection" width="55" fixed="left" />
-          <el-table-column prop="id" label="ID" width="170" fixed="left" />
+          <el-table-column prop="id" label="ID" width="180" fixed="left" />
           <el-table-column prop="tccode" label="产品代码" min-width="120" show-overflow-tooltip />
           <el-table-column prop="supplier" label="供应商" min-width="120" show-overflow-tooltip />
           <el-table-column prop="supplierCode" label="供应商代码" min-width="120" show-overflow-tooltip />
@@ -72,18 +88,18 @@
             <template #default="scope">¥{{ scope.row.fob40ContainerPrice?.toLocaleString('zh-CN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}</template>
           </el-table-column>
           <el-table-column prop="shippingPort" label="发货港口" min-width="120" show-overflow-tooltip />
-          <el-table-column label="操作" width="170" fixed="right">
+          <el-table-column label="操作" width="170" fixed="right" align="center">
             <template #default="scope">
               <div class="flex items-center justify-center space-x-3">
                 <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleView(scope.row)">
                   <el-icon><View /></el-icon>
                   查看
                 </el-button>
-                <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleEdit(scope.row)">
+                <el-button v-permission="{module: 'prod', action: 'Edit'}" type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleEdit(scope.row)">
                   <el-icon><Edit /></el-icon>
                   编辑
                 </el-button>
-                <el-button type="danger" link size="small" style="padding: 0; min-width: 35px" @click="handleDelete(scope.row.id)">
+                <el-button v-permission="{module: 'prod', action: 'Delete'}" type="danger" link size="small" style="padding: 0; min-width: 35px" @click="handleDelete(scope.row.id)">
                   <el-icon><Delete /></el-icon>
                   删除
                 </el-button>
@@ -104,7 +120,7 @@
 <script lang="ts" setup>
 import {getProductsPage, PageProducts, Products, deleteProductDtoDeleteById} from '@/api'
 import {exportToWord} from '@/utils/exportToWord'
-import {Delete, Document, Edit, Message, Search, View} from '@element-plus/icons-vue'
+import {Delete, Document, Edit, Message, Search, View, Plus} from '@element-plus/icons-vue'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {saveAs} from 'file-saver'
 import JSZip from 'jszip'
@@ -441,3 +457,48 @@ onMounted(() => {
   fetchTableData()
 })
 </script>
+
+<style scoped>
+/* 确保表格边框正确显示 */
+:deep(.el-table) {
+  border: 1px solid #ebeef5;
+}
+
+:deep(.el-table__fixed-right) {
+  height: 100% !important;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.12);
+}
+
+:deep(.el-table__fixed-right-patch) {
+  background-color: #f5f7fa;
+  border-bottom: 1px solid #ebeef5;
+}
+
+:deep(.el-table__cell) {
+  border-right: 1px solid #ebeef5;
+  border-bottom: 1px solid #ebeef5 !important;
+}
+
+:deep(.el-button.is-link) {
+  border: none;
+}
+
+/* 修复固定列边框问题 */
+:deep(.el-table__fixed-right .el-table__fixed-body-wrapper) {
+  height: auto !important;
+}
+
+:deep(.el-table__fixed-right .el-table__cell) {
+  border-bottom: 1px solid #ebeef5 !important;
+}
+
+/* 确保表格行高一致 */
+:deep(.el-table__row) {
+  height: 50px;
+}
+
+/* 修复表格底部边框 */
+:deep(.el-table::before) {
+  height: 0;
+}
+</style>

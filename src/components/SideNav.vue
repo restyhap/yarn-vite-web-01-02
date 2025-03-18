@@ -16,17 +16,90 @@
 
     <!-- 导航菜单 -->
     <el-menu class="border-0 flex-1" :default-active="activeMenu" @select="handleSelect" :router="true" :unique-opened="true">
-      <el-sub-menu v-for="menu in menuItems" :key="menu.index" :index="menu.index">
+      <!-- 产品规格管理 -->
+      <el-sub-menu v-if="hasPermission(ModuleType.PROD, PermissionAction.VIEW)" index="/prod">
         <template #title>
           <div class="flex items-center">
-            <component :is="menu.icon" class="menu-icon" />
-            <span>{{ menu.title }}</span>
+            <Document class="menu-icon" />
+            <span>规格表管理</span>
           </div>
         </template>
-        <el-menu-item v-for="subMenu in menu.children" :key="subMenu.index" :index="subMenu.index">
+        <el-menu-item index="/prod/list">
           <div class="flex items-center">
-            <component :is="subMenu.icon" class="menu-icon" />
-            <span>{{ subMenu.title }}</span>
+            <View class="menu-icon" />
+            <span>查看规格表</span>
+          </div>
+        </el-menu-item>
+        <el-menu-item v-if="hasPermission(ModuleType.PROD, PermissionAction.CREATE)" index="/prod/create">
+          <div class="flex items-center">
+            <Plus class="menu-icon" />
+            <span>创建规格表</span>
+          </div>
+        </el-menu-item>
+      </el-sub-menu>
+
+      <!-- 质检表管理 -->
+      <el-sub-menu v-if="hasPermission(ModuleType.SPEC, PermissionAction.VIEW)" index="/spec">
+        <template #title>
+          <div class="flex items-center">
+            <Document class="menu-icon" />
+            <span>质检表管理</span>
+          </div>
+        </template>
+        <el-menu-item index="/spec/list">
+          <div class="flex items-center">
+            <View class="menu-icon" />
+            <span>查看质检表</span>
+          </div>
+        </el-menu-item>
+        <el-menu-item v-if="hasPermission(ModuleType.SPEC, PermissionAction.CREATE)" index="/spec/create">
+          <div class="flex items-center">
+            <Plus class="menu-icon" />
+            <span>创建质检表</span>
+          </div>
+        </el-menu-item>
+      </el-sub-menu>
+
+      <!-- 报价单管理 -->
+      <el-sub-menu v-if="hasPermission(ModuleType.QUOTE, PermissionAction.VIEW)" index="/quote">
+        <template #title>
+          <div class="flex items-center">
+            <Document class="menu-icon" />
+            <span>报价单管理</span>
+          </div>
+        </template>
+        <el-menu-item index="/quote/list">
+          <div class="flex items-center">
+            <View class="menu-icon" />
+            <span>查看报价单</span>
+          </div>
+        </el-menu-item>
+        <el-menu-item v-if="hasPermission(ModuleType.QUOTE, PermissionAction.CREATE)" index="/quote/create">
+          <div class="flex items-center">
+            <Plus class="menu-icon" />
+            <span>创建报价单</span>
+          </div>
+        </el-menu-item>
+      </el-sub-menu>
+
+      <!-- 系统设置 -->
+      <el-sub-menu v-if="hasSettingsPermission" index="/settings">
+        <template #title>
+          <div class="flex items-center">
+            <Tools class="menu-icon" />
+            <span>系统设置</span>
+          </div>
+        </template>
+        <el-menu-item v-if="hasPermission(ModuleType.SETTINGS, PermissionAction.USERS)" index="/settings/users">
+          <div class="flex items-center">
+            <User class="menu-icon" />
+            <span>用户管理</span>
+          </div>
+        </el-menu-item>
+        <el-menu-item v-if="hasPermission(ModuleType.SETTINGS, PermissionAction.PERMISSIONS)" index="/settings/permissions">
+          <div class="flex items-center">
+            <Lock class="menu-icon" />
+            <span>权限设置</span>
           </div>
         </el-menu-item>
       </el-sub-menu>
@@ -49,6 +122,7 @@ import {Document, Tools, User, Lock, View, Plus, SwitchButton, Money} from '@ele
 import {ElMessageBox} from 'element-plus'
 import {useUserStore} from '@/pinia/user'
 import {storeToRefs} from 'pinia'
+import {ModuleType, PermissionAction, checkPermission} from '@/utils/permissionUtils'
 
 const router = useRouter()
 const route = useRoute()
@@ -71,77 +145,46 @@ watch(
   {immediate: true}
 )
 
-// 菜单配置数据
-const menuItems = [
-  {
-    index: '/prod',
-    title: '规格表管理',
-    icon: Document,
-    children: [
-      {
-        index: '/prod/list',
-        title: '查看规格表',
-        icon: View
-      },
-      {
-        index: '/prod/create',
-        title: '创建规格表',
-        icon: Plus
-      }
-    ]
-  },
-  {
-    index: '/spec',
-    title: '质检表管理',
-    icon: Document,
-    children: [
-      {
-        index: '/spec/list',
-        title: '查看质检表',
-        icon: View
-      },
-      {
-        index: '/spec/create',
-        title: '创建质检表',
-        icon: Plus
-      }
-    ]
-  },
-  {
-    index: '/quote',
-    title: '报价单管理',
-    icon: Document,
-    children: [
-      {
-        index: '/quote/list',
-        title: '查看报价单',
-        icon: View
-      },
-      {
-        index: '/quote/create',
-        title: '创建报价单',
-        icon: Plus
-      }
-    ]
-  },
-  {
-    index: '/settings',
-    title: '系统设置',
-    icon: Tools,
-    children: [
-      {
-        index: '/settings/users',
-        title: '用户管理',
-        icon: User
-      },
-      {
-        index: '/settings/permissions',
-        title: '权限设置',
-        icon: Lock
-      }
-    ]
+// 权限检查
+const permissionCache = ref<Record<string, boolean>>({})
+
+// 检查是否有权限
+const hasPermission = (module: ModuleType, action: PermissionAction) => {
+  const key = `${module}_${action}`
+
+  // 管理员默认拥有所有权限
+  if (userInfo.value?.roleType === 0) {
+    return true
   }
-]
+
+  // 如果没有token，说明未登录
+  if (!userStore.token) {
+    return false
+  }
+
+  // 如果缓存中有，直接返回
+  if (permissionCache.value[key] !== undefined) {
+    return permissionCache.value[key]
+  }
+
+  // 否则异步检查权限并缓存结果
+  checkPermission(module, action)
+    .then(result => {
+      permissionCache.value[key] = result
+    })
+    .catch(error => {
+      console.error(`权限检查失败 ${module}_${action}:`, error)
+      permissionCache.value[key] = false
+    })
+
+  // 默认返回false，等待异步检查结果
+  return false
+}
+
+// 是否显示系统设置菜单
+const hasSettingsPermission = computed(() => {
+  return hasPermission(ModuleType.SETTINGS, PermissionAction.USERS) || hasPermission(ModuleType.SETTINGS, PermissionAction.PERMISSIONS)
+})
 
 const handleSelect = (key: string) => {
   router.push(key)
@@ -154,6 +197,7 @@ const handleLogout = () => {
     type: 'warning'
   })
     .then(() => {
+      userStore.clearUserInfo()
       router.push('/')
     })
     .catch(() => {})
@@ -162,6 +206,15 @@ const handleLogout = () => {
 // 确保在组件挂载后重新计算一次激活菜单
 onMounted(() => {
   activeMenu.value = route.path
+
+  // 预加载权限
+  Object.values(ModuleType).forEach(module => {
+    Object.values(PermissionAction).forEach(action => {
+      checkPermission(module, action).then(result => {
+        permissionCache.value[`${module}_${action}`] = result
+      })
+    })
+  })
 })
 </script>
 

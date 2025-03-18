@@ -56,9 +56,19 @@
 
       <!-- 表格区域 -->
       <div class="overflow-auto mt-16">
-        <el-table :data="tableData" border class="w-full" height="calc(100vh - 340px)" v-loading="loading" :empty-text="loading ? '加载中...' : '暂无数据'" @selection-change="handleSelectionChange">
+        <el-table
+          :data="tableData"
+          border
+          class="w-full"
+          :style="{height: 'calc(100vh - 340px)'}"
+          v-loading="loading"
+          :empty-text="loading ? '加载中...' : '暂无数据'"
+          @selection-change="handleSelectionChange"
+          :cell-style="{padding: '8px'}"
+          :header-cell-style="{background: '#f5f7fa', color: '#606266', fontWeight: 'bold'}"
+        >
           <el-table-column type="selection" width="55" fixed="left" />
-          <el-table-column prop="id" label="ID" width="170" fixed="left" />
+          <el-table-column prop="id" label="ID" width="185" fixed="left" />
           <el-table-column prop="modelCode" label="型号代码" min-width="150" show-overflow-tooltip />
           <el-table-column prop="factoryCode" label="工厂代码" min-width="120" show-overflow-tooltip />
           <el-table-column prop="supplier" label="供应商" min-width="120" show-overflow-tooltip />
@@ -102,7 +112,7 @@
               }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="170" fixed="right">
+          <el-table-column label="操作" width="170" fixed="right" align="center">
             <template #default="scope">
               <div class="flex items-center justify-center space-x-3">
                 <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleView(scope.row)">
@@ -549,3 +559,48 @@ const confirmSendEmail = async () => {
   }
 }
 </script>
+
+<style scoped>
+/* 确保表格边框正确显示 */
+:deep(.el-table) {
+  border: 1px solid #ebeef5;
+}
+
+:deep(.el-table__fixed-right) {
+  height: 100% !important;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.12);
+}
+
+:deep(.el-table__fixed-right-patch) {
+  background-color: #f5f7fa;
+  border-bottom: 1px solid #ebeef5;
+}
+
+:deep(.el-table__cell) {
+  border-right: 1px solid #ebeef5;
+  border-bottom: 1px solid #ebeef5 !important;
+}
+
+:deep(.el-button.is-link) {
+  border: none;
+}
+
+/* 修复固定列边框问题 */
+:deep(.el-table__fixed-right .el-table__fixed-body-wrapper) {
+  height: auto !important;
+}
+
+:deep(.el-table__fixed-right .el-table__cell) {
+  border-bottom: 1px solid #ebeef5 !important;
+}
+
+/* 确保表格行高一致 */
+:deep(.el-table__row) {
+  height: 50px;
+}
+
+/* 修复表格底部边框 */
+:deep(.el-table::before) {
+  height: 0;
+}
+</style>

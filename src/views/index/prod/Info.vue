@@ -25,6 +25,10 @@
               <h2 class="text-lg font-semibold text-gray-800">产品规格详情</h2>
             </div>
             <div class="flex gap-2">
+              <el-button v-permission="{module: 'prod', action: 'Edit'}" type="primary" :loading="exporting" @click="handleEdit" class="min-w-[120px]">
+                <el-icon><Edit /></el-icon>
+                编辑
+              </el-button>
               <el-button type="primary" :loading="exporting" @click="handleExport" class="min-w-[120px]">
                 <el-icon>
                   <Document />
@@ -112,7 +116,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import {Products, CartonDetails, ProductDimensions, ProductionLogistics, SeatInnerComponents, BackInnerComponents, BackOuterComponents, SeatOuterComponents, Arms, FoamDetails, Castors, Bases, GasLift, GasLiftCover, Mechanism, Fittings, ProductImages, Upholstery} from '@/api'
 import {
   getProductDtoGetById,
