@@ -284,6 +284,7 @@ import {Document, Edit, Check, Close, Delete, Plus, Back, CircleClose} from '@el
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {exportQCReport} from '@/utils/exportQCReport'
 import type {QCReportData} from '@/utils/exportQCReport'
+import {saveAs} from 'file-saver'
 import {QcReports, QcReportsDto, DefectImages, Defects, DefectsDto} from '@/api'
 import {putQcReportsUpdate, getQcReportsDtoGetById, getFilesRemove, postFilesUpload, postDefectImagesSave, deleteDefectImagesRemoveById, deleteDefectsRemoveById, putDefectsUpdate, putDefectImagesUpdate, postDefectsSave} from '@/api'
 import ImageHandler from '@/components/ImageHandler.vue'
@@ -1272,38 +1273,23 @@ const getDefectImages = (defectDto: DefectsDto) => {
 const handleExport = async () => {
   exporting.value = true
   try {
-    ElMessage.info('正在准备导出文档，请稍候...')
+    // 从数据库获取最新数据
+    const res = await getQcReportsDtoGetById({id: route.params.id as string})
 
-    // 初始化AbortController
-    abortController.value = new AbortController()
-    const signal = abortController.value.signal
-
-    // 准备导出数据
-    if (!formData.value?.qcReports) {
+    if (!res.data?.qcReports) {
       ElMessage.error('没有可导出的数据')
-      exporting.value = false
       return
     }
 
-    // 检查是否取消
-    if (signal.aborted) {
-      return
-    }
-
-    const qcReports = formData.value.qcReports
+    const qcReports = res.data.qcReports
     const defects =
-      formData.value.defectsDTO?.map(dto => ({
+      res.data.defectsDTO?.map((dto: DefectsDto) => ({
         defectTitle: dto.defects?.defectTitle || '',
         defectDescription: dto.defects?.defectDescription || '',
         improvementSuggestion: dto.defects?.improvementSuggestion || '',
         inspector: dto.defects?.inspector || '',
-        images: dto.defectImages?.map(img => img.imagePath || '') || []
+        images: dto.defectImages?.map((img: DefectImages) => img.imagePath || '') || []
       })) || []
-
-    // 检查是否取消
-    if (signal.aborted) {
-      return
-    }
 
     // 构建导出数据
     const exportData: QCReportData = {
@@ -1378,171 +1364,23 @@ const handleExport = async () => {
       defectCount: defects.length
     }
 
-    // 检查是否取消
-    if (signal.aborted) {
-      return
-    }
+    // 调用导出函数获取 workbook
+    const workbook = await exportQCReport(exportData)
 
-    // 调用导出函数
-    await exportQCReport(exportData)
+    // 生成文件名
+    const fileName = `质检报告_${qcReports.modelCode || '未知型号'}_${new Date().toISOString().slice(0, 10)}.xlsx`
 
-    // 检查是否取消
-    if (signal.aborted) {
-      return
-    }
+    // 转换为 buffer 并使用 saveAs 下载
+    const buffer = await workbook.xlsx.writeBuffer()
+    const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+    saveAs(blob, fileName)
 
     ElMessage.success('导出成功')
   } catch (error) {
     console.error('导出失败', error)
-    if ((error as Error).message === '用户取消导出') {
-      ElMessage.info('导出已取消')
-    } else {
-      ElMessage.error(`导出失败: ${(error as Error).message}`)
-    }
+    ElMessage.error(`导出失败: ${(error as Error).message}`)
   } finally {
     exporting.value = false
-    abortController.value = null
-  }
-}
-
-const handleSave = async () => {
-  try {
-    loading.value = true
-
-    // 保存基本信息
-    if (isEditing.value && tempFormData.value?.qcReports) {
-      console.log('保存前的临时数据:', JSON.stringify(tempFormData.value.qcReports))
-
-      // 调用API保存更改
-      await putQcReportsUpdate(tempFormData.value.qcReports)
-
-      // 执行待执行的操作
-      if (pendingOperations.value['basic']) {
-        const operations = pendingOperations.value['basic']
-
-        // 执行删除操作
-        for (const item of operations.toDelete) {
-          try {
-            // 从服务器删除图片文件
-            if (item.path) {
-              await getFilesRemove({filePath: item.path})
-              console.log(`已从服务器删除图片文件: ${item.path}`)
-            }
-          } catch (error) {
-            console.error(`删除图片失败: ${item.path}`, error)
-          }
-        }
-
-        // 清空待执行操作
-        pendingOperations.value['basic'] = {
-          toDelete: [],
-          toAdd: [],
-          toUpdate: []
-        }
-      }
-
-      // 清理newUploads中的相关记录
-      if (tempUploadedImages.value['newUploads']) {
-        // 获取所有图片字段
-        const imageFields = Object.keys(imageSections).flatMap(sectionKey => Object.keys(imageSections[sectionKey as keyof typeof imageSections].fields))
-
-        // 找出所有使用的图片
-        const usedImages: string[] = []
-        for (const field of imageFields) {
-          const value = tempFormData.value.qcReports[field as keyof typeof tempFormData.value.qcReports]
-          if (typeof value === 'string' && value.startsWith('http')) {
-            usedImages.push(value)
-          }
-        }
-
-        // 从newUploads中移除已保存的图片
-        tempUploadedImages.value['newUploads'] = tempUploadedImages.value['newUploads'].filter(path => !usedImages.includes(path))
-        console.log('保存后清理临时上传记录，剩余:', tempUploadedImages.value['newUploads'])
-      }
-
-      // 更新本地数据
-      formData.value = JSON.parse(JSON.stringify(tempFormData.value))
-
-      // 使用可选链操作符避免undefined错误
-      console.log('保存后的正式数据:', JSON.stringify(formData.value?.qcReports || {}))
-
-      // 重置编辑状态
-      isEditing.value = false
-      editingSections.value = []
-
-      ElMessage.success('保存成功')
-    }
-  } catch (error) {
-    console.error('保存失败', error)
-    ElMessage.error('保存失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleCancel = async () => {
-  // 检查是否有临时上传的图片需要删除
-  if (isEditing.value && tempFormData.value?.qcReports) {
-    // 获取所有图片字段
-    const imageFields = Object.keys(imageSections).flatMap(sectionKey => Object.keys(imageSections[sectionKey as keyof typeof imageSections].fields))
-
-    // 检查每个图片字段，找出临时添加的图片
-    for (const field of imageFields) {
-      const originalValue = formData.value.qcReports?.[field as keyof typeof formData.value.qcReports]
-      const tempValue = tempFormData.value.qcReports[field as keyof typeof tempFormData.value.qcReports]
-
-      // 如果临时值存在但与原始值不同，可能是新上传的图片
-      if (tempValue && tempValue !== originalValue) {
-        console.log(`检测到取消编辑时需要删除的临时图片 - 字段: ${field}, 值:`, tempValue)
-
-        try {
-          // 从服务器删除图片文件
-          if (typeof tempValue === 'string' && tempValue.startsWith('http')) {
-            await getFilesRemove({filePath: tempValue})
-            console.log(`已从服务器删除临时图片文件: ${tempValue}`)
-          }
-        } catch (error) {
-          console.error(`删除服务器临时图片文件失败: ${tempValue}`, error)
-        }
-      }
-
-      // 获取临时上传的图片列表
-      const newUploads = tempUploadedImages.value['newUploads'] || []
-
-      // 删除所有临时上传的图片，确保没有遗漏
-      for (const path of newUploads) {
-        if (path && path.startsWith('http')) {
-          try {
-            await getFilesRemove({filePath: path})
-            console.log('已删除临时上传的图片:', path)
-          } catch (error) {
-            console.error('删除临时上传图片失败:', error)
-          }
-        }
-
-        // 清空临时上传列表
-        tempUploadedImages.value['newUploads'] = []
-        tempUploadedImages.value['basic'] = []
-
-        // 清空待执行操作
-        if (pendingOperations.value['basic']) {
-          pendingOperations.value['basic'] = {
-            toDelete: [],
-            toAdd: [],
-            toUpdate: []
-          }
-        }
-      }
-
-      // 重置编辑状态
-      isEditing.value = false
-      editingSections.value = []
-
-      // 重置临时数据
-      tempFormData.value = null
-
-      ElMessage.info('已取消编辑')
-    }
   }
 }
 
