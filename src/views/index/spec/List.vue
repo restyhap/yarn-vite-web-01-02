@@ -155,8 +155,8 @@ import {exportQCReport} from '@/utils/exportQCReport'
 import type {QCReportData} from '@/utils/exportQCReport'
 import JSZip from 'jszip'
 import {saveAs} from 'file-saver'
-import {getQcReportsPage, getQcReportsSearch, deleteQcReportsRemoveById} from '@/api'
-import type {QcReports} from '@/api'
+import {getQcReportsPage, getQcReportsSearch, deleteQcReportsRemoveById, getQcReportsDtoGetById} from '@/api'
+import type {QcReports, DefectsDto, DefectImages} from '@/api'
 import ImageHandler from '@/components/ImageHandler.vue'
 
 const router = useRouter()
@@ -409,125 +409,161 @@ const handleBatchDelete = async () => {
 
 // 批量导出
 const handleBatchExport = async () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请选择要导出的数据')
+    return
+  }
+
   exporting.value = true
-  try {
-    if (!selectedRows.value.length) {
-      ElMessage.warning('请选择要导出的记录')
-      return
+
+  // 添加一个超时计时器
+  const timeout = setTimeout(() => {
+    if (exporting.value) {
+      exporting.value = false
+      ElMessage.warning('导出超时，请减少选择的数量后重试')
     }
+  }, 120000) // 2分钟超时
 
-    // 处理每条记录的导出
-    for (const row of selectedRows.value) {
+  try {
+    ElMessage.info(`开始批量导出 ${selectedRows.value.length} 个报告...`)
+
+    // 创建一个新的 ZIP 包
+    const zip = new JSZip()
+
+    // 计数成功和失败的报告
+    let successCount = 0
+    let failedCount = 0
+
+    // 逐个处理选中的行
+    for (let i = 0; i < selectedRows.value.length; i++) {
+      const row = selectedRows.value[i]
+
+      if (!row.id) {
+        failedCount++
+        console.error(`报告缺少ID: ${row.modelCode || '未知型号'}`)
+        continue
+      }
+
       try {
-        // 模拟获取完整数据
-        const qcData: QCReportData = {
-          // 基本信息
-          modelCode: row.modelCode,
-          factoryCode: row.factoryCode,
-          supplier: row.supplier,
-          client: row.client,
-          poNumber: row.poNumber,
-          inspectionDate: row.inspectionDate,
-          orderQty: row.orderQty,
-          reportDate: row.reportDate,
-          inspectQty: row.inspectQty,
-          qcOfficer: row.qcOfficer,
-          passFail: row.passFail,
-          secondQCDate: row.secondQcDate,
-          comments: row.comments,
+        ElMessage.info(`处理第 ${i + 1}/${selectedRows.value.length} 个报告: ${row.modelCode || '未知型号'}`)
 
-          // 产品外观图片 (使用示例图片)
-          stocksInWarehouse: row.stocksInWarehouse,
-          samplingOfProductsQuantity: row.samplingOfProductsQuantity,
-          shippingMarks: row.shippingMarks,
-          barcode: row.barcode,
-          packingOutside: row.packingOutside,
-          packingInside: row.packingInside,
+        // 从数据库获取完整数据
+        const res = await getQcReportsDtoGetById({id: row.id as string})
 
-          // 椅子组件图片
-          chairComponentsPacked: row.chairComponentsPacked,
-          chairComponentsUnpacked: row.chairComponentsUnpacked,
-
-          // 配件包图片
-          fittingPackPacked: row.fittingPackPacked,
-          fittingPackUnpacked: row.fittingPackUnpacked,
-
-          // 标签和说明图片
-          productionLabel: row.productionLabel,
-          assemblyInstructions: row.assemblyInstructions,
-
-          // 组件图片
-          imageOfComponentsSeat: row.imageOfComponentsSeat,
-          imageOfComponentsBack: row.imageOfComponentsBack,
-          imageOfComponentsBase: row.imageOfComponentsBase,
-          imageOfComponentsCastors: row.imageOfComponentsCastors,
-          imageOfComponentsGasLiftCover: row.imageOfComponentsGasLiftCover,
-          imageOfComponentsGasLiftStamp: row.imageOfComponentsGasLiftStamp,
-          imageOfComponentsArmrest: row.imageOfComponentsArmrest,
-          imageOfComponentMechanism: row.imageOfComponentMechanism,
-          imageOfComponentsHeadrest: row.imageOfComponentsHeadrest,
-
-          // 成品图片
-          imageOfProductBuiltFront: row.imageOfProductBuiltFront,
-          imageOfProductBuiltSide: row.imageOfProductBuiltSide,
-          imageOfProductBuiltBack: row.imageOfProductBuiltBack,
-          imageOfProductBuilt45Degree: row.imageOfProductBuilt45Degree,
-          frontImageOfProductBuiltCompare1: row.frontImageOfProductBuiltCompare1,
-          frontImageOfProductBuiltCompare2: row.frontImageOfProductBuiltCompare2,
-
-          // 功能检查图片
-          functionCheckSeatHeightExtension: row.functionCheckSeatHeightExtension,
-          functionCheckMechanismAdjustment: row.functionCheckMechanismAdjustment,
-          functionCheckArmrestAdjustment: row.functionCheckArmrestAdjustment,
-          functionCheckHeadrestAdjustment: row.functionCheckHeadrestAdjustment,
-          functionCheckOther1: row.functionCheckOther1,
-          functionCheckOther2: row.functionCheckOther2,
-
-          // 其他必需字段
-          inspector: row.qcOfficer,
-          inspectionLocation: '生产车间',
-          sampleSize: row.orderQty,
-          defectCount: row.passFail === 'Fail' ? 1 : 0,
-
-          // 缺陷记录
-          defects:
-            row.passFail === 'Fail'
-              ? [
-                  {
-                    defectTitle: '缺陷记录',
-                    defectDescription: '外箱角落有轻微破损',
-                    improvementSuggestion: '建议加强包装材料',
-                    inspector: row.qcOfficer,
-                    images: [row.stocksInWarehouse, row.stocksInWarehouse]
-                  }
-                ]
-              : []
+        if (!res.data?.qcReports) {
+          failedCount++
+          console.error(`无法获取报告数据: ${row.modelCode || '未知型号'}`)
+          continue
         }
 
-        // 生成Excel文件
-        const workbook = await exportQCReport(qcData)
-        const buffer = await workbook.xlsx.writeBuffer()
-        const fileName = `${qcData.modelCode}_${qcData.poNumber}_${new Date().getTime()}.xlsx`
+        const qcReports = res.data.qcReports
+        const defects =
+          res.data.defectsDTO?.map((dto: DefectsDto) => ({
+            defectTitle: dto.defects?.defectTitle || '',
+            defectDescription: dto.defects?.defectDescription || '',
+            improvementSuggestion: dto.defects?.improvementSuggestion || '',
+            inspector: dto.defects?.inspector || '',
+            images: dto.defectImages?.map((img: DefectImages) => img.imagePath || '').filter(Boolean) || []
+          })) || []
 
-        // 添加到zip文件
-        const zip = new JSZip()
+        // 构建导出数据
+        const exportData: QCReportData = {
+          modelCode: qcReports.modelCode || '',
+          factoryCode: qcReports.factoryCode || '',
+          supplier: qcReports.supplier || '',
+          client: qcReports.client || '',
+          poNumber: qcReports.poNumber || '',
+          inspectionDate: qcReports.inspectionDate || '',
+          orderQty: Number(qcReports.orderQty) || 0,
+          reportDate: qcReports.reportDate || new Date().toISOString().split('T')[0],
+          inspectQty: Number(qcReports.inspectQty) || 0,
+          qcOfficer: qcReports.qcOfficer || '',
+          passFail: (qcReports.passFail as 'Pass' | 'Fail') || 'Pass',
+          secondQCDate: qcReports.secondQcDate || '',
+          comments: qcReports.comments || '',
+
+          // 图片相关字段
+          stocksInWarehouse: qcReports.stocksInWarehouse,
+          samplingOfProductsQuantity: qcReports.samplingOfProductsQuantity,
+          shippingMarks: qcReports.shippingMarks,
+          barcode: qcReports.barcode,
+          packingOutside: qcReports.packingOutside,
+          packingInside: qcReports.packingInside,
+          chairComponentsPacked: qcReports.chairComponentsPacked,
+          chairComponentsUnpacked: qcReports.chairComponentsUnpacked,
+          fittingPackPacked: qcReports.fittingPackPacked,
+          fittingPackUnpacked: qcReports.fittingPackUnpacked,
+          productionLabel: qcReports.productionLabel,
+          assemblyInstructions: qcReports.assemblyInstructions,
+          imageOfComponentsSeat: qcReports.imageOfComponentsSeat,
+          imageOfComponentsBack: qcReports.imageOfComponentsBack,
+          imageOfComponentsBase: qcReports.imageOfComponentsBase,
+          imageOfComponentsCastors: qcReports.imageOfComponentsCastors,
+          imageOfComponentsGasLiftCover: qcReports.imageOfComponentsGasLiftCover,
+          imageOfComponentsGasLiftStamp: qcReports.imageOfComponentsGasLiftStamp,
+          imageOfComponentsArmrest: qcReports.imageOfComponentsArmrest,
+          imageOfComponentMechanism: qcReports.imageOfComponentMechanism,
+          imageOfComponentsHeadrest: qcReports.imageOfComponentsHeadrest,
+          imageOfProductBuiltFront: qcReports.imageOfProductBuiltFront,
+          imageOfProductBuiltSide: qcReports.imageOfProductBuiltSide,
+          imageOfProductBuiltBack: qcReports.imageOfProductBuiltBack,
+          imageOfProductBuilt45Degree: qcReports.imageOfProductBuilt45Degree,
+          frontImageOfProductBuiltCompare1: qcReports.frontImageOfProductBuiltCompare1,
+          frontImageOfProductBuiltCompare2: qcReports.frontImageOfProductBuiltCompare2,
+          functionCheckSeatHeightExtension: qcReports.functionCheckSeatHeightExtension,
+          functionCheckMechanismAdjustment: qcReports.functionCheckMechanismAdjustment,
+          functionCheckArmrestAdjustment: qcReports.functionCheckArmrestAdjustment,
+          functionCheckHeadrestAdjustment: qcReports.functionCheckHeadrestAdjustment,
+          functionCheckOther1: qcReports.functionCheckOther1,
+          functionCheckOther2: qcReports.functionCheckOther2,
+
+          // 缺陷记录
+          defects,
+
+          // 其他必需字段
+          inspector: qcReports.qcOfficer || '',
+          inspectionLocation: '工厂',
+          sampleSize: Number(qcReports.inspectQty) || 0,
+          defectCount: defects.length
+        }
+
+        // 调用导出函数生成工作簿
+        const workbook = await exportQCReport(exportData)
+
+        // 生成文件名
+        const fileName = `质检报告_${qcReports.modelCode || '未知型号'}_${new Date().toISOString().slice(0, 10)}.xlsx`
+
+        // 将 Excel 文件转换为 buffer
+        const buffer = await workbook.xlsx.writeBuffer()
+
+        // 将 buffer 添加到 ZIP 包中
         zip.file(fileName, buffer)
 
-        // 生成并下载zip文件
-        const zipContent = await zip.generateAsync({type: 'blob'})
-        const timestamp = new Date().getTime()
-        saveAs(zipContent, `质检报告_${timestamp}.zip`)
-
-        ElMessage.success('批量导出完成')
+        successCount++
+        ElMessage.info(`已完成 ${successCount}/${selectedRows.value.length} 个报告`)
       } catch (error) {
-        console.error(`导出记录 ${row.id} 失败:`, error)
-        ElMessage.error(`导出记录 ${row.id} 失败`)
+        failedCount++
+        console.error(`处理报告失败: ${row.modelCode || '未知型号'}`, error)
       }
+    }
+
+    if (successCount > 0) {
+      // 生成 ZIP 文件
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+      const zipContent = await zip.generateAsync({type: 'blob'})
+
+      // 保存 ZIP 文件
+      saveAs(zipContent, `质检报告_${timestamp}.zip`)
+
+      ElMessage.success(`成功导出 ${successCount} 个报告，失败 ${failedCount} 个`)
+    } else {
+      ElMessage.error('没有成功导出任何报告')
     }
   } catch (error) {
     console.error('批量导出失败:', error)
-    ElMessage.error('批量导出失败')
+    ElMessage.error(`批量导出失败: ${(error as Error).message}`)
   } finally {
+    clearTimeout(timeout)
     exporting.value = false
   }
 }

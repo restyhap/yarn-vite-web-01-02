@@ -1273,13 +1273,26 @@ const getDefectImages = (defectDto: DefectsDto) => {
 const handleExport = async () => {
   exporting.value = true
   try {
+    // 添加超时计时器
+    const timeout = setTimeout(() => {
+      if (exporting.value) {
+        exporting.value = false
+        ElMessage.warning('导出超时，请重试或减少图片数量')
+      }
+    }, 60000) // 60秒超时
+
+    ElMessage.info('开始获取数据...')
+
     // 从数据库获取最新数据
     const res = await getQcReportsDtoGetById({id: route.params.id as string})
 
     if (!res.data?.qcReports) {
       ElMessage.error('没有可导出的数据')
+      clearTimeout(timeout)
       return
     }
+
+    ElMessage.info('数据获取成功，准备生成Excel文件...')
 
     const qcReports = res.data.qcReports
     const defects =
@@ -1288,7 +1301,7 @@ const handleExport = async () => {
         defectDescription: dto.defects?.defectDescription || '',
         improvementSuggestion: dto.defects?.improvementSuggestion || '',
         inspector: dto.defects?.inspector || '',
-        images: dto.defectImages?.map((img: DefectImages) => img.imagePath || '') || []
+        images: dto.defectImages?.map((img: DefectImages) => img.imagePath || '').filter(Boolean) || []
       })) || []
 
     // 构建导出数据
@@ -1364,31 +1377,35 @@ const handleExport = async () => {
       defectCount: defects.length
     }
 
-    // 调用导出函数获取 workbook
-    const workbook = await exportQCReport(exportData)
+    ElMessage.info('正在生成Excel文件，请稍候...')
 
-    // 生成文件名
-    const fileName = `质检报告_${qcReports.modelCode || '未知型号'}_${new Date().toISOString().slice(0, 10)}.xlsx`
+    try {
+      // 调用导出函数获取 workbook
+      const workbook = await exportQCReport(exportData)
 
-    // 转换为 buffer 并使用 saveAs 下载
-    const buffer = await workbook.xlsx.writeBuffer()
-    const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
-    saveAs(blob, fileName)
+      ElMessage.info('Excel生成成功，准备下载...')
 
-    ElMessage.success('导出成功')
+      // 生成文件名
+      const fileName = `质检报告_${qcReports.modelCode || '未知型号'}_${new Date().toISOString().slice(0, 10)}.xlsx`
+
+      // 转换为 buffer 并使用 saveAs 下载
+      const buffer = await workbook.xlsx.writeBuffer()
+      const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
+      saveAs(blob, fileName)
+
+      ElMessage.success('导出成功')
+    } catch (exportError) {
+      console.error('Excel生成或下载失败', exportError)
+      ElMessage.error(`Excel生成失败: ${(exportError as Error).message}`)
+    }
+
+    // 清除超时计时器
+    clearTimeout(timeout)
   } catch (error) {
-    console.error('导出失败', error)
+    console.error('导出过程中出错', error)
     ElMessage.error(`导出失败: ${(error as Error).message}`)
   } finally {
     exporting.value = false
-  }
-}
-
-const handleCancelExport = () => {
-  if (exporting.value && abortController.value) {
-    abortController.value.abort('用户取消导出')
-    exporting.value = false
-    ElMessage.info('导出已取消')
   }
 }
 
