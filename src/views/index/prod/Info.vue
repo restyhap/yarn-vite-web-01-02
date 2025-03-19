@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-01-15 11:34:14
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-03-15 08:41:47
+ * @LastEditTime: 2025-03-18 17:09:36
  * @FilePath: /yarn-vite-web-01-02/src/views/index/prod/Info.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -1131,9 +1131,196 @@ const handleCancel = async (section: string) => {
 const handleExport = async () => {
   exporting.value = true
   try {
-    // 直接使用页面上的数据
-    console.log('导出数据:', formData.value)
-    await exportToWord(formData.value)
+    // 确保 ID 存在且为字符串类型
+    const productId = formData.value.products.id
+    if (!productId) {
+      throw new Error('产品ID不能为空')
+    }
+
+    const params = {id: productId}
+    const response = await getProductDtoGetById(params)
+
+    if (!response || !response.data) {
+      throw new Error('获取产品数据失败')
+    }
+
+    const productData = response.data
+    console.log('从API获取的数据:', productData)
+
+    // 创建适配的数据结构，以匹配exportToWord期望的格式
+    const adaptedData = {
+      // 基本信息和文件名
+      products: productData.products || {},
+      product_code: productData.products?.tccode || 'Unknown',
+
+      // TC GROUP INTERNAL USE ONLY 表格所需字段
+      initialMonthlyForecast: '', // 使用空字符串代替 'N/A'
+      productionColours: '', // 使用空字符串代替 'N/A'
+      customerProductCode: '', // 使用空字符串代替 'N/A'
+      customerBarcode: '', // 使用空字符串代替 'N/A'
+      customerProductName: '', // 使用空字符串代替 'N/A'
+      factoryProductName: '', // 使用空字符串代替 'N/A'
+
+      // 使用 TC 相关字段代替默认字段
+      tc_code: productData.products?.tccode || '',
+      tc_barcode: [productData.products?.barcode1 || '', productData.products?.barcode2 || '', productData.products?.barcode3 || ''].filter(Boolean).join(', '),
+      tc_product_name: productData.products?.name || '',
+      factory_code: productData.products?.factoryCode || '',
+
+      // seat inner 字段 - 确保所有需要的字段都存在
+      seatInner: {
+        materialCode: productData.seatInnerComponents?.materialCode || '',
+        thickness: String(productData.seatInnerComponents?.thickness || ''),
+        layersCount: String(productData.seatInnerComponents?.layersCount || ''),
+        dimensions: productData.seatInnerComponents?.dimensions || ''
+      },
+
+      // back inner 字段 - 确保所有需要的字段都存在
+      backInner: {
+        materialCode: productData.backInnerComponents?.materialCode || '',
+        thickness: String(productData.backInnerComponents?.thickness || ''),
+        layersCount: String(productData.backInnerComponents?.layersCount || ''),
+        dimensions: productData.backInnerComponents?.dimensions || ''
+      },
+
+      // seat outer 字段 - 确保所有需要的字段都存在
+      seatOuter: {
+        material: productData.seatOuterComponents?.material || '',
+        dimensions: productData.seatOuterComponents?.dimensions || '',
+        manufacturerName: productData.seatOuterComponents?.manufacturerName || ''
+      },
+
+      // back outer 字段 - 确保所有需要的字段都存在
+      backOuter: {
+        material: productData.backOuterComponents?.material || '',
+        dimensions: productData.backOuterComponents?.dimensions || '',
+        manufacturerName: productData.backOuterComponents?.manufacturerName || ''
+      },
+
+      // arms 字段 - 确保所有需要的字段都存在
+      arms: {
+        description: productData.arms?.description || '',
+        material: productData.arms?.material || '',
+        type: productData.arms?.type || '',
+        manufacturer: productData.arms?.manufacturer || '',
+        arm_height_from_seat: String(productData.arms?.armHeightFromSeat || ''),
+        arm_height_from_floor: String(productData.arms?.armHeightFromFloor || '')
+      },
+
+      // foam 字段 - 确保所有需要的字段都存在
+      foam: {
+        description: productData.foamDetails?.description || '',
+        seat_density: String(productData.foamDetails?.seatDensity || ''),
+        back_density: String(productData.foamDetails?.backDensity || ''),
+        seat_thickness: String(productData.foamDetails?.seatThickness || ''),
+        back_thickness: String(productData.foamDetails?.backThickness || '')
+      },
+
+      // castors 字段 - 确保所有需要的字段都存在
+      castors: {
+        description: productData.castors?.description || '',
+        pin_thickness: String(productData.castors?.pinThickness || ''),
+        wheel_diameter: String(productData.castors?.wheelDiameter || '')
+      },
+
+      // base 字段 - 确保所有需要的字段都存在
+      base: {
+        description: productData.bases?.description || '',
+        size_diameter: String(productData.bases?.sizeDiameter || ''),
+        material: productData.bases?.material || '',
+        type: productData.bases?.type || ''
+      },
+
+      // gasLift 字段 - 确保所有需要的字段都存在
+      gasLift: {
+        description: productData.gasLift?.description || '',
+        gasLiftClass: productData.gasLift?.gasLiftClass || '',
+        casingLength: String(productData.gasLift?.casingLength || ''),
+        extensionSize: String(productData.gasLift?.extensionSize || ''),
+        taper: String(productData.gasLift?.taper || '')
+      },
+
+      // gasLiftCover 字段 - 确保所有需要的字段都存在
+      gasLiftCover: {
+        description: productData.gasLiftCover?.description || '',
+        material: productData.gasLiftCover?.material || '',
+        colour: productData.gasLiftCover?.colour || ''
+      },
+
+      // mechanism 字段 - 确保所有需要的字段都存在
+      mechanism: {
+        description: productData.mechanism?.description || '',
+        leversCount: String(productData.mechanism?.leversCount || ''),
+        lockingPositions: productData.mechanism?.lockingPositions || '',
+        modelNo: productData.mechanism?.modelNo || '',
+        supplierName: productData.mechanism?.supplierName || ''
+      },
+
+      // fittings 字段 - 确保所有需要的字段都存在
+      fittings: {
+        fittingNumber: String(productData.fittings?.fittingNumber || ''),
+        description: productData.fittings?.description || '',
+        quantity: String(productData.fittings?.quantity || ''),
+        material: productData.fittings?.material || ''
+      },
+
+      // packaging 字段 - 确保所有需要的字段都存在
+      packaging: {
+        width: String(productData.cartonDetails?.width || ''),
+        depth: String(productData.cartonDetails?.depth || ''),
+        height: String(productData.cartonDetails?.height || ''),
+        boardType: productData.cartonDetails?.boardType || '',
+        itemsPerCarton: String(productData.cartonDetails?.itemsPerCarton || ''),
+        cartonVolume: String(productData.cartonDetails?.cartonVolume || '')
+      },
+
+      // logistics 字段 - 确保字段名与 exportToWord 中的一致
+      logistics: {
+        production_time: String(productData.productionLogistics?.productionTime || ''),
+        effective_volume: String(productData.productionLogistics?.effectiveVolume || ''),
+        loading_quantity_20gp: String(productData.productionLogistics?.loadingQuantity20gp || ''),
+        loading_quantity_40hc: String(productData.productionLogistics?.loadingQuantity40hc || ''),
+        net_weight: String(productData.productionLogistics?.netWeight || ''),
+        gross_weight: String(productData.productionLogistics?.grossWeight || '')
+      },
+
+      // dimensions 字段 - 确保字段名与 exportToWord 中的一致
+      dimensions: {
+        seat_width: String(productData.productDimensions?.seatWidth || ''),
+        seat_depth: String(productData.productDimensions?.seatDepth || ''),
+        back_width: String(productData.productDimensions?.backWidth || ''),
+        back_height: String(productData.productDimensions?.backHeight || ''),
+        seat_height_min: String(productData.productDimensions?.seatHeightMin || ''),
+        seat_height_max: String(productData.productDimensions?.seatHeightMax || ''),
+        back_height_from_seat: String(productData.productDimensions?.backHeightFromSeat || ''),
+        overall_width: String(productData.productDimensions?.overallWidth || ''),
+        overall_depth: String(productData.productDimensions?.overallDepth || ''),
+        overall_height_min: String(productData.productDimensions?.overallHeightMin || ''),
+        overall_height_max: String(productData.productDimensions?.overallHeightMax || '')
+      },
+
+      // upholstery 字段 - 确保所有需要的字段都存在
+      upholstery: {
+        fabricManufacturer: productData.upholstery?.fabricManufacturer || '',
+        colourCode: productData.upholstery?.colourCode || '',
+        leatherGrade: productData.upholstery?.leatherGrade || '',
+        usagePerChair: String(productData.upholstery?.usagePerChair || '')
+      },
+
+      // 图片数据特殊处理：将驼峰命名的字段名转换为下划线格式
+      images: {
+        front_img_path: productData.productImages?.frontImgPath || '',
+        side_img_path: productData.productImages?.sideImgPath || '',
+        back_view_path: productData.productImages?.backImgPath || '',
+        angle_view_path: productData.productImages?.angleImgPath || ''
+      },
+
+      // 添加一个标记，表示这不是批量导出
+      is_batch_export: false
+    }
+
+    console.log('适配后的导出数据:', adaptedData)
+    await exportToWord(adaptedData)
     ElMessage.success('导出成功')
   } catch (error) {
     console.error('导出失败:', error)
