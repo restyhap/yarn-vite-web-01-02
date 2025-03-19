@@ -29,9 +29,9 @@
                 <el-icon><Close /></el-icon>
                 取消
               </el-button>
-              <el-button type="primary" @click="handleExport">
+              <el-button type="primary" :loading="exporting" @click="handleExport" class="min-w-[120px]">
                 <el-icon><Document /></el-icon>
-                导出文档
+                {{ exporting ? '导出中...' : '导出文档' }}
               </el-button>
               <el-button @click="router.back()">
                 <el-icon><Back /></el-icon>
@@ -280,7 +280,7 @@
 <script setup lang="ts">
 import {ref, onMounted, computed, nextTick} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
-import {Document, Edit, Check, Close, Delete, Plus, Back} from '@element-plus/icons-vue'
+import {Document, Edit, Check, Close, Delete, Plus, Back, CircleClose} from '@element-plus/icons-vue'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {exportQCReport} from '@/utils/exportQCReport'
 import type {QCReportData} from '@/utils/exportQCReport'
@@ -391,6 +391,10 @@ const imageSections = {
     }
   }
 } as const
+
+// 添加导出状态变量和AbortController
+const exporting = ref(false)
+const abortController = ref<AbortController | null>(null)
 
 const getData = async () => {
   console.log((' route.params.id as string ======== ' + route.params.id) as string)
@@ -1266,12 +1270,23 @@ const getDefectImages = (defectDto: DefectsDto) => {
 }
 
 const handleExport = async () => {
+  exporting.value = true
   try {
     ElMessage.info('正在准备导出文档，请稍候...')
+
+    // 初始化AbortController
+    abortController.value = new AbortController()
+    const signal = abortController.value.signal
 
     // 准备导出数据
     if (!formData.value?.qcReports) {
       ElMessage.error('没有可导出的数据')
+      exporting.value = false
+      return
+    }
+
+    // 检查是否取消
+    if (signal.aborted) {
       return
     }
 
@@ -1284,6 +1299,11 @@ const handleExport = async () => {
         inspector: dto.defects?.inspector || '',
         images: dto.defectImages?.map(img => img.imagePath || '') || []
       })) || []
+
+    // 检查是否取消
+    if (signal.aborted) {
+      return
+    }
 
     // 构建导出数据
     const exportData: QCReportData = {
@@ -1358,12 +1378,30 @@ const handleExport = async () => {
       defectCount: defects.length
     }
 
+    // 检查是否取消
+    if (signal.aborted) {
+      return
+    }
+
     // 调用导出函数
     await exportQCReport(exportData)
+
+    // 检查是否取消
+    if (signal.aborted) {
+      return
+    }
+
     ElMessage.success('导出成功')
   } catch (error) {
     console.error('导出失败', error)
-    ElMessage.error('导出失败')
+    if ((error as Error).message === '用户取消导出') {
+      ElMessage.info('导出已取消')
+    } else {
+      ElMessage.error(`导出失败: ${(error as Error).message}`)
+    }
+  } finally {
+    exporting.value = false
+    abortController.value = null
   }
 }
 
@@ -1505,6 +1543,14 @@ const handleCancel = async () => {
 
       ElMessage.info('已取消编辑')
     }
+  }
+}
+
+const handleCancelExport = () => {
+  if (exporting.value && abortController.value) {
+    abortController.value.abort('用户取消导出')
+    exporting.value = false
+    ElMessage.info('导出已取消')
   }
 }
 

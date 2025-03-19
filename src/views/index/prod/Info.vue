@@ -35,6 +35,10 @@
                 </el-icon>
                 {{ exporting ? '导出中...' : '导出文档' }}
               </el-button>
+              <el-button v-if="exporting" type="warning" @click="handleCancelExport" class="min-w-[120px]">
+                <el-icon><CircleClose /></el-icon>
+                取消导出
+              </el-button>
               <el-button @click="router.back()">
                 <el-icon>
                   <Back />
@@ -142,7 +146,7 @@ import {
   postFilesUpload
 } from '@/api'
 import ImageHandler from '@/components/ImageHandler.vue'
-import {Back, Check, Close, Document, Edit} from '@element-plus/icons-vue'
+import {Back, Check, Close, Document, Edit, CircleClose} from '@element-plus/icons-vue'
 import {ElMessage} from 'element-plus'
 import {onMounted, ref} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
@@ -194,6 +198,8 @@ const route = useRoute()
 const router = useRouter()
 const loading = ref(false)
 const editingSections = ref<string[]>([])
+const exporting = ref(false)
+const abortController = ref<AbortController | null>(null)
 const formData = ref<FormData>({
   products: {
     id: '',
@@ -355,7 +361,6 @@ const formData = ref<FormData>({
     usagePerChair: 0
   }
 })
-const exporting = ref(false)
 const formDataBackup = ref<FormData>(JSON.parse(JSON.stringify(formData.value)))
 
 // 基本字段定义
@@ -1127,18 +1132,41 @@ const handleCancel = async (section: string) => {
   }
 }
 
+// 添加取消导出函数
+const handleCancelExport = () => {
+  if (exporting.value && abortController.value) {
+    abortController.value.abort('用户取消导出')
+    exporting.value = false
+    ElMessage.info('导出已取消')
+  }
+}
+
 // 使用页面数据导出Word文档
 const handleExport = async () => {
   exporting.value = true
   try {
+    // 初始化AbortController
+    abortController.value = new AbortController()
+    const signal = abortController.value.signal
+
     // 确保 ID 存在且为字符串类型
     const productId = formData.value.products.id
     if (!productId) {
       throw new Error('产品ID不能为空')
     }
 
+    // 检查是否取消
+    if (signal.aborted) {
+      return
+    }
+
     const params = {id: productId}
     const response = await getProductDtoGetById(params)
+
+    // 检查是否取消
+    if (signal.aborted) {
+      return
+    }
 
     if (!response || !response.data) {
       throw new Error('获取产品数据失败')
@@ -1146,6 +1174,11 @@ const handleExport = async () => {
 
     const productData = response.data
     console.log('从API获取的数据:', productData)
+
+    // 检查是否取消
+    if (signal.aborted) {
+      return
+    }
 
     // 创建适配的数据结构，以匹配exportToWord期望的格式
     const adaptedData = {
@@ -1319,14 +1352,30 @@ const handleExport = async () => {
       is_batch_export: false
     }
 
+    // 检查是否取消
+    if (signal.aborted) {
+      return
+    }
+
     console.log('适配后的导出数据:', adaptedData)
     await exportToWord(adaptedData)
+
+    // 检查是否取消
+    if (signal.aborted) {
+      return
+    }
+
     ElMessage.success('导出成功')
   } catch (error) {
-    console.error('导出失败:', error)
-    ElMessage.error('导出失败')
+    console.error('导出失败', error)
+    if ((error as Error).message === '用户取消导出') {
+      ElMessage.info('导出已取消')
+    } else {
+      ElMessage.error(`导出失败: ${(error as Error).message}`)
+    }
   } finally {
     exporting.value = false
+    abortController.value = null
   }
 }
 

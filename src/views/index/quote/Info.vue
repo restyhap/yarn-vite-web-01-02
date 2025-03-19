@@ -37,6 +37,10 @@
                 <el-icon><Document /></el-icon>
                 {{ exporting ? '导出中...' : '导出文档' }}
               </el-button>
+              <el-button v-if="exporting" type="warning" @click="handleCancelExport" class="min-w-[120px]">
+                <el-icon><CircleClose /></el-icon>
+                取消导出
+              </el-button>
               <el-button @click="router.back()">
                 <el-icon><Back /></el-icon>
                 返回
@@ -127,7 +131,7 @@
 <script lang="ts" setup>
 import {ref, onMounted, nextTick, computed} from 'vue'
 import {useRouter, useRoute} from 'vue-router'
-import {Check, Back, Plus, Edit, Close, Document, Picture} from '@element-plus/icons-vue'
+import {Check, Back, Plus, Edit, Close, Document, Picture, CircleClose} from '@element-plus/icons-vue'
 import type {UploadFile} from 'element-plus'
 import {ElMessage} from 'element-plus'
 import {getQuotationGetInfoById, putQuotationUpdate, getFilesRemove, postFilesUpload} from '@/api'
@@ -149,6 +153,8 @@ const tempFiles = ref<string[]>([])
 const tempUploadedImages = ref<{[key: string]: string[]}>({
   newUploads: []
 })
+// 添加AbortController相关变量
+const abortController = ref<AbortController | null>(null)
 
 interface FormData {
   id?: string
@@ -470,6 +476,15 @@ const handleCancel = async () => {
 const handleExport = async () => {
   exporting.value = true
   try {
+    // 初始化AbortController
+    abortController.value = new AbortController()
+    const signal = abortController.value.signal
+
+    // 检查是否取消
+    if (signal.aborted) {
+      return
+    }
+
     // 转换字段名为下划线格式
     const exportData = {
       supplier: formData.value.supplier || '',
@@ -501,7 +516,18 @@ const handleExport = async () => {
       image: formData.value.image || ''
     }
 
+    // 检查是否取消
+    if (signal.aborted) {
+      return
+    }
+
     const buffer = await exportQuotation(exportData)
+
+    // 检查是否取消
+    if (signal.aborted) {
+      return
+    }
+
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     })
@@ -509,12 +535,22 @@ const handleExport = async () => {
     const fileName = `TC QUOTATION FORM ${exportData.supplier} ${createDate}.xlsx`
     saveAs(blob, fileName)
 
+    // 检查是否取消
+    if (signal.aborted) {
+      return
+    }
+
     ElMessage.success('导出成功')
   } catch (error) {
     console.error('导出失败:', error)
-    ElMessage.error('导出失败')
+    if ((error as Error).message === '用户取消导出') {
+      ElMessage.info('导出已取消')
+    } else {
+      ElMessage.error(`导出失败: ${(error as Error).message}`)
+    }
   } finally {
     exporting.value = false
+    abortController.value = null
   }
 }
 
@@ -526,6 +562,15 @@ const handleTempFile = (filePath: string) => {
   tempUploadedImages.value['newUploads'].push(filePath)
   console.log('记录新上传的图片到newUploads:', filePath)
   tempFiles.value.push(filePath)
+}
+
+// 处理取消导出
+const handleCancelExport = () => {
+  if (exporting.value && abortController.value) {
+    abortController.value.abort('用户取消导出')
+    exporting.value = false
+    ElMessage.info('导出已取消')
+  }
 }
 
 onMounted(async () => {
