@@ -37,10 +37,6 @@
                 <el-icon><Document /></el-icon>
                 {{ exporting ? '导出中...' : '导出文档' }}
               </el-button>
-              <el-button v-if="exporting" type="warning" @click="handleCancelExport" class="min-w-[120px]">
-                <el-icon><CircleClose /></el-icon>
-                取消导出
-              </el-button>
               <el-button @click="router.back()">
                 <el-icon><Back /></el-icon>
                 返回
@@ -562,15 +558,6 @@ const handleTempFile = (filePath: string) => {
   tempUploadedImages.value['newUploads'].push(filePath)
   console.log('记录新上传的图片到newUploads:', filePath)
   tempFiles.value.push(filePath)
-}
-
-// 处理取消导出
-const handleCancelExport = () => {
-  if (exporting.value && abortController.value) {
-    abortController.value.abort('用户取消导出')
-    exporting.value = false
-    ElMessage.info('导出已取消')
-  }
 }
 
 onMounted(async () => {

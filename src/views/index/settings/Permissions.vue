@@ -1,117 +1,124 @@
 <template>
-  <div dir="ltr" class="flex-1 ps-1 min-w-0">
-    <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
-      <div class="flex justify-between items-center py-2 px-6">
-        <div class="flex-1">
-          <h2 class="text-xl font-bold text-gray-800">权限设置</h2>
-        </div>
-      </div>
-    </div>
-    <div class="bg-white rounded-lg shadow p-4">
-      <!-- 加载状态 -->
-      <div v-if="loading" class="flex justify-center items-center py-10">
-        <el-skeleton :rows="10" animated />
-      </div>
-
-      <!-- 数据内容 -->
-      <div v-else class="grid grid-cols-1 gap-6">
-        <!-- 角色列表 -->
-        <div v-for="role in roles" :key="role.id" class="border rounded-lg p-6">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-              <el-tag :type="getRoleType(role.name)" size="large">{{ role.name }}</el-tag>
-              <span class="text-gray-500 text-sm">{{ role.description }}</span>
+  <!-- 使用相对定位作为参考点，实现右侧内容区域与左侧导航栏完全分离 -->
+  <div class="relative h-screen w-full overflow-hidden">
+    <!-- 右侧内容区域，使用absolute定位占据从200px到右边界的区域 -->
+    <div class="absolute top-0 bottom-0 right-0 left-[4px] bg-white shadow-md overflow-hidden z-10">
+      <!-- 内容容器，占满整个高度并允许垂直滚动 -->
+      <div class="h-full w-full overflow-y-auto">
+        <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
+          <div class="flex justify-between items-center py-2 px-6">
+            <div class="flex-1">
+              <h2 class="text-xl font-bold text-gray-800">权限设置</h2>
             </div>
           </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+          <!-- 加载状态 -->
+          <div v-if="loading" class="flex justify-center items-center py-10">
+            <el-skeleton :rows="10" animated />
+          </div>
 
-          <!-- 权限模块 -->
-          <div class="space-y-6">
-            <!-- 产品规格管理权限 -->
-            <div class="border-t pt-4">
-              <div class="flex items-center mb-2">
-                <el-checkbox v-model="role.allProdPermissions" :indeterminate="isIndeterminate(role, 'prod')" @change="val => handleModuleChange(val, role, 'prod')">
-                  <span class="font-medium">产品规格管理</span>
-                </el-checkbox>
+          <!-- 数据内容 -->
+          <div v-else class="grid grid-cols-1 gap-6">
+            <!-- 角色列表 -->
+            <div v-for="role in roles" :key="role.id" class="border rounded-lg p-6">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                  <el-tag :type="getRoleType(role.name)" size="large">{{ role.name }}</el-tag>
+                  <span class="text-gray-500 text-sm">{{ role.description }}</span>
+                </div>
               </div>
 
-              <div class="ml-6 grid grid-cols-4 gap-4">
-                <div>
-                  <el-checkbox v-model="role.permissions.prodView" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodView')">查看</el-checkbox>
-                </div>
-                <div>
-                  <el-checkbox v-model="role.permissions.prodCreate" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodCreate')">创建</el-checkbox>
-                </div>
-                <div>
-                  <el-checkbox v-model="role.permissions.prodEdit" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodEdit')">编辑</el-checkbox>
-                </div>
-                <div>
-                  <el-checkbox v-model="role.permissions.prodDelete" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodDelete')">删除</el-checkbox>
-                </div>
-              </div>
-            </div>
+              <!-- 权限模块 -->
+              <div class="space-y-6">
+                <!-- 产品规格管理权限 -->
+                <div class="border-t pt-4">
+                  <div class="flex items-center mb-2">
+                    <el-checkbox v-model="role.allProdPermissions" :indeterminate="isIndeterminate(role, 'prod')" @change="val => handleModuleChange(val, role, 'prod')">
+                      <span class="font-medium">产品规格管理</span>
+                    </el-checkbox>
+                  </div>
 
-            <!-- 质检报告管理权限 -->
-            <div class="border-t pt-4">
-              <div class="flex items-center mb-2">
-                <el-checkbox v-model="role.allSpecPermissions" :indeterminate="isIndeterminate(role, 'spec')" @change="val => handleModuleChange(val, role, 'spec')">
-                  <span class="font-medium">质检报告管理</span>
-                </el-checkbox>
-              </div>
+                  <div class="ml-6 grid grid-cols-4 gap-4">
+                    <div>
+                      <el-checkbox v-model="role.permissions.prodView" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodView')">查看</el-checkbox>
+                    </div>
+                    <div>
+                      <el-checkbox v-model="role.permissions.prodCreate" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodCreate')">创建</el-checkbox>
+                    </div>
+                    <div>
+                      <el-checkbox v-model="role.permissions.prodEdit" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodEdit')">编辑</el-checkbox>
+                    </div>
+                    <div>
+                      <el-checkbox v-model="role.permissions.prodDelete" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodDelete')">删除</el-checkbox>
+                    </div>
+                  </div>
+                </div>
 
-              <div class="ml-6 grid grid-cols-4 gap-4">
-                <div>
-                  <el-checkbox v-model="role.permissions.specView" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specView')">查看</el-checkbox>
-                </div>
-                <div>
-                  <el-checkbox v-model="role.permissions.specCreate" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specCreate')">创建</el-checkbox>
-                </div>
-                <div>
-                  <el-checkbox v-model="role.permissions.specEdit" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specEdit')">编辑</el-checkbox>
-                </div>
-                <div>
-                  <el-checkbox v-model="role.permissions.specDelete" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specDelete')">删除</el-checkbox>
-                </div>
-              </div>
-            </div>
+                <!-- 质检报告管理权限 -->
+                <div class="border-t pt-4">
+                  <div class="flex items-center mb-2">
+                    <el-checkbox v-model="role.allSpecPermissions" :indeterminate="isIndeterminate(role, 'spec')" @change="val => handleModuleChange(val, role, 'spec')">
+                      <span class="font-medium">质检报告管理</span>
+                    </el-checkbox>
+                  </div>
 
-            <!-- 产品报价管理权限 -->
-            <div class="border-t pt-4">
-              <div class="flex items-center mb-2">
-                <el-checkbox v-model="role.allQuotePermissions" :indeterminate="isIndeterminate(role, 'quote')" @change="val => handleModuleChange(val, role, 'quote')">
-                  <span class="font-medium">产品报价管理</span>
-                </el-checkbox>
-              </div>
+                  <div class="ml-6 grid grid-cols-4 gap-4">
+                    <div>
+                      <el-checkbox v-model="role.permissions.specView" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specView')">查看</el-checkbox>
+                    </div>
+                    <div>
+                      <el-checkbox v-model="role.permissions.specCreate" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specCreate')">创建</el-checkbox>
+                    </div>
+                    <div>
+                      <el-checkbox v-model="role.permissions.specEdit" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specEdit')">编辑</el-checkbox>
+                    </div>
+                    <div>
+                      <el-checkbox v-model="role.permissions.specDelete" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specDelete')">删除</el-checkbox>
+                    </div>
+                  </div>
+                </div>
 
-              <div class="ml-6 grid grid-cols-4 gap-4">
-                <div>
-                  <el-checkbox v-model="role.permissions.quoteView" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteView')">查看</el-checkbox>
-                </div>
-                <div>
-                  <el-checkbox v-model="role.permissions.quoteCreate" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteCreate')">创建</el-checkbox>
-                </div>
-                <div>
-                  <el-checkbox v-model="role.permissions.quoteEdit" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteEdit')">编辑</el-checkbox>
-                </div>
-                <div>
-                  <el-checkbox v-model="role.permissions.quoteDelete" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteDelete')">删除</el-checkbox>
-                </div>
-              </div>
-            </div>
+                <!-- 产品报价管理权限 -->
+                <div class="border-t pt-4">
+                  <div class="flex items-center mb-2">
+                    <el-checkbox v-model="role.allQuotePermissions" :indeterminate="isIndeterminate(role, 'quote')" @change="val => handleModuleChange(val, role, 'quote')">
+                      <span class="font-medium">产品报价管理</span>
+                    </el-checkbox>
+                  </div>
 
-            <!-- 系统设置权限 -->
-            <div class="border-t pt-4">
-              <div class="flex items-center mb-2">
-                <el-checkbox v-model="role.allSettingsPermissions" :indeterminate="isIndeterminate(role, 'settings')" @change="val => handleModuleChange(val, role, 'settings')">
-                  <span class="font-medium">系统设置</span>
-                </el-checkbox>
-              </div>
-
-              <div class="ml-6 grid grid-cols-4 gap-4">
-                <div>
-                  <el-checkbox v-model="role.permissions.settingsUsers" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'settings', 'settingsUsers')">用户管理</el-checkbox>
+                  <div class="ml-6 grid grid-cols-4 gap-4">
+                    <div>
+                      <el-checkbox v-model="role.permissions.quoteView" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteView')">查看</el-checkbox>
+                    </div>
+                    <div>
+                      <el-checkbox v-model="role.permissions.quoteCreate" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteCreate')">创建</el-checkbox>
+                    </div>
+                    <div>
+                      <el-checkbox v-model="role.permissions.quoteEdit" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteEdit')">编辑</el-checkbox>
+                    </div>
+                    <div>
+                      <el-checkbox v-model="role.permissions.quoteDelete" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteDelete')">删除</el-checkbox>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <el-checkbox v-model="role.permissions.settingsPermissions" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'settings', 'settingsPermissions')">权限设置</el-checkbox>
+
+                <!-- 系统设置权限 -->
+                <div class="border-t pt-4">
+                  <div class="flex items-center mb-2">
+                    <el-checkbox v-model="role.allSettingsPermissions" :indeterminate="isIndeterminate(role, 'settings')" @change="val => handleModuleChange(val, role, 'settings')">
+                      <span class="font-medium">系统设置</span>
+                    </el-checkbox>
+                  </div>
+
+                  <div class="ml-6 grid grid-cols-4 gap-4">
+                    <div>
+                      <el-checkbox v-model="role.permissions.settingsUsers" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'settings', 'settingsUsers')">用户管理</el-checkbox>
+                    </div>
+                    <div>
+                      <el-checkbox v-model="role.permissions.settingsPermissions" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'settings', 'settingsPermissions')">权限设置</el-checkbox>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
