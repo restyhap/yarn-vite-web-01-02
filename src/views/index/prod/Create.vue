@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-01-14 17:03:09
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-03-12 11:45:28
+ * @LastEditTime: 2025-03-24 09:16:13
  * @FilePath: /yarn-vite-web-01-02/src/views/index/prod/Create.vue
  * @Description: 产品规格创建表单
 -->
@@ -16,7 +16,6 @@
           <h2 class="text-lg font-semibold text-gray-800">创建规格表</h2>
         </div>
         <div class="flex gap-2">
-          <el-button type="warning" @click="generateMockData">生成模拟数据</el-button>
           <el-button @click="router.back()">
             <el-icon><Back /></el-icon>
             返回
@@ -871,151 +870,6 @@ const steps = [
 // 在 script setup 部分添加 goToStep 函数
 const goToStep = (step: number) => {
   activeStep.value = step
-}
-
-// 首先在 script 部分添加测试图片数组
-const testImages = [
-  'https://img.shetu66.com/2023/04/25/1682391094827084.png',
-  'https://img.shetu66.com/2023/04/25/1682410877994833.png',
-  'https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/04/ChMkJlbKyFOILgqwAAU1Zymsk68AALIAgFwgVgABTV_720.jpg',
-  'https://img.shetu66.com/2023/04/25/1682391086456995.png',
-  'https://ts1.cn.mm.bing.net/th/id/R-C.26fa5434823e0afae3f9b576b61b3df0?rik=1ki5rrqJXLS00w&riu=http%3a%2f%2fpic.52112.com%2f180420%2f180420_32%2fJ9xjxe1jIg_small.jpg&ehk=a8hQQlllEncpFeXgnFZ1a7fIII7lcz2ph6WLdtzS51k%3d&risl=&pid=ImgRaw&r=0'
-]
-
-// 添加随机数据生成函数
-const generateMockData = () => {
-  // 基本信息
-  basicForm.tccode = `TC${Math.floor(Math.random() * 10000)}`
-  basicForm.supplier = '测试供应商'
-  basicForm.supplierCode = `SP${Math.floor(Math.random() * 1000)}`
-  basicForm.supplierName = '测试供应商名称'
-  basicForm.fireStandard = 'BS 5852'
-  basicForm.fob20ContainerPrice = Math.floor(Math.random() * 1000)
-  basicForm.fob40ContainerPrice = Math.floor(Math.random() * 2000)
-  basicForm.shippingPort = '深圳港'
-
-  // 面料信息
-  upholsteryForm.fabricManufacturer = '测试面料厂商'
-  upholsteryForm.colourCode = `C${Math.floor(Math.random() * 100)}`
-  upholsteryForm.leatherGrade = 'A级'
-  upholsteryForm.usagePerChair = Math.random() * 5
-
-  // 包装信息
-  cartonForm.width = Math.floor(Math.random() * 100) + 50
-  cartonForm.depth = Math.floor(Math.random() * 100) + 50
-  cartonForm.height = Math.floor(Math.random() * 100) + 50
-  cartonForm.boardType = '五层瓦楞纸'
-  cartonForm.itemsPerCarton = Math.floor(Math.random() * 5) + 1
-  cartonForm.cartonVolume = Math.random() * 2
-
-  // 生产物流信息
-  logisticsForm.productionTime = Math.floor(Math.random() * 30) + 15
-  logisticsForm.effectiveVolume = Math.random() * 3 + 0.5
-  logisticsForm.loadingQuantity20gp = Math.floor(Math.random() * 200) + 100
-  logisticsForm.loadingQuantity40hc = Math.floor(Math.random() * 400) + 200
-  logisticsForm.netWeight = Math.random() * 20 + 10
-  logisticsForm.grossWeight = Math.random() * 25 + 15
-
-  // 产品尺寸信息
-  dimensionsForm.seatWidth = Math.floor(Math.random() * 100) + 400
-  dimensionsForm.seatDepth = Math.floor(Math.random() * 50) + 450
-  dimensionsForm.seatHeightMin = Math.floor(Math.random() * 50) + 400
-  dimensionsForm.seatHeightMax = Math.floor(Math.random() * 50) + 500
-  dimensionsForm.backWidth = Math.floor(Math.random() * 100) + 400
-  dimensionsForm.backHeight = Math.floor(Math.random() * 100) + 500
-  dimensionsForm.backHeightFromSeat = Math.floor(Math.random() * 50) + 450
-  dimensionsForm.overallWidth = Math.floor(Math.random() * 100) + 600
-  dimensionsForm.overallDepth = Math.floor(Math.random() * 100) + 600
-  dimensionsForm.overallHeightMin = Math.floor(Math.random() * 50) + 1000
-  dimensionsForm.overallHeightMax = Math.floor(Math.random() * 50) + 1100
-
-  // 座椅内部结构
-  seatInnerForm.materialCode = `MAT${Math.floor(Math.random() * 1000)}`
-  seatInnerForm.thickness = Math.floor(Math.random() * 20) + 10
-  seatInnerForm.layersCount = Math.floor(Math.random() * 3) + 2
-  seatInnerForm.dimensions = '标准尺寸'
-
-  // 背部内部结构
-  backInnerForm.materialCode = `MAT${Math.floor(Math.random() * 1000)}`
-  backInnerForm.thickness = Math.floor(Math.random() * 20) + 10
-  backInnerForm.layersCount = Math.floor(Math.random() * 3) + 2
-  backInnerForm.dimensions = '标准尺寸'
-
-  // 座椅外部结构
-  seatOuterForm.material = '高密度海绵'
-  seatOuterForm.dimensions = '500x500'
-  seatOuterForm.manufacturerName = '测试制造商'
-
-  // 背部外部结构
-  backOuterForm.material = '高密度海绵'
-  backOuterForm.dimensions = '500x700'
-  backOuterForm.manufacturerName = '测试制造商'
-
-  // 扶手信息
-  armsForm.material = 'PP塑料'
-  armsForm.type = '可调节扶手'
-  armsForm.manufacturer = '扶手制造商'
-  armsForm.description = '人体工学设计，可调节高度'
-  armsForm.armHeightFromSeat = Math.floor(Math.random() * 50) + 200
-  armsForm.armHeightFromFloor = Math.floor(Math.random() * 50) + 600
-
-  // 泡棉信息
-  foamForm.description = '高回弹海绵'
-  foamForm.seatDensity = Math.floor(Math.random() * 10) + 45
-  foamForm.backDensity = Math.floor(Math.random() * 10) + 40
-  foamForm.seatThickness = Math.floor(Math.random() * 20) + 50
-  foamForm.backThickness = Math.floor(Math.random() * 20) + 40
-
-  // 脚轮信息
-  castorsForm.description = 'PU静音脚轮'
-  castorsForm.pinThickness = Math.floor(Math.random() * 5) + 10
-  castorsForm.wheelDiameter = Math.floor(Math.random() * 10) + 50
-
-  // 底座信息
-  baseForm.description = '铝合金五星脚'
-  baseForm.sizeDiameter = Math.floor(Math.random() * 50) + 600
-  baseForm.material = '铝合金'
-  baseForm.type = '五星脚'
-
-  // 气压棒信息
-  gasLiftForm.description = '高承重气压棒'
-  gasLiftForm.gasLiftClass = '4级'
-  gasLiftForm.casingLength = Math.floor(Math.random() * 50) + 200
-  gasLiftForm.extensionSize = Math.floor(Math.random() * 50) + 100
-  gasLiftForm.taper = Math.floor(Math.random() * 2) + 8
-
-  // 气压罩信息
-  gasLiftCoverForm.description = '标准气压罩'
-  gasLiftCoverForm.material = 'PP塑料'
-  gasLiftCoverForm.colour = '黑色'
-
-  // 机构信息
-  mechanismForm.description = '多功能底盘'
-  mechanismForm.leversCount = Math.floor(Math.random() * 2) + 2
-  mechanismForm.lockingPositions = '5档'
-  mechanismForm.modelNo = `M${Math.floor(Math.random() * 1000)}`
-  mechanismForm.supplierName = '底盘制造商'
-
-  // 配件信息
-  fittingsForm.fittingNumber = Math.floor(Math.random() * 1000)
-  fittingsForm.description = '标准配件套装'
-  fittingsForm.quantity = Math.floor(Math.random() * 5) + 1
-  fittingsForm.material = '金属/塑料'
-
-  // 随机填充图片
-  const shuffledImages = [...testImages].sort(() => Math.random() - 0.5)
-  productImagesForm.value = {
-    frontImgPath: [shuffledImages[0]],
-    sideImgPath: [shuffledImages[1]],
-    backImgPath: [shuffledImages[2]],
-    angleImgPath: [shuffledImages[3]]
-  }
-
-  // 生成数据后跳转到最后一步
-  activeStep.value = steps.length - 1
-
-  // 提示用户数据已生成
-  ElMessage.success('模拟数据已生成，请检查后提交')
 }
 
 // 添加新的 handlePreview 函数

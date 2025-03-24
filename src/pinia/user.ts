@@ -49,7 +49,6 @@ export const useUserStore = defineStore('user', {
       try {
         this.permissions = await getUserPermissions();
       } catch (error) {
-        console.error('加载权限失败:', error);
         this.permissions = null;
       }
     }

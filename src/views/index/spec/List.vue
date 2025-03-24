@@ -26,33 +26,8 @@
             <el-icon class="mr-2"><Delete /></el-icon>
             批量删除
           </el-button>
-          <el-button type="info" :disabled="!selectedRows.length" @click="handleSendEmail" class="min-w-[120px]">
-            <el-icon class="mr-2"><Message /></el-icon>
-            发送邮件
-          </el-button>
         </div>
       </div>
-
-      <!-- 邮件发送对话框 -->
-      <el-dialog v-model="showEmailDialog" title="发送邮件" width="600px">
-        <el-form :model="emailForm" label-width="80px">
-          <el-form-item label="收件人">
-            <el-input v-model="emailForm.to" placeholder="请输入收件人邮箱，多个邮箱用逗号分隔" />
-          </el-form-item>
-          <el-form-item label="主题">
-            <el-input v-model="emailForm.subject" placeholder="请输入邮件主题" />
-          </el-form-item>
-          <el-form-item label="正文">
-            <el-input v-model="emailForm.content" type="textarea" :rows="6" placeholder="请输入邮件内容" />
-          </el-form-item>
-        </el-form>
-        <template #footer>
-          <div class="flex justify-end gap-2">
-            <el-button @click="showEmailDialog = false">取消</el-button>
-            <el-button type="primary" @click="confirmSendEmail">发送</el-button>
-          </div>
-        </template>
-      </el-dialog>
 
       <!-- 表格区域 -->
       <div class="overflow-auto mt-16">
@@ -565,33 +540,6 @@ const handleBatchExport = async () => {
   } finally {
     clearTimeout(timeout)
     exporting.value = false
-  }
-}
-
-// 发送邮件
-const handleSendEmail = () => {
-  if (!selectedRows.value.length) {
-    ElMessage.warning('请选择要发送的记录')
-    return
-  }
-  showEmailDialog.value = true
-  emailForm.value = {
-    to: '',
-    subject: `质检报告 - ${selectedRows.value.map((row: QcReports) => row.modelCode).join(', ')}`,
-    content: `请查收以下质检报告：\n${selectedRows.value.map((row: QcReports) => `型号代码：${row.modelCode}\n最小订购量：${row.poNumber}\n样品交期：${row.inspectionDate}\n`).join('\n')}`
-  }
-}
-
-// 确认发送邮件
-const confirmSendEmail = async () => {
-  try {
-    // TODO: 调用发送邮件API
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    showEmailDialog.value = false
-    ElMessage.success('邮件发送成功')
-  } catch (error) {
-    console.error('邮件发送失败:', error)
-    ElMessage.error('邮件发送失败')
   }
 }
 </script>

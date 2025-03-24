@@ -7,10 +7,6 @@
           <h2 class="text-lg font-semibold text-gray-800">创建报价单</h2>
         </div>
         <div class="flex gap-2">
-          <el-button @click="generateMockData">
-            <el-icon><Opportunity /></el-icon>
-            生成测试数据
-          </el-button>
           <el-button @click="router.back()">
             <el-icon><Back /></el-icon>
             返回
@@ -191,7 +187,7 @@
 import {ref, reactive} from 'vue'
 import {useRouter} from 'vue-router'
 import {ElMessage, FormInstance} from 'element-plus'
-import {Check, Back, Opportunity} from '@element-plus/icons-vue'
+import {Back, Check} from '@element-plus/icons-vue'
 import {postQuotationSave} from '@/api'
 import ImageHandler from '@/components/ImageHandler.vue'
 
@@ -241,40 +237,6 @@ const rules = {
 // 处理临时文件
 const handleTempFile = (filePath: string) => {
   tempFiles.value.push(filePath)
-}
-
-// 生成模拟数据
-const generateMockData = () => {
-  Object.assign(formData, {
-    supplier: '宁波家具有限公司',
-    supplierItemCode: 'NB-' + Math.floor(Math.random() * 10000),
-    specificationDetails: '高级办公椅，人体工学设计，可调节高度和靠背',
-    sampleLeadTime: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-    overallDimensionsWidth: 65.5,
-    overallDimensionsDepth: 70.2,
-    overallDimensionsHeight: 120.8,
-    boxDimensionsWidth: 68.0,
-    boxDimensionsDepth: 72.5,
-    boxDimensionsHeight: 60.0,
-    boxWeightNetWeighth: 15.5,
-    netWeightGrossWeight: '15.5/17.2',
-    effectiveVol: '0.3 CBM',
-    loadingQty: 120,
-    moq: '50 PCS',
-    fobPrice: 85.99,
-    currency: 0,
-    bifmaTested: 1,
-    cadBlockAvailable: 1,
-    productDataAvailable: 1,
-    productImagesAvailable: 1,
-    salesContacts: '张经理 (13812345678)',
-    createTime: new Date(),
-    validPeriod: '2024-12-31',
-    port: '宁波港',
-    remark: '此报价单包含所有运输和包装费用，不含税。如需更多信息，请联系销售。'
-  })
-
-  ElMessage.success('已生成测试数据')
 }
 
 // 提交表单

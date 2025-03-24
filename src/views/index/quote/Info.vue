@@ -28,7 +28,7 @@
                 </el-button>
               </template>
               <template v-else>
-                <el-button type="primary" @click="handleEdit('basic')">
+                <el-button type="primary" @click="handleEdit('basic')" v-if="canEdit">
                   <el-icon><Edit /></el-icon>
                   编辑
                 </el-button>
@@ -135,6 +135,7 @@ import {exportQuotation} from '@/utils/exportQuotation'
 import {saveAs} from 'file-saver'
 import ImageHandler from '@/components/ImageHandler.vue'
 import request from '@/api/request'
+import {ModuleType, PermissionAction, checkPermission} from '@/utils/permissionUtils'
 
 const router = useRouter()
 const route = useRoute()
@@ -151,6 +152,8 @@ const tempUploadedImages = ref<{[key: string]: string[]}>({
 })
 // 添加AbortController相关变量
 const abortController = ref<AbortController | null>(null)
+// 权限控制
+const canEdit = ref(false)
 
 interface FormData {
   id?: string
@@ -560,11 +563,18 @@ const handleTempFile = (filePath: string) => {
   tempFiles.value.push(filePath)
 }
 
+// 初始化权限
+const initPermissions = async () => {
+  // 检查编辑权限
+  canEdit.value = await checkPermission(ModuleType.QUOTE, PermissionAction.EDIT)
+}
+
 onMounted(async () => {
+  await initPermissions() // 初始化权限
   await fetchQuoteDetail() // 等待数据获取完成
   updateUploadDisplay()
-  // 检查 URL 参数，如果有 edit=1，则自动进入编辑状态
-  if (route.query.edit === '1') {
+  // 检查 URL 参数，如果有 edit=1，则自动进入编辑状态（需要有编辑权限）
+  if (route.query.edit === '1' && canEdit.value) {
     handleEdit('basic')
   }
 })

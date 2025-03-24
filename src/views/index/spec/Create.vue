@@ -7,10 +7,6 @@
           <h2 class="text-lg font-semibold text-gray-800">创建质检报告</h2>
         </div>
         <div class="flex gap-2">
-          <el-button type="warning" plain @click="fillTestData">
-            <el-icon><DataLine /></el-icon>
-            生成模拟数据
-          </el-button>
           <el-button @click="router.back()">
             <el-icon><Back /></el-icon>
             返回
@@ -688,99 +684,6 @@ const submitForm = async () => {
   }
 }
 
-// 修改 fillTestData 函数
-const fillTestData = () => {
-  // 确保formData已初始化
-  initializeFormData()
-
-  const testImages = [
-    'https://img.shetu66.com/2023/04/25/1682391094827084.png',
-    'https://img.shetu66.com/2023/04/25/1682410877994833.png',
-    'https://desk-fd.zol-img.com.cn/t_s960x600c5/g5/M00/02/04/ChMkJlbKyFOILgqwAAU1Zymsk68AALIAgFwgVgABTV_720.jpg',
-    'https://img.shetu66.com/2023/04/25/1682391086456995.png',
-    'https://ts1.cn.mm.bing.net/th/id/R-C.26fa5434823e0afae3f9b576b61b3df0?rik=1ki5rrqJXLS00w&riu=http%3a%2f%2fpic.52112.com%2f180420%2f180420_32%2fJ9xjxe1jIg_small.jpg&ehk=a8hQQlllEncpFeXgnFZ1a7fIII7lcz2ph6WLdtzS51k%3d&risl=&pid=ImgRaw&r=0'
-  ]
-  const getRandomImage = () => testImages[Math.floor(Math.random() * testImages.length)]
-
-  // 日期格式化函数
-  const formatDate = (date: Date): string => {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
-
-  // 确保qcReports对象存在
-  if (!formData.value.qcReports) {
-    formData.value.qcReports = {}
-  }
-
-  // 填充质检信息
-  formData.value.qcReports = {
-    ...formData.value.qcReports,
-    id: formData.value.qcReports.id || getId(),
-    modelCode: 'TEST-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0'),
-    factoryCode: 'FC-' + String(Math.floor(Math.random() * 1000)).padStart(3, '0'),
-    supplier: ['上海家具有限公司', '北京办公家具厂', '广州椅业制造厂'][Math.floor(Math.random() * 3)],
-    client: ['微软中国', '阿里巴巴', '腾讯科技', '字节跳动'][Math.floor(Math.random() * 4)],
-    poNumber: 'PO-' + new Date().getTime().toString().slice(-6),
-    inspectionDate: formatDate(new Date()),
-    orderQty: 500 + Math.floor(Math.random() * 1000),
-    reportDate: formatDate(new Date()),
-    inspectQty: 50 + Math.floor(Math.random() * 100),
-    qcOfficer: ['张三', '李四', '王五', '赵六'][Math.floor(Math.random() * 4)],
-    passFail: Math.random() > 0.3 ? 'Pass' : 'Fail',
-    secondQcDate: formatDate(new Date(Date.now() + 24 * 60 * 60 * 1000)), // 明天
-    comments: ['产品整体质量良好，符合标准要求', '存在少量瑕疵，但在可接受范围内', '部分细节需要改进，建议加强质量控制', '质量基本达标，建议持续监控生产过程'][Math.floor(Math.random() * 4)]
-  }
-
-  // 填充所有图片字段
-  if (formData.value.qcReports) {
-    Object.keys(formData.value.qcReports).forEach(key => {
-      if (isImageField(key)) {
-        formData.value.qcReports[key] = getRandomImage()
-      }
-    })
-  }
-
-  // 生成随机缺陷记录
-  const defectCount = 1 + Math.floor(Math.random() * 2) // 生成1-2条缺陷记录
-  formData.value.defectsDTO = Array.from({length: defectCount}, () => {
-    const defectId = getId()
-    return {
-      defects: {
-        id: defectId,
-        reportId: formData.value.qcReports?.id,
-        defectTitle: ['座椅靠背划痕', '扶手连接处磨损', '气压棒功能异常', '座垫接缝不平整'][Math.floor(Math.random() * 4)],
-        defectDescription: ['产品表面出现约3cm长的浅划痕，影响美观', '连接处出现轻微磨损，可能影响使用寿命', '调节时有异响，升降不够顺畅', '缝线部分出现松动，影响产品质感'][Math.floor(Math.random() * 4)],
-        improvementSuggestion: ['建议加强包装保护，避免运输磕碰', '需要调整生产工艺，提高装配精度', '建议更换更高品质的零部件', '加强质量控制，提高生产标准'][Math.floor(Math.random() * 4)],
-        inspector: ['张三', '李四', '王五', '赵六'][Math.floor(Math.random() * 4)],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      defectImages: [
-        {
-          id: getId(),
-          defectId: defectId,
-          imagePath: getRandomImage(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: getId(),
-          defectId: defectId,
-          imagePath: getRandomImage(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      ],
-      isEditing: false
-    }
-  })
-
-  ElMessage.success(`模拟数据生成成功: ${defectCount}个缺陷记录`)
-}
-
 // 修改 initializeImageFields 函数
 const initializeImageFields = () => {
   if (!formData.value.qcReports) return
@@ -837,5 +740,3 @@ const initializeFormData = () => {
   initializeImageFields()
 }
 </script>
-
-@/api/bak/specification

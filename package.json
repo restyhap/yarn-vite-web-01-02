@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
+    "build": "vite build",
+    "build:type-check": "vue-tsc && vite build",
     "preview": "vite preview",
     "api": "cd src/api && zerone api"
   },
@@ -38,6 +39,7 @@
     "axios": "^1.8.1",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.0",
+    "terser": "^5.39.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.2.2",
     "vite": "^5.0.8",

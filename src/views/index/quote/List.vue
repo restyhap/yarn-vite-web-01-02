@@ -18,17 +18,13 @@
           </div>
         </div>
         <div class="right-actions flex gap-4">
-          <el-button type="primary" :loading="exporting" :disabled="!selectedRows.length" @click="handleBatchExport" class="w-24">
+          <el-button type="primary" :loading="exporting" :disabled="!selectedRows.length" @click="handleBatchExport" class="w-24" v-if="canExport">
             <el-icon><Document /></el-icon>
             {{ exporting ? '导出中...' : '批量导出' }}
           </el-button>
-          <el-button type="danger" :disabled="!selectedRows.length" @click="handleBatchDelete">
+          <el-button type="danger" :disabled="!selectedRows.length" @click="handleBatchDelete" v-if="canDelete">
             <el-icon class="mr-2"><Delete /></el-icon>
             批量删除
-          </el-button>
-          <el-button type="info" :disabled="!selectedRows.length" @click="handleSendEmail">
-            <el-icon class="mr-2"><Message /></el-icon>
-            发送邮件
           </el-button>
         </div>
       </div>
@@ -81,19 +77,19 @@
           <el-table-column label="操作" width="170" fixed="right" align="center">
             <template #default="scope">
               <div class="flex items-center justify-center space-x-3">
-                <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleView(scope.row)">
+                <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleView(scope.row)" v-if="canView">
                   <el-icon>
                     <View />
                   </el-icon>
                   查看
                 </el-button>
-                <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleEdit(scope.row)">
+                <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleEdit(scope.row)" v-if="canEdit">
                   <el-icon>
                     <Edit />
                   </el-icon>
                   编辑
                 </el-button>
-                <el-button type="danger" link size="small" style="padding: 0; min-width: 35px" @click="handleDelete(scope.row)">
+                <el-button type="danger" link size="small" style="padding: 0; min-width: 35px" @click="handleDelete(scope.row)" v-if="canDelete">
                   <el-icon>
                     <Delete />
                   </el-icon>
@@ -114,14 +110,16 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, onMounted, watch} from 'vue'
+import {ref, onMounted, watch, computed} from 'vue'
 import {Search, Delete, View, Edit, Download, Message, Document} from '@element-plus/icons-vue'
 import {ElMessageBox, ElMessage} from 'element-plus'
 import {useRouter, useRoute} from 'vue-router'
 import {exportQuotation} from '@/utils/exportQuotation'
 import JSZip from 'jszip'
 import {saveAs} from 'file-saver'
-import {getQuotationPage, deleteQuotationRemoveById, getQuotationSearch} from '@/api'
+import {deleteQuotationRemoveById, getQuotationSearch} from '@/api'
+import {useUserStore} from '@/pinia/user'
+import {ModuleType, PermissionAction, checkPermission} from '@/utils/permissionUtils'
 
 interface QuoteData {
   id: number
@@ -173,6 +171,8 @@ const emailForm = ref({
 
 // 表格数据
 const tableData = ref<QuoteData[]>([])
+// 用户存储
+const userStore = useUserStore()
 
 // 货币单位映射
 const currencyMap = {
@@ -188,6 +188,29 @@ const getCurrencyLabel = (currency: number) => {
 // 添加导出状态
 const exporting = ref(false)
 
+// 权限控制计算属性
+const canView = ref(true) // 默认允许查看
+const canEdit = ref(false)
+const canDelete = ref(false)
+const canExport = ref(false)
+const canEmail = ref(false)
+
+// 初始化权限
+const initPermissions = async () => {
+  // 查看权限 - 默认为true，因为能进入列表页面就表示有查看权限
+  canView.value = true
+
+  // 编辑权限
+  canEdit.value = await checkPermission(ModuleType.QUOTE, PermissionAction.EDIT)
+
+  // 删除权限
+  canDelete.value = await checkPermission(ModuleType.QUOTE, PermissionAction.DELETE)
+
+  // 导出和邮件权限 - 如果允许查看，则可以导出和发送邮件
+  canExport.value = canView.value
+  canEmail.value = canView.value
+}
+
 // 监听路由变化
 watch(
   () => route.path,
@@ -201,14 +224,23 @@ watch(
 const fetchTableData = async () => {
   loading.value = true
   try {
+    // 构建请求参数
+    const params: any = {
+      currentPage: currentPage.value,
+      pageSize: pageSize.value,
+      keyword: searchQuery.value
+    }
+
+    // 如果是供应商角色，只查询自己的数据
+    if (userStore.userInfo.roleType === 1) {
+      // 假设roleType=2表示供应商角色
+      params.supplier = userStore.userInfo.realName || userStore.userInfo.username
+    }
+
     const response = await getQuotationSearch({
-      params: {
-        currentPage: currentPage.value,
-        pageSize: pageSize.value,
-        keyword: searchQuery.value
-      }
+      params
     })
-    console.log('response', response)
+
     if (response?.data) {
       // 根据实际返回的数据结构进行处理
       if (Array.isArray(response.data)) {
@@ -228,15 +260,7 @@ const fetchTableData = async () => {
       tableData.value = []
       total.value = 0
     }
-
-    console.log('分页数据:', {
-      总条数: total.value,
-      当前页: currentPage.value,
-      每页条数: pageSize.value,
-      总页数: Math.ceil(total.value / pageSize.value)
-    })
   } catch (error) {
-    console.error('获取数据失败:', error)
     ElMessage.error('获取数据失败')
     tableData.value = []
     total.value = 0
@@ -247,6 +271,7 @@ const fetchTableData = async () => {
 
 // 初始加载数据
 onMounted(() => {
+  initPermissions()
   fetchTableData()
 })
 
@@ -260,16 +285,24 @@ const handleSearch = async () => {
   loading.value = true
   currentPage.value = 1 // 重置到第一页
   try {
-    if (searchQuery.value.trim()) {
+    if (searchQuery.value.trim() || userStore.userInfo.roleType === 2) {
+      // 构建请求参数
+      const params: any = {
+        keyword: searchQuery.value.trim(),
+        currentPage: currentPage.value,
+        pageSize: pageSize.value
+      }
+
+      // 如果是供应商角色，只查询自己的数据
+      if (userStore.userInfo.roleType === 2) {
+        // 假设roleType=2表示供应商角色
+        params.supplier = userStore.userInfo.realName || userStore.userInfo.username
+      }
+
       const response = await getQuotationSearch({
-        params: {
-          keyword: searchQuery.value.trim(),
-          currentPage: currentPage.value,
-          pageSize: pageSize.value
-        }
+        params
       })
       if (response?.data) {
-        console.log('搜索结果:', response.data)
         // 根据实际返回的数据结构进行处理
         if (Array.isArray(response.data)) {
           tableData.value = response.data
@@ -292,7 +325,6 @@ const handleSearch = async () => {
       await fetchTableData()
     }
   } catch (error) {
-    console.error('搜索失败:', error)
     ElMessage.error('搜索失败，请重试')
     tableData.value = []
     total.value = 0
@@ -355,7 +387,6 @@ const handleDelete = async (row: QuoteData) => {
     fetchTableData()
   } catch (error) {
     if (error !== 'cancel') {
-      console.error('删除失败:', error)
       ElMessage.error('删除失败')
     }
   }
@@ -373,11 +404,6 @@ const handleBatchDelete = async () => {
       type: 'warning'
     })
 
-    console.log(
-      '批量删除记录，IDs:',
-      selectedRows.value.map(row => row.id)
-    )
-
     // 过滤掉无效的ID
     const validRows = selectedRows.value.filter(row => row.id || row.id === 0)
     if (validRows.length === 0) {
@@ -392,13 +418,11 @@ const handleBatchDelete = async () => {
     })
 
     const results = await Promise.all(deletePromises)
-    console.log('批量删除响应:', results)
 
     ElMessage.success('批量删除成功')
     fetchTableData()
   } catch (error) {
     if (error !== 'cancel') {
-      console.error('批量删除失败:', error)
       ElMessage.error('批量删除失败')
     }
   }
@@ -479,7 +503,6 @@ const handleBatchExport = async () => {
         zip.file(uniqueFileName, buffer)
         return {success: true, fileName: uniqueFileName}
       } catch (error) {
-        console.error(`导出记录 ${row.id} 失败:`, error)
         return {success: false, fileName: row.supplierItemCode}
       }
     })
@@ -508,55 +531,9 @@ const handleBatchExport = async () => {
       ElMessage.success('批量导出成功')
     }
   } catch (error) {
-    console.error('批量导出失败:', error)
     ElMessage.error('批量导出失败')
   } finally {
     exporting.value = false
-  }
-}
-
-// 发送邮件
-const handleSendEmail = () => {
-  if (selectedRows.value.length === 0) {
-    ElMessage.warning('请选择要发送的数据')
-    return
-  }
-
-  // 预设邮件内容
-  emailForm.value.subject = `报价单信息 - ${selectedRows.value.map(row => row.supplierItemCode).join(', ')}`
-  emailForm.value.content = selectedRows.value.map(row => `供应商: ${row.supplier || '-'}\n` + `供应商项目代码: ${row.supplierItemCode || '-'}\n` + `规格详细信息: ${row.specificationDetails || '-'}\n` + `价格: ${row.fobPrice || 0} ${getCurrencyLabel(row.currency)}`).join('\n\n')
-
-  showEmailDialog.value = true
-}
-
-// 确认发送邮件
-const confirmSendEmail = async () => {
-  if (!emailForm.value.to) {
-    ElMessage.warning('请输入收件人邮箱')
-    return
-  }
-
-  try {
-    // TODO: 调用发送邮件API
-    console.log('发送邮件:', {
-      to: emailForm.value.to,
-      subject: emailForm.value.subject,
-      content: emailForm.value.content,
-      quotations: selectedRows.value.map(row => row.id)
-    })
-
-    ElMessage.success('邮件发送成功')
-    showEmailDialog.value = false
-
-    // 重置表单
-    emailForm.value = {
-      to: '',
-      subject: '',
-      content: ''
-    }
-  } catch (error) {
-    console.error('邮件发送失败:', error)
-    ElMessage.error('邮件发送失败')
   }
 }
 </script>

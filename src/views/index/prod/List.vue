@@ -19,47 +19,16 @@
         </div>
 
         <div class="right-actions flex gap-4">
-          <el-button type="primary" :loading="exporting" :disabled="!selectedRows.length" @click="handleBatchExport" class="w-24">
+          <el-button v-permission="{module: 'prod', action: 'Export'}" type="primary" :loading="exporting" :disabled="!selectedRows.length" @click="handleBatchExport" class="w-24">
             <el-icon><Document /></el-icon>
             {{ exporting ? '导出中...' : '批量导出' }}
           </el-button>
-          <el-button type="danger" :disabled="!selectedRows.length" @click="handleBatchDelete" class="min-w-[120px]">
+          <el-button v-permission="{module: 'prod', action: 'Delete'}" type="danger" :disabled="!selectedRows.length" @click="handleBatchDelete" class="min-w-[120px]">
             <el-icon class="mr-2"><Delete /></el-icon>
             批量删除
           </el-button>
-          <el-button type="info" :disabled="!selectedRows.length" @click="handleSendEmail">
-            <el-icon class="mr-2"><Message /></el-icon>
-            发送邮件
-          </el-button>
-          <div class="flex gap-2">
-            <el-button v-permission="{module: 'prod', action: 'Create'}" type="primary" @click="router.push('/prod/create')">
-              <el-icon><Plus /></el-icon>
-              创建规格表
-            </el-button>
-          </div>
         </div>
       </div>
-
-      <!-- 邮件发送对话框 -->
-      <el-dialog v-model="showEmailDialog" title="发送邮件" width="600px">
-        <el-form :model="emailForm" label-width="80px">
-          <el-form-item label="收件人">
-            <el-input v-model="emailForm.to" placeholder="请输入收件人邮箱，多个邮箱用逗号分隔" />
-          </el-form-item>
-          <el-form-item label="主题">
-            <el-input v-model="emailForm.subject" placeholder="请输入邮件主题" />
-          </el-form-item>
-          <el-form-item label="正文">
-            <el-input v-model="emailForm.content" type="textarea" :rows="6" placeholder="请输入邮件内容" />
-          </el-form-item>
-        </el-form>
-        <template #footer>
-          <div class="flex justify-end gap-2">
-            <el-button @click="showEmailDialog = false">取消</el-button>
-            <el-button type="primary" @click="confirmSendEmail">发送</el-button>
-          </div>
-        </template>
-      </el-dialog>
 
       <!-- 表格区域 -->
       <div class="overflow-auto mt-16">
@@ -120,7 +89,7 @@
 <script lang="ts" setup>
 import {getProductsPage, PageProducts, Products, deleteProductDtoDeleteById} from '@/api'
 import {exportToWord} from '@/utils/exportToWord'
-import {Delete, Document, Edit, Message, Search, View, Plus} from '@element-plus/icons-vue'
+import {Delete, Document, Edit, Search, View, Plus} from '@element-plus/icons-vue'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {saveAs} from 'file-saver'
 import JSZip from 'jszip'
@@ -132,14 +101,6 @@ const searchQuery = ref('')
 const total = ref(0)
 const selectedRows = ref<ProdData[]>([])
 const loading = ref(false)
-
-// 邮件相关
-const showEmailDialog = ref(false)
-const emailForm = ref({
-  to: '',
-  subject: '',
-  content: ''
-})
 
 // 表格数据
 const tableData = ref<Products[]>([])
@@ -376,51 +337,7 @@ const handleBatchDelete = async () => {
   }
 }
 
-// 发送邮件
-const handleSendEmail = () => {
-  if (selectedRows.value.length === 0) {
-    ElMessage.warning('请选择要发送的数据')
-    return
-  }
-
-  // 预设邮件内容
-  emailForm.value.subject = `产品信息 - ${selectedRows.value.map(row => row.tccode).join(', ')}`
-  emailForm.value.content = selectedRows.value.map(row => `产品代码: ${row.tccode}\n供应商: ${row.supplier_name}\n价格: ¥${row.fob_20_container_price}`).join('\n\n')
-
-  showEmailDialog.value = true
-}
-
-// 确认发送邮件
-const confirmSendEmail = async () => {
-  if (!emailForm.value.to) {
-    ElMessage.warning('请输入收件人邮箱')
-    return
-  }
-
-  try {
-    // TODO: 调用发送邮件API
-    console.log('发送邮件:', {
-      to: emailForm.value.to,
-      subject: emailForm.value.subject,
-      content: emailForm.value.content,
-      products: selectedRows.value.map(row => row.id)
-    })
-
-    ElMessage.success('邮件发送成功')
-    showEmailDialog.value = false
-
-    // 重置表单
-    emailForm.value = {
-      to: '',
-      subject: '',
-      content: ''
-    }
-  } catch (error) {
-    ElMessage.error('邮件发送失败')
-  }
-}
-
-// 操作处理
+// 查看详情
 const handleView = (row: any) => {
   router.push({
     name: 'productInfo',
