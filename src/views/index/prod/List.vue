@@ -155,11 +155,12 @@ const fetchTableData = async () => {
       orders: [{column: 'id', asc: false}]
     }
     const res = await getProductsPage({page: pagination.value})
-    console.log(res)
-    // 从 ResultVo 的 data 字段中提取数据
-    const pageData = res.data as PageProducts
-    tableData.value = pageData?.records || []
-    total.value = pageData?.totalRow || 0
+    console.log('API Response:', res)
+    // 直接使用返回的数据，因为API直接返回了分页数据对象
+    tableData.value = res.records || []
+    total.value = res.totalRow || 0
+    pagination.value.pageNumber = res.pageNumber
+    pagination.value.pageSize = res.pageSize
   } catch (error) {
     console.error('获取数据失败:', error)
     ElMessage.error('获取数据失败')
@@ -167,9 +168,6 @@ const fetchTableData = async () => {
     loading.value = false
   }
 }
-
-// 初始加载数据
-fetchTableData()
 
 // 表格选择处理
 const handleSelectionChange = (rows: any[]) => {
@@ -179,6 +177,12 @@ const handleSelectionChange = (rows: any[]) => {
 // 搜索处理
 const handleSearch = () => {
   pagination.value.pageNumber = 1
+  // 更新查询参数
+  queryParams.value = {
+    ...queryParams.value,
+    tccode: searchQuery.value,
+    supplier: searchQuery.value
+  }
   fetchTableData()
 }
 

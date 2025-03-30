@@ -43,14 +43,21 @@ import {User as IUser, postUserLogin} from '@/api'
 const router = useRouter()
 const userStore = useUserStore()
 
-const login = async (user_name: string, password: string): Promise<IUser | any> => {
-  const result = await postUserLogin({username: user_name, password: password})
-  // 从 ResultVo 的 data 字段中提取 User 数据
-  const userList = result.data as IUser[] | any
-  if (userList && userList.length > 0) {
-    return userList[0] as IUser
-  } else {
-    throw new Error('登录失败')
+const login = async (user_name: string, password: string): Promise<IUser> => {
+  try {
+    const result = await postUserLogin({username: user_name, password: password})
+    console.log('登录响应数据：', result)
+
+    // result 已经是用户列表数据
+    if (!Array.isArray(result) || result.length === 0) {
+      throw new Error('用户不存在')
+    }
+
+    console.log('登录成功，用户数据：', result[0])
+    return result[0]
+  } catch (error) {
+    console.error('登录失败：', error)
+    throw error
   }
 }
 
@@ -100,20 +107,22 @@ const loginFormRef = ref()
 const handleLogin = () => {
   loginFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
-      // 登录逻辑
       try {
-        let user = await login(loginForm.value.username, loginForm.value.password)
+        const user = await login(loginForm.value.username, loginForm.value.password)
+        if (!user.id || !user.username || user.status !== 1) {
+          throw new Error('用户状态异常')
+        }
         // 设置用户信息
         userStore.setUserInfo(user)
-        // 设置token（假设后端返回了token，如果没有，可以使用用户ID作为临时token）
-        userStore.setToken(user.id || `token_${Date.now()}`)
+        // 设置token
+        userStore.setToken(user.id)
         // 加载用户权限
         await userStore.loadPermissions()
         // 登录成功后跳转
         router.push('/index')
-      } catch (e) {
-        console.log(e)
-        ElMessage.error('用户名不存在或密码错误')
+      } catch (error: any) {
+        console.error('登录失败：', error)
+        ElMessage.error(error.message || '用户名不存在或密码错误')
       }
     }
   })

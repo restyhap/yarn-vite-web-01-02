@@ -122,7 +122,7 @@ import {useUserStore} from '@/pinia/user'
 import {ModuleType, PermissionAction, checkPermission} from '@/utils/permissionUtils'
 
 interface QuoteData {
-  id: number
+  id: string
   supplier: string
   supplierItemCode: string
   specificationDetails: string
@@ -225,15 +225,18 @@ const fetchTableData = async () => {
   loading.value = true
   try {
     // 构建请求参数
-    const params: any = {
+    const params = {
       currentPage: currentPage.value,
-      pageSize: pageSize.value,
-      keyword: searchQuery.value
+      pageSize: pageSize.value
+    }
+
+    // 如果有搜索关键词，添加到查询参数中
+    if (searchQuery.value) {
+      params.keyword = searchQuery.value.trim()
     }
 
     // 如果是供应商角色，只查询自己的数据
     if (userStore.userInfo.roleType === 1) {
-      // 假设roleType=2表示供应商角色
       params.supplier = userStore.userInfo.realName || userStore.userInfo.username
     }
 
@@ -241,26 +244,41 @@ const fetchTableData = async () => {
       params
     })
 
-    if (response?.data) {
-      // 根据实际返回的数据结构进行处理
-      if (Array.isArray(response.data)) {
-        tableData.value = response.data
-        total.value = response.data.length
-      } else if (response.data.dataList) {
-        tableData.value = response.data.dataList || []
-        total.value = Number(response.data.totalCount) || 0
-      } else if (response.data.records) {
-        tableData.value = response.data.records || []
-        total.value = Number(response.data.total) || 0
-      } else {
-        tableData.value = []
-        total.value = 0
-      }
-    } else {
-      tableData.value = []
-      total.value = 0
-    }
+    console.log('API Response:', response)
+    // 确保每个数据项都符合QuoteData接口定义
+    tableData.value = response.dataList.map((item: any) => ({
+      id: item.id,
+      supplier: item.supplier || '',
+      supplierItemCode: item.supplierItemCode || '',
+      specificationDetails: item.specificationDetails || '',
+      sampleLeadTime: item.sampleLeadTime || '',
+      fobPrice: Number(item.fobPrice) || 0,
+      currency: Number(item.currency) || 0,
+      salesContacts: item.salesContacts || '',
+      createTime: item.createTime || '',
+      bifmaTested: Number(item.bifmaTested) || 0,
+      cadBlockAvailable: Number(item.cadBlockAvailable) || 0,
+      productDataAvailable: Number(item.productDataAvailable) || 0,
+      productImagesAvailable: Number(item.productImagesAvailable) || 0,
+      image: item.image || '',
+      validPeriod: item.validPeriod || '',
+      port: item.port || '',
+      remark: item.remark || '',
+      overallDimensionsWidth: Number(item.overallDimensionsWidth) || 0,
+      overallDimensionsDepth: Number(item.overallDimensionsDepth) || 0,
+      overallDimensionsHeight: Number(item.overallDimensionsHeight) || 0,
+      boxDimensionsWidth: Number(item.boxDimensionsWidth) || 0,
+      boxDimensionsDepth: Number(item.boxDimensionsDepth) || 0,
+      boxDimensionsHeight: Number(item.boxDimensionsHeight) || 0,
+      boxWeightNetWeighth: Number(item.boxWeightNetWeighth) || 0,
+      netWeightGrossWeight: item.netWeightGrossWeight || '',
+      effectiveVol: item.effectiveVol || '',
+      loadingQty: Number(item.loadingQty) || 0,
+      moq: item.moq || ''
+    }))
+    total.value = response.totalCount || 0
   } catch (error) {
+    console.error('获取数据失败:', error)
     ElMessage.error('获取数据失败')
     tableData.value = []
     total.value = 0
@@ -281,56 +299,9 @@ const handleSelectionChange = (rows: QuoteData[]) => {
 }
 
 // 搜索处理
-const handleSearch = async () => {
-  loading.value = true
+const handleSearch = () => {
   currentPage.value = 1 // 重置到第一页
-  try {
-    if (searchQuery.value.trim() || userStore.userInfo.roleType === 2) {
-      // 构建请求参数
-      const params: any = {
-        keyword: searchQuery.value.trim(),
-        currentPage: currentPage.value,
-        pageSize: pageSize.value
-      }
-
-      // 如果是供应商角色，只查询自己的数据
-      if (userStore.userInfo.roleType === 2) {
-        // 假设roleType=2表示供应商角色
-        params.supplier = userStore.userInfo.realName || userStore.userInfo.username
-      }
-
-      const response = await getQuotationSearch({
-        params
-      })
-      if (response?.data) {
-        // 根据实际返回的数据结构进行处理
-        if (Array.isArray(response.data)) {
-          tableData.value = response.data
-          total.value = response.data.length
-        } else if (response.data.dataList) {
-          tableData.value = response.data.dataList || []
-          total.value = Number(response.data.totalCount) || 0
-        } else if (response.data.records) {
-          tableData.value = response.data.records || []
-          total.value = Number(response.data.total) || 0
-        } else {
-          tableData.value = []
-          total.value = 0
-        }
-      } else {
-        tableData.value = []
-        total.value = 0
-      }
-    } else {
-      await fetchTableData()
-    }
-  } catch (error) {
-    ElMessage.error('搜索失败，请重试')
-    tableData.value = []
-    total.value = 0
-  } finally {
-    loading.value = false
-  }
+  fetchTableData()
 }
 
 // 搜索框失焦处理
@@ -340,6 +311,7 @@ const handleSearchBlur = () => {
 
 // 搜索框清空处理
 const handleSearchClear = () => {
+  searchQuery.value = ''
   currentPage.value = 1 // 重置到第一页
   fetchTableData()
 }
@@ -347,6 +319,7 @@ const handleSearchClear = () => {
 // 分页处理
 const handleSizeChange = (val: number) => {
   pageSize.value = val
+  currentPage.value = 1 // 切换每页显示数量时重置到第一页
   fetchTableData()
 }
 

@@ -163,7 +163,6 @@ const fetchTableData = async (isSearch = false) => {
     // 根据是否搜索选择不同的 API
     let response
     if (isSearch) {
-      // 搜索 API 使用 config 参数
       response = await getQcReportsSearch({
         params: {
           keyword: searchQuery.value,
@@ -172,7 +171,6 @@ const fetchTableData = async (isSearch = false) => {
         }
       })
     } else {
-      // 分页 API 使用 page 参数
       response = await getQcReportsPage({
         page: {
           pageNumber: currentPage.value,
@@ -181,53 +179,12 @@ const fetchTableData = async (isSearch = false) => {
       })
     }
 
-    if (response?.data) {
-      // 处理返回的数据
-      const responseData = response.data
-
-      // 检查返回的数据结构
-      if (responseData && typeof responseData === 'object') {
-        // 尝试获取记录列表
-        let records = null
-        let totalCount = 0
-
-        if (Array.isArray(responseData)) {
-          // 如果直接返回数组
-          records = responseData
-          totalCount = responseData.length
-        } else if (responseData.records && Array.isArray(responseData.records)) {
-          // 标准分页结构
-          records = responseData.records
-          totalCount = Number(responseData.totalRow || 0)
-          currentPage.value = Number(responseData.pageNumber || currentPage.value)
-          pageSize.value = Number(responseData.pageSize || pageSize.value)
-        } else if (responseData.data) {
-          // 嵌套的 data 字段
-          const nestedData = responseData.data
-          if (Array.isArray(nestedData)) {
-            records = nestedData
-            totalCount = nestedData.length
-          } else if (nestedData.records && Array.isArray(nestedData.records)) {
-            records = nestedData.records
-            totalCount = Number(nestedData.totalRow || nestedData.total || 0)
-          }
-        }
-
-        if (records) {
-          tableData.value = records
-          total.value = totalCount
-        } else {
-          tableData.value = []
-          total.value = 0
-        }
-      } else {
-        tableData.value = []
-        total.value = 0
-      }
-    } else {
-      tableData.value = []
-      total.value = 0
-    }
+    console.log('API Response:', response)
+    // 直接使用返回的数据
+    tableData.value = response.records || []
+    total.value = response.totalRow || 0
+    currentPage.value = response.pageNumber || currentPage.value
+    pageSize.value = response.pageSize || pageSize.value
 
     console.log(`${isSearch ? '搜索' : '普通'}分页数据:`, {
       总条数: total.value,
