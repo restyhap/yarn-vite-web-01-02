@@ -7,14 +7,14 @@
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import request from "@/api/request";
-import { type ResultVo, type DeepRequired } from "../../interface";
+import { type ResultVo } from "../../interface";
 import { type AxiosRequestConfig } from "axios";
 
 /**
  * /quotation/remove/{id}
  */
 export function deleteQuotationRemoveById(params: DeleteQuotationRemoveByIdParams, config?: AxiosRequestConfig) {
-    return request.delete<DeepRequired<ResultVo>>(`/quotation/remove/${params.id}`, config);
+    return request.delete<ResultVo<void>>(`/quotation/remove/${params.id}`, config);
 }
 
 export interface DeleteQuotationRemoveByIdParams {

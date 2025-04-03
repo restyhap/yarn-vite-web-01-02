@@ -16,6 +16,10 @@
           <h2 class="text-lg font-semibold text-gray-800">创建规格表</h2>
         </div>
         <div class="flex gap-2">
+          <el-button type="primary" @click="fillTestData">
+            <el-icon><DataLine /></el-icon>
+            模拟数据
+          </el-button>
           <el-button @click="router.back()">
             <el-icon><Back /></el-icon>
             返回
@@ -407,7 +411,7 @@
 import {ref, reactive, onMounted, onUnmounted} from 'vue'
 import {ElMessage} from 'element-plus'
 import type {UploadProps, UploadFile} from 'element-plus'
-import {Plus} from '@element-plus/icons-vue'
+import {Plus, Back, DataLine} from '@element-plus/icons-vue'
 import type {Products, Upholstery, CartonDetails, ProductionLogistics, ProductDimensions, SeatInnerComponents, BackInnerComponents, SeatOuterComponents, BackOuterComponents, Arms, FoamDetails, Castors, Bases, GasLift, GasLiftCover, Mechanism, Fittings, ProductImages, ProductDto} from '@/api'
 import {getId} from '@/utils/idUtils'
 import {postProductDtoSave} from '@/api'
@@ -748,13 +752,32 @@ const submitForm = async () => {
 }
 
 // 修改键盘事件处理函数
-const handleKeyDown = (e: KeyboardEvent) => {
-  // 如果当前焦点在输入框或文本框中，不处理回车事件
-  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+const handleKeyDown = (event: KeyboardEvent) => {
+  // Alt + F 填充测试数据
+  if (event.altKey && event.key.toLowerCase() === 'f') {
+    fillTestData()
     return
   }
 
-  if (e.key === 'Enter') {
+  // Alt + 左箭头 上一步
+  if (event.altKey && event.key === 'ArrowLeft') {
+    prevStep()
+    return
+  }
+
+  // Alt + 右箭头 下一步
+  if (event.altKey && event.key === 'ArrowRight') {
+    nextStep()
+    return
+  }
+
+  // 如果当前焦点在输入框或文本框中，不处理回车事件
+  if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+    return
+  }
+
+  // 处理回车键
+  if (event.key === 'Enter') {
     if (activeStep.value < 17) {
       nextStep()
     } else {
@@ -763,14 +786,15 @@ const handleKeyDown = (e: KeyboardEvent) => {
   }
 }
 
-// 在组件挂载时添加键盘事件监听
+// 在组件挂载时添加快捷键支持
 onMounted(() => {
-  window.addEventListener('keydown', handleKeyDown)
+  // 添加快捷键监听
+  document.addEventListener('keydown', handleKeyDown)
 })
 
-// 在组件卸载时移除键盘事件监听
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeyDown)
+  // 移除快捷键监听
+  document.removeEventListener('keydown', handleKeyDown)
 })
 
 // 步骤配置
@@ -877,4 +901,176 @@ const handlePreview = (imageUrl: string) => {
   // 处理图片预览逻辑
   console.log('预览图片:', imageUrl)
 }
+
+// 添加测试数据填充函数
+const fillTestData = () => {
+  // 填充基本信息
+  Object.assign(basicForm, {
+    tccode: 'TC-2025001',
+    supplier: 'Test Supplier',
+    supplierCode: 'SUP001',
+    supplierName: '测试供应商',
+    fireStandard: 'BS 5852',
+    fob20ContainerPrice: 100,
+    fob40ContainerPrice: 180,
+    shippingPort: '深圳港'
+  })
+
+  // 填充面料信息
+  Object.assign(upholsteryForm, {
+    fabricManufacturer: '测试面料厂商',
+    colourCode: 'BLACK-001',
+    leatherGrade: 'A级',
+    usagePerChair: 2.5
+  })
+
+  // 填充包装信息
+  Object.assign(cartonForm, {
+    width: 60,
+    depth: 60,
+    height: 120,
+    boardType: '五层瓦楞纸',
+    itemsPerCarton: 1,
+    cartonVolume: 0.432
+  })
+
+  // 填充生产物流信息
+  Object.assign(logisticsForm, {
+    productionTime: 30,
+    effectiveVolume: 0.4,
+    loadingQuantity20gp: 120,
+    loadingQuantity40hc: 280,
+    netWeight: 15.5,
+    grossWeight: 18.2
+  })
+
+  // 填充产品尺寸信息
+  Object.assign(dimensionsForm, {
+    seatWidth: 50,
+    seatDepth: 50,
+    seatHeightMin: 45,
+    seatHeightMax: 55,
+    backWidth: 45,
+    backHeight: 60,
+    backHeightFromSeat: 55,
+    overallWidth: 65,
+    overallDepth: 65,
+    overallHeightMin: 115,
+    overallHeightMax: 125
+  })
+
+  // 填充座椅内部结构信息
+  Object.assign(seatInnerForm, {
+    materialCode: 'PP-001',
+    thickness: 5,
+    layersCount: 1,
+    dimensions: '500x500mm'
+  })
+
+  // 填充背部内部结构信息
+  Object.assign(backInnerForm, {
+    materialCode: 'PP-002',
+    thickness: 5,
+    layersCount: 1,
+    dimensions: '450x600mm'
+  })
+
+  // 填充座椅外部结构信息
+  Object.assign(seatOuterForm, {
+    material: 'PP塑料',
+    dimensions: '520x520mm',
+    manufacturerName: '测试制造商'
+  })
+
+  // 填充背部外部结构信息
+  Object.assign(backOuterForm, {
+    material: 'PP塑料',
+    dimensions: '470x620mm',
+    manufacturerName: '测试制造商'
+  })
+
+  // 填充扶手信息
+  Object.assign(armsForm, {
+    material: 'PP+钢架',
+    type: '可调节扶手',
+    manufacturer: '明泰五金',
+    description: '3D调节扶手，带软垫',
+    armHeightFromSeat: 20,
+    armHeightFromFloor: 65
+  })
+
+  // 填充泡棉信息
+  Object.assign(foamForm, {
+    description: '高密度记忆海绵',
+    seatDensity: 55,
+    backDensity: 45,
+    seatThickness: 6,
+    backThickness: 4
+  })
+
+  // 填充脚轮信息
+  Object.assign(castorsForm, {
+    description: '静音PU轮',
+    pinThickness: 11,
+    wheelDiameter: 60
+  })
+
+  // 填充底座信息
+  Object.assign(baseForm, {
+    description: '铝合金五星脚',
+    sizeDiameter: 680,
+    material: '铝合金',
+    type: '五星脚'
+  })
+
+  // 填充气压棒信息
+  Object.assign(gasLiftForm, {
+    description: '4级气压棒',
+    gasLiftClass: 'Class 4',
+    casingLength: 240,
+    extensionSize: 100,
+    taper: 28
+  })
+
+  // 填充气压罩信息
+  Object.assign(gasLiftCoverForm, {
+    description: '伸缩防尘罩',
+    material: 'PP',
+    colour: '黑色'
+  })
+
+  // 填充机构信息
+  Object.assign(mechanismForm, {
+    description: '多功能底盘',
+    leversCount: 3,
+    lockingPositions: '5档',
+    modelNo: 'JG-001',
+    supplierName: '金冠机械'
+  })
+
+  // 填充配件信息
+  Object.assign(fittingsForm, {
+    fittingNumber: 1001,
+    description: '安装螺丝套件',
+    quantity: 12,
+    material: '碳钢'
+  })
+
+  // 填充产品图片信息（这里只设置空数组，因为实际图片需要用户上传）
+  productImagesForm.value = {
+    frontImgPath: [],
+    sideImgPath: [],
+    backImgPath: [],
+    angleImgPath: []
+  }
+
+  ElMessage.success('所有表单已填充模拟数据')
+}
+
+// 导出必要的变量和函数供模板使用
+defineExpose({
+  steps,
+  goToStep,
+  handlePreview
+})
 </script>

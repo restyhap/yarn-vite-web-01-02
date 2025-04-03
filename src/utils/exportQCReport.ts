@@ -101,12 +101,16 @@ const base64ToUint8Array = (base64: string): Uint8Array => {
  */
 export const getImageBuffer = async (url: string): Promise<Uint8Array | null> => {
   try {
-    // 将外部URL转换为使用代理的URL
-    const proxyUrl = url.startsWith('https://img.shetu66.com')
-      ? url.replace('https://img.shetu66.com', '/img-proxy')
-      : url
+    // 对于测试图片路径，直接返回null不尝试获取
+    if (url.includes('img.shetu66.com')) {
+      console.log('跳过测试图片:', url)
+      return null
+    }
+    
+    // 尝试获取图片
+    console.log('正在获取图片:', { url })
+    const response = await fetch(url)
 
-    const response = await fetch(proxyUrl)
     if (!response.ok) {
       console.warn(`获取图片失败: ${url}, 状态码: ${response.status}`)
       return null

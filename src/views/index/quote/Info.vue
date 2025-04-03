@@ -315,7 +315,17 @@ const fetchQuoteDetail = async () => {
     loading.value = true
     const id = route.params.id as string
     const response = await getQuotationGetInfoById({id})
-    formData.value = {...formData.value, ...response.data}
+
+    if (response.code !== '200') {
+      ElMessage.error(response.message || '获取详情失败')
+      return
+    }
+
+    if (response.data) {
+      formData.value = {...formData.value, ...response.data}
+    } else {
+      ElMessage.error('获取详情失败：数据为空')
+    }
   } catch (error) {
     console.error('获取详情失败:', error)
     ElMessage.error('获取详情失败')

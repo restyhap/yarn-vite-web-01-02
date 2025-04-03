@@ -38,21 +38,19 @@ import {Lock, User} from '@element-plus/icons-vue'
 import {ElMessage} from 'element-plus'
 import {ref} from 'vue'
 import {useRouter} from 'vue-router'
-import {User as IUser, postUserLogin} from '@/api'
+import {User as IUser, postUserLogin, ResultVo} from '@/api'
 
 const router = useRouter()
 const userStore = useUserStore()
 
-const login = async (user_name: string, password: string): Promise<IUser> => {
+const login = async (user_name: string, password: string): Promise<ResultVo> => {
   try {
     const result = await postUserLogin({username: user_name, password: password})
-    console.log('登录响应数据：', result)
-
     // result 已经是用户列表数据
+    console.log('登录成功，用户数据：', result)
     if (!Array.isArray(result) || result.length === 0) {
       throw new Error('用户不存在')
     }
-
     console.log('登录成功，用户数据：', result[0])
     return result[0]
   } catch (error) {

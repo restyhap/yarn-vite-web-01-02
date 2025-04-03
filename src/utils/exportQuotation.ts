@@ -43,14 +43,15 @@ interface QuotationData {
  */
 const getImageBuffer = async (url: string): Promise<Uint8Array | null> => {
   try {
-    // 将外部URL转换为使用代理的URL
-    const proxyUrl = url.startsWith('https://img.shetu66.com')
-      ? url.replace('https://img.shetu66.com', '/img-proxy')
-      : url
-
-    console.log('正在获取图片:', { originalUrl: url, proxyUrl })
-
-    const response = await fetch(proxyUrl)
+    // 对于测试图片路径，直接返回null不尝试获取
+    if (url.includes('img.shetu66.com')) {
+      console.log('跳过测试图片:', url)
+      return null
+    }
+    
+    // 尝试获取图片
+    console.log('正在获取图片:', { url })
+    const response = await fetch(url)
     console.log('图片请求响应:', { status: response.status, ok: response.ok })
 
     if (!response.ok) {

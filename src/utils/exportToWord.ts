@@ -1,6 +1,7 @@
 import { Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun, AlignmentType, HeadingLevel, BorderStyle, VerticalAlign, WidthType, ImageRun, Media, Header } from 'docx'
 import { saveAs } from 'file-saver'
 import { LOGO } from './excelUtils'
+import type { ProductDto } from '@/api/interface'
 /**
  * 表单数据接口定义
  * 使用索引签名允许任意字符串键
@@ -1013,14 +1014,15 @@ const createFoamTableRow = (formData: any, rowType: 'header' | 'density' | 'thic
  */
 const getImageBuffer = async (url: string): Promise<Uint8Array | null> => {
   try {
-    // 将外部URL转换为使用代理的URL
-    const proxyUrl = url.startsWith('https://img.shetu66.com')
-      ? url.replace('https://img.shetu66.com', '/img-proxy')
-      : url
-
-    console.log('正在获取图片:', { originalUrl: url, proxyUrl })
-
-    const response = await fetch(proxyUrl)
+    // 对于测试图片路径，直接返回null不尝试获取
+    if (url.includes('img.shetu66.com')) {
+      console.log('跳过测试图片:', url)
+      return null
+    }
+    
+    // 尝试获取图片
+    console.log('正在获取图片:', { url })
+    const response = await fetch(url)
     console.log('图片请求响应:', { status: response.status, ok: response.ok })
 
     if (!response.ok) {
@@ -1133,28 +1135,226 @@ const formatValueByField = (value: any, fieldName: string): string => {
 
 /**
  * 导出Word文档
- * @param formData - 包含所有表单数据的对象
+ * @param productDto - 包含所有产品数据的ProductDto对象
  * @returns Promise<Blob> - 返回文档的 Blob 对象
  * @throws 导出失败时抛出错误
  */
-export const exportToWord = async (formData: FormData): Promise<Blob> => {
+export const exportToWord = async (productDto: ProductDto): Promise<Blob> => {
   try {
+    console.log('开始处理产品数据:', productDto)
+
+    // 转换ProductDto为导出所需的数据结构
+    const formData: FormData = {
+      // 基本信息和文件名
+      products: productDto.products || {},
+      product_code: productDto.products?.tccode || 'Unknown',
+
+      // TC GROUP INTERNAL USE ONLY 表格所需字段
+      initialMonthlyForecast: '', // 使用空字符串代替 'N/A'
+      productionColours: '', // 使用空字符串代替 'N/A'
+      customerProductCode: '', // 使用空字符串代替 'N/A'
+      customerBarcode: '', // 使用空字符串代替 'N/A'
+      customerProductName: '', // 使用空字符串代替 'N/A'
+      factoryProductName: '', // 使用空字符串代替 'N/A'
+
+      // 使用 TC 相关字段代替默认字段
+      tc_code: productDto.products?.tccode || '',
+      tc_barcode: '', // API中没有此字段，暂时留空
+      tc_product_name: productDto.products?.supplier || '', // 假设supplier可用作产品名称
+      factory_code: productDto.products?.supplierCode || '',
+
+      // 图片数据特殊处理：将驼峰命名的字段名转换为下划线格式
+      images: {
+        front_img_path: productDto.productImages?.frontImgPath || '',
+        side_img_path: productDto.productImages?.sideImgPath || '',
+        back_view_path: productDto.productImages?.backImgPath || '',
+        angle_view_path: productDto.productImages?.angleImgPath || ''
+      },
+
+      // 座椅内部结构
+      seatInner: {
+        materialCode: productDto.seatInnerComponents?.materialCode || '',
+        thickness: String(productDto.seatInnerComponents?.thickness || ''),
+        layersCount: String(productDto.seatInnerComponents?.layersCount || ''),
+        dimensions: productDto.seatInnerComponents?.dimensions || ''
+      },
+
+      // 背部内部结构
+      backInner: {
+        materialCode: productDto.backInnerComponents?.materialCode || '',
+        thickness: String(productDto.backInnerComponents?.thickness || ''),
+        layersCount: String(productDto.backInnerComponents?.layersCount || ''),
+        dimensions: productDto.backInnerComponents?.dimensions || ''
+      },
+
+      // 座椅外部结构
+      seatOuter: {
+        material: productDto.seatOuterComponents?.material || '',
+        dimensions: productDto.seatOuterComponents?.dimensions || '',
+        manufacturerName: productDto.seatOuterComponents?.manufacturerName || ''
+      },
+
+      // 背部外部结构
+      backOuter: {
+        material: productDto.backOuterComponents?.material || '',
+        dimensions: productDto.backOuterComponents?.dimensions || '',
+        manufacturerName: productDto.backOuterComponents?.manufacturerName || ''
+      },
+
+      // 扶手信息
+      arms: {
+        description: productDto.arms?.description || '',
+        material: productDto.arms?.material || '',
+        type: productDto.arms?.type || '',
+        manufacturer: productDto.arms?.manufacturer || '',
+        arm_height_from_seat: String(productDto.arms?.armHeightFromSeat || ''),
+        arm_height_from_floor: String(productDto.arms?.armHeightFromFloor || '')
+      },
+
+      // 泡棉信息
+      foam: {
+        description: productDto.foamDetails?.description || '',
+        seat_density: String(productDto.foamDetails?.seatDensity || ''),
+        back_density: String(productDto.foamDetails?.backDensity || ''),
+        seat_thickness: String(productDto.foamDetails?.seatThickness || ''),
+        back_thickness: String(productDto.foamDetails?.backThickness || '')
+      },
+
+      // 脚轮信息
+      castors: {
+        description: productDto.castors?.description || '',
+        pin_thickness: String(productDto.castors?.pinThickness || ''),
+        wheel_diameter: String(productDto.castors?.wheelDiameter || '')
+      },
+
+      // 底座信息
+      base: {
+        description: productDto.bases?.description || '',
+        size_diameter: String(productDto.bases?.sizeDiameter || ''),
+        material: productDto.bases?.material || '',
+        type: productDto.bases?.type || ''
+      },
+
+      // 气压棒信息
+      gasLift: {
+        description: productDto.gasLift?.description || '',
+        gasLiftClass: productDto.gasLift?.gasLiftClass || '',
+        casingLength: String(productDto.gasLift?.casingLength || ''),
+        extensionSize: String(productDto.gasLift?.extensionSize || ''),
+        taper: String(productDto.gasLift?.taper || '')
+      },
+
+      // 气压罩信息
+      gasLiftCover: {
+        description: productDto.gasLiftCover?.description || '',
+        material: productDto.gasLiftCover?.material || '',
+        colour: productDto.gasLiftCover?.colour || ''
+      },
+
+      // 机构信息
+      mechanism: {
+        description: productDto.mechanism?.description || '',
+        leversCount: String(productDto.mechanism?.leversCount || ''),
+        lockingPositions: productDto.mechanism?.lockingPositions || '',
+        modelNo: productDto.mechanism?.modelNo || '',
+        supplierName: productDto.mechanism?.supplierName || ''
+      },
+
+      // 配件信息
+      fittings: {
+        fittingNumber: String(productDto.fittings?.fittingNumber || ''),
+        description: productDto.fittings?.description || '',
+        quantity: String(productDto.fittings?.quantity || ''),
+        material: productDto.fittings?.material || ''
+      },
+
+      // 包装信息
+      packaging: {
+        width: String(productDto.cartonDetails?.width || ''),
+        depth: String(productDto.cartonDetails?.depth || ''),
+        height: String(productDto.cartonDetails?.height || ''),
+        boardType: productDto.cartonDetails?.boardType || '',
+        itemsPerCarton: String(productDto.cartonDetails?.itemsPerCarton || ''),
+        cartonVolume: String(productDto.cartonDetails?.cartonVolume || '')
+      },
+
+      // 物流信息 - 确保字段名与模板匹配
+      logistics: {
+        production_time: String(productDto.productionLogistics?.productionTime || ''),
+        effective_volume: String(productDto.productionLogistics?.effectiveVolume || ''),
+        loading_quantity_20gp: String(productDto.productionLogistics?.loadingQuantity20gp || ''),
+        loading_quantity_40hc: String(productDto.productionLogistics?.loadingQuantity40hc || ''),
+        net_weight: String(productDto.productionLogistics?.netWeight || ''),
+        gross_weight: String(productDto.productionLogistics?.grossWeight || '')
+      },
+
+      // 尺寸信息 - 确保字段名与模板匹配
+      dimensions: {
+        seat_width: String(productDto.productDimensions?.seatWidth || ''),
+        seat_depth: String(productDto.productDimensions?.seatDepth || ''),
+        back_width: String(productDto.productDimensions?.backWidth || ''),
+        back_height: String(productDto.productDimensions?.backHeight || ''),
+        seat_height_min: String(productDto.productDimensions?.seatHeightMin || ''),
+        seat_height_max: String(productDto.productDimensions?.seatHeightMax || ''),
+        back_height_from_seat: String(productDto.productDimensions?.backHeightFromSeat || ''),
+        overall_width: String(productDto.productDimensions?.overallWidth || ''),
+        overall_depth: String(productDto.productDimensions?.overallDepth || ''),
+        overall_height_min: String(productDto.productDimensions?.overallHeightMin || ''),
+        overall_height_max: String(productDto.productDimensions?.overallHeightMax || '')
+      },
+
+      // 面料信息
+      upholstery: {
+        fabricManufacturer: productDto.upholstery?.fabricManufacturer || '',
+        colourCode: productDto.upholstery?.colourCode || '',
+        leatherGrade: productDto.upholstery?.leatherGrade || '',
+        usagePerChair: String(productDto.upholstery?.usagePerChair || '')
+      },
+
+      // 添加一个标记，表示这不是批量导出
+      is_batch_export: false
+    }
+
     console.log('开始处理图片数据:', formData.images)
 
     // 获取所有图片的 Buffer 数据
-    const frontImageBuffer = formData.images?.front_img_path ? await getImageBuffer(formData.images.front_img_path) : null
-    const sideImageBuffer = formData.images?.side_img_path ? await getImageBuffer(formData.images.side_img_path) : null
-    const backImageBuffer = formData.images?.back_view_path ? await getImageBuffer(formData.images.back_view_path) : null
-    const angleImageBuffer = formData.images?.angle_view_path ? await getImageBuffer(formData.images.angle_view_path) : null
+    let frontImageBuffer, sideImageBuffer, backImageBuffer, angleImageBuffer;
+    try {
+      frontImageBuffer = formData.images?.front_img_path ? await getImageBuffer(formData.images.front_img_path) : null
+    } catch (error) {
+      console.error('获取正面图片失败:', error)
+      frontImageBuffer = null
+    }
+    
+    try {
+      sideImageBuffer = formData.images?.side_img_path ? await getImageBuffer(formData.images.side_img_path) : null
+    } catch (error) {
+      console.error('获取侧面图片失败:', error)
+      sideImageBuffer = null
+    }
+    
+    try {
+      backImageBuffer = formData.images?.back_view_path ? await getImageBuffer(formData.images.back_view_path) : null
+    } catch (error) {
+      console.error('获取背面图片失败:', error)
+      backImageBuffer = null
+    }
+    
+    try {
+      angleImageBuffer = formData.images?.angle_view_path ? await getImageBuffer(formData.images.angle_view_path) : null
+    } catch (error) {
+      console.error('获取角度图片失败:', error)
+      angleImageBuffer = null
+    }
 
     // 获取 logo 图片数据
-    let logoBuffer: Uint8Array;
+    let logoBuffer;
     try {
       logoBuffer = await getLogoBuffer();
-      console.log('Logo loaded successfully');
+      console.log('Logo加载成功');
     } catch (error) {
-      console.error('Error loading logo:', error);
-      // 如果 logo 加载失败，使用一个空的 buffer，但仍然继续生成文档
+      console.error('Logo加载失败:', error);
+      // 如果logo加载失败，使用空buffer
       logoBuffer = new Uint8Array(0);
     }
 

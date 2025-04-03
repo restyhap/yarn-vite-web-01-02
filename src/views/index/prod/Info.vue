@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-01-15 11:34:14
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-03-18 17:09:36
+ * @LastEditTime: 2025-04-02 10:00:52
  * @FilePath: /yarn-vite-web-01-02/src/views/index/prod/Info.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -25,19 +25,11 @@
               <h2 class="text-lg font-semibold text-gray-800">产品规格详情</h2>
             </div>
             <div class="flex gap-2">
-              <el-button v-permission="{module: 'prod', action: 'Edit'}" type="primary" :loading="exporting" @click="handleEdit" class="min-w-[120px]">
-                <el-icon><Edit /></el-icon>
-                编辑
-              </el-button>
               <el-button type="primary" :loading="exporting" @click="handleExport" class="min-w-[120px]">
                 <el-icon>
                   <Document />
                 </el-icon>
                 {{ exporting ? '导出中...' : '导出文档' }}
-              </el-button>
-              <el-button v-if="exporting" type="warning" @click="handleCancelExport" class="min-w-[120px]">
-                <el-icon><CircleClose /></el-icon>
-                取消导出
               </el-button>
               <el-button @click="router.back()">
                 <el-icon>
@@ -201,165 +193,24 @@ const editingSections = ref<string[]>([])
 const exporting = ref(false)
 const abortController = ref<AbortController | null>(null)
 const formData = ref<FormData>({
-  products: {
-    id: '',
-    tccode: '',
-    supplier: '',
-    supplierCode: '',
-    supplierName: '',
-    fireStandard: '',
-    fob20ContainerPrice: 0,
-    fob40ContainerPrice: 0,
-    shippingPort: ''
-  },
-  packaging: {
-    id: '',
-    productId: '',
-    width: 0,
-    depth: 0,
-    height: 0,
-    boardType: '',
-    itemsPerCarton: 0,
-    cartonVolume: 0
-  },
-  dimensions: {
-    id: '',
-    productId: '',
-    seatWidth: 0,
-    seatDepth: 0,
-    seatHeightMin: 0,
-    seatHeightMax: 0,
-    backWidth: 0,
-    backHeight: 0,
-    backHeightFromSeat: 0,
-    overallWidth: 0,
-    overallDepth: 0,
-    overallHeightMin: 0,
-    overallHeightMax: 0
-  },
-  logistics: {
-    id: '',
-    productId: '',
-    productionTime: 0,
-    effectiveVolume: 0,
-    loadingQuantity20gp: 0,
-    loadingQuantity40hc: 0,
-    netWeight: 0,
-    grossWeight: 0
-  },
-  seatInner: {
-    id: '',
-    productId: '',
-    materialCode: '',
-    thickness: 0,
-    layersCount: 0,
-    dimensions: ''
-  },
-  backInner: {
-    id: '',
-    productId: '',
-    materialCode: '',
-    thickness: 0,
-    layersCount: 0,
-    dimensions: ''
-  },
-  backOuter: {
-    id: '',
-    productId: '',
-    material: '',
-    dimensions: '',
-    manufacturerName: ''
-  },
-  seatOuter: {
-    id: '',
-    productId: '',
-    material: '',
-    dimensions: '',
-    manufacturerName: ''
-  },
-  arms: {
-    id: '',
-    productId: '',
-    material: '',
-    type: '',
-    manufacturer: '',
-    description: '',
-    armHeightFromSeat: 0,
-    armHeightFromFloor: 0
-  },
-  foam: {
-    id: '',
-    productId: '',
-    description: '',
-    seatDensity: 0,
-    backDensity: 0,
-    seatThickness: 0,
-    backThickness: 0
-  },
-  castors: {
-    id: '',
-    productId: '',
-    description: '',
-    pinThickness: 0,
-    wheelDiameter: 0
-  },
-  base: {
-    id: '',
-    productId: '',
-    description: '',
-    sizeDiameter: 0,
-    material: '',
-    type: ''
-  },
-  gasLift: {
-    id: '',
-    productId: '',
-    description: '',
-    gasLiftClass: '',
-    casingLength: 0,
-    extensionSize: 0,
-    taper: 0
-  },
-  gasLiftCover: {
-    id: '',
-    productId: '',
-    description: '',
-    material: '',
-    colour: ''
-  },
-  mechanism: {
-    id: '',
-    productId: '',
-    description: '',
-    leversCount: 0,
-    lockingPositions: '',
-    modelNo: '',
-    supplierName: ''
-  },
-  fittings: {
-    id: '',
-    productId: '',
-    fittingNumber: 0,
-    description: '',
-    quantity: 0,
-    material: ''
-  },
-  images: {
-    id: '',
-    prodId: '',
-    frontImgPath: '',
-    sideImgPath: '',
-    backImgPath: '',
-    angleImgPath: ''
-  },
-  upholstery: {
-    id: '',
-    productId: '',
-    fabricManufacturer: '',
-    colourCode: '',
-    leatherGrade: '',
-    usagePerChair: 0
-  }
+  products: {} as Products,
+  packaging: {} as CartonDetails,
+  dimensions: {} as ProductDimensions,
+  logistics: {} as ProductionLogistics,
+  seatInner: {} as SeatInnerComponents,
+  backInner: {} as BackInnerComponents,
+  backOuter: {} as BackOuterComponents,
+  seatOuter: {} as SeatOuterComponents,
+  arms: {} as Arms,
+  foam: {} as FoamDetails,
+  castors: {} as Castors,
+  base: {} as Bases,
+  gasLift: {} as GasLift,
+  gasLiftCover: {} as GasLiftCover,
+  mechanism: {} as Mechanism,
+  fittings: {} as Fittings,
+  images: {} as ProductImages,
+  upholstery: {} as Upholstery
 })
 const formDataBackup = ref<FormData>(JSON.parse(JSON.stringify(formData.value)))
 
@@ -519,167 +370,64 @@ const fetchData = async () => {
     console.log('获取到的数据:', response)
     if (response) {
       // 使用类型断言处理API返回的数据
-      const responseData = response.data as any
+      const responseData = response as any
+
+      // 使用接口类型优化数据处理
       formData.value = {
-        ...formData.value,
         products: {
-          id: responseData.products?.id || '',
-          tccode: responseData.products?.tccode || '',
-          supplier: responseData.products?.supplier || '',
-          supplierCode: responseData.products?.supplierCode || '',
-          supplierName: responseData.products?.supplierName || '',
-          fireStandard: responseData.products?.fireStandard || '',
-          fob20ContainerPrice: Number(responseData.products?.fob20ContainerPrice) || 0,
-          fob40ContainerPrice: Number(responseData.products?.fob40ContainerPrice) || 0,
-          shippingPort: responseData.products?.shippingPort || ''
+          ...((responseData.products || {}) as Products)
         },
         packaging: {
-          id: responseData.cartonDetails?.id || '',
-          productId: responseData.cartonDetails?.productId || '',
-          width: Number(responseData.cartonDetails?.width) || 0,
-          depth: Number(responseData.cartonDetails?.depth) || 0,
-          height: Number(responseData.cartonDetails?.height) || 0,
-          boardType: responseData.cartonDetails?.boardType || '',
-          itemsPerCarton: Number(responseData.cartonDetails?.itemsPerCarton) || 0,
-          cartonVolume: Number(responseData.cartonDetails?.cartonVolume) || 0
+          ...((responseData.cartonDetails || {}) as CartonDetails)
         },
         dimensions: {
-          id: responseData.productDimensions?.id || '',
-          productId: responseData.productDimensions?.productId || '',
-          seatWidth: responseData.productDimensions?.seatWidth || 0,
-          seatDepth: responseData.productDimensions?.seatDepth || 0,
-          seatHeightMin: responseData.productDimensions?.seatHeightMin || 0,
-          seatHeightMax: responseData.productDimensions?.seatHeightMax || 0,
-          backWidth: responseData.productDimensions?.backWidth || 0,
-          backHeight: responseData.productDimensions?.backHeight || 0,
-          backHeightFromSeat: responseData.productDimensions?.backHeightFromSeat || 0,
-          overallWidth: responseData.productDimensions?.overallWidth || 0,
-          overallDepth: responseData.productDimensions?.overallDepth || 0,
-          overallHeightMin: responseData.productDimensions?.overallHeightMin || 0,
-          overallHeightMax: responseData.productDimensions?.overallHeightMax || 0
+          ...((responseData.productDimensions || {}) as ProductDimensions)
         },
         logistics: {
-          id: responseData.productionLogistics?.id || '',
-          productId: responseData.productionLogistics?.productId || '',
-          productionTime: responseData.productionLogistics?.productionTime || 0,
-          effectiveVolume: responseData.productionLogistics?.effectiveVolume || 0,
-          loadingQuantity20gp: responseData.productionLogistics?.loadingQuantity20gp || 0,
-          loadingQuantity40hc: responseData.productionLogistics?.loadingQuantity40hc || 0,
-          netWeight: responseData.productionLogistics?.netWeight || 0,
-          grossWeight: responseData.productionLogistics?.grossWeight || 0
+          ...((responseData.productionLogistics || {}) as ProductionLogistics)
         },
         seatInner: {
-          id: responseData.seatInnerComponents?.id || '',
-          productId: responseData.seatInnerComponents?.productId || '',
-          materialCode: responseData.seatInnerComponents?.materialCode || '',
-          thickness: responseData.seatInnerComponents?.thickness || 0,
-          layersCount: responseData.seatInnerComponents?.layersCount || 0,
-          dimensions: responseData.seatInnerComponents?.dimensions || ''
+          ...((responseData.seatInnerComponents || {}) as SeatInnerComponents)
         },
         backInner: {
-          id: responseData.backInnerComponents?.id || '',
-          productId: responseData.backInnerComponents?.productId || '',
-          materialCode: responseData.backInnerComponents?.materialCode || '',
-          thickness: responseData.backInnerComponents?.thickness || 0,
-          layersCount: responseData.backInnerComponents?.layersCount || 0,
-          dimensions: responseData.backInnerComponents?.dimensions || ''
+          ...((responseData.backInnerComponents || {}) as BackInnerComponents)
         },
         backOuter: {
-          id: responseData.backOuterComponents?.id || '',
-          productId: responseData.backOuterComponents?.productId || '',
-          material: responseData.backOuterComponents?.material || '',
-          dimensions: responseData.backOuterComponents?.dimensions || '',
-          manufacturerName: responseData.backOuterComponents?.manufacturerName || ''
+          ...((responseData.backOuterComponents || {}) as BackOuterComponents)
         },
         seatOuter: {
-          id: responseData.seatOuterComponents?.id || '',
-          productId: responseData.seatOuterComponents?.productId || '',
-          material: responseData.seatOuterComponents?.material || '',
-          dimensions: responseData.seatOuterComponents?.dimensions || '',
-          manufacturerName: responseData.seatOuterComponents?.manufacturerName || ''
+          ...((responseData.seatOuterComponents || {}) as SeatOuterComponents)
         },
         arms: {
-          id: responseData.arms?.id || '',
-          productId: responseData.arms?.productId || '',
-          material: responseData.arms?.material || '',
-          type: responseData.arms?.type || '',
-          manufacturer: responseData.arms?.manufacturer || '',
-          description: responseData.arms?.description || '',
-          armHeightFromSeat: responseData.arms?.armHeightFromSeat || 0,
-          armHeightFromFloor: responseData.arms?.armHeightFromFloor || 0
+          ...((responseData.arms || {}) as Arms)
         },
         foam: {
-          id: responseData.foamDetails?.id || '',
-          productId: responseData.foamDetails?.productId || '',
-          description: responseData.foamDetails?.description || '',
-          seatDensity: responseData.foamDetails?.seatDensity || 0,
-          backDensity: responseData.foamDetails?.backDensity || 0,
-          seatThickness: responseData.foamDetails?.seatThickness || 0,
-          backThickness: responseData.foamDetails?.backThickness || 0
+          ...((responseData.foamDetails || {}) as FoamDetails)
         },
         castors: {
-          id: responseData.castors?.id || '',
-          productId: responseData.castors?.productId || '',
-          description: responseData.castors?.description || '',
-          pinThickness: responseData.castors?.pinThickness || 0,
-          wheelDiameter: responseData.castors?.wheelDiameter || 0
+          ...((responseData.castors || {}) as Castors)
         },
         base: {
-          id: responseData.bases?.id || '',
-          productId: responseData.bases?.productId || '',
-          description: responseData.bases?.description || '',
-          sizeDiameter: responseData.bases?.sizeDiameter || 0,
-          material: responseData.bases?.material || '',
-          type: responseData.bases?.type || ''
+          ...((responseData.bases || {}) as Bases)
         },
         gasLift: {
-          id: responseData.gasLift?.id || '',
-          productId: responseData.gasLift?.productId || '',
-          description: responseData.gasLift?.description || '',
-          gasLiftClass: responseData.gasLift?.gasLiftClass || '',
-          casingLength: responseData.gasLift?.casingLength || 0,
-          extensionSize: responseData.gasLift?.extensionSize || 0,
-          taper: responseData.gasLift?.taper || 0
+          ...((responseData.gasLift || {}) as GasLift)
         },
         gasLiftCover: {
-          id: responseData.gasLiftCover?.id || '',
-          productId: responseData.gasLiftCover?.productId || '',
-          description: responseData.gasLiftCover?.description || '',
-          material: responseData.gasLiftCover?.material || '',
-          colour: responseData.gasLiftCover?.colour || ''
+          ...((responseData.gasLiftCover || {}) as GasLiftCover)
         },
         mechanism: {
-          id: responseData.mechanism?.id || '',
-          productId: responseData.mechanism?.productId || '',
-          description: responseData.mechanism?.description || '',
-          leversCount: responseData.mechanism?.leversCount || 0,
-          lockingPositions: responseData.mechanism?.lockingPositions || '',
-          modelNo: responseData.mechanism?.modelNo || '',
-          supplierName: responseData.mechanism?.supplierName || ''
+          ...((responseData.mechanism || {}) as Mechanism)
         },
         fittings: {
-          id: responseData.fittings?.id || '',
-          productId: responseData.fittings?.productId || '',
-          fittingNumber: responseData.fittings?.fittingNumber || 0,
-          description: responseData.fittings?.description || '',
-          quantity: responseData.fittings?.quantity || 0,
-          material: responseData.fittings?.material || ''
+          ...((responseData.fittings || {}) as Fittings)
         },
         images: {
-          id: responseData.productImages?.id || '',
-          prodId: responseData.productImages?.productId || '',
-          frontImgPath: responseData.productImages?.frontImgPath || '',
-          sideImgPath: responseData.productImages?.sideImgPath || '',
-          backImgPath: responseData.productImages?.backImgPath || '',
-          angleImgPath: responseData.productImages?.angleImgPath || ''
-        },
+          ...(responseData.productImages || {}),
+          prodId: responseData.productImages?.productId || ''
+        } as ProductImages,
         upholstery: {
-          id: responseData.upholstery?.id || '',
-          productId: responseData.upholstery?.productId || '',
-          fabricManufacturer: responseData.upholstery?.fabricManufacturer || '',
-          colourCode: responseData.upholstery?.colourCode || '',
-          leatherGrade: responseData.upholstery?.leatherGrade || '',
-          usagePerChair: Number(responseData.upholstery?.usagePerChair) || 0
+          ...((responseData.upholstery || {}) as Upholstery)
         }
       }
 
@@ -803,6 +551,28 @@ const handleSaveData = async (section: string) => {
           // 图片信息特殊处理，使用 prodId 而不是 productId
           sectionData.prodId = id
           delete sectionData.productId
+
+          // 确保所有图片路径都有效
+          for (const key in sectionData) {
+            if (isImagePath(key) && (!sectionData[key] || sectionData[key] === '')) {
+              delete sectionData[key] // 删除空的图片路径，避免覆盖已有的值
+            } else if (isImagePath(key)) {
+              console.log(`保存图片路径 ${key}: ${sectionData[key]}`)
+
+              // 验证URL是否有效
+              if (typeof sectionData[key] === 'string' && !sectionData[key].startsWith('http')) {
+                console.warn(`发现无效的图片URL: ${key}=${sectionData[key]}，将删除此字段`)
+                delete sectionData[key]
+              }
+            }
+          }
+
+          // 确保至少有一个有效的图片路径
+          const hasValidImage = Object.keys(sectionData).some(key => isImagePath(key) && sectionData[key] && typeof sectionData[key] === 'string')
+
+          if (!hasValidImage) {
+            console.warn('没有找到有效的图片路径，可能会保存失败')
+          }
           break
       }
 
@@ -916,26 +686,21 @@ const updateSingleImage = async (sectionKey: string, imageKey: string, val: any[
         let imageUrl = ''
 
         // 使用类型断言处理响应
-        const responseData = response as any
-
-        if (responseData && responseData.data) {
-          if (typeof responseData.data === 'string') {
-            // 直接返回字符串URL
-            imageUrl = responseData.data
-          } else if (responseData.code === '200' && responseData.data) {
-            // 标准成功响应
-            imageUrl = responseData.data
-          } else if (responseData.data && responseData.data.data) {
-            // 嵌套的data字段
-            imageUrl = responseData.data.data
-          }
-        }
+        imageUrl = response as any
 
         // 确保获取到了图片URL
         if (!imageUrl) {
           console.error('无法从响应中获取图片URL:', response)
           throw new Error('上传成功但无法获取图片地址')
         }
+
+        // 确保URL是字符串并以http开头
+        if (typeof imageUrl !== 'string' || !imageUrl.startsWith('http')) {
+          console.error('返回的不是有效的图片URL:', imageUrl)
+          throw new Error('服务器返回的图片地址无效')
+        }
+
+        console.log('成功获取到图片URL:', imageUrl)
 
         // 检查URL长度，防止数据库截断错误
         const MAX_URL_LENGTH = 255 // 数据库字段长度为255
@@ -1001,8 +766,16 @@ const updateSingleImage = async (sectionKey: string, imageKey: string, val: any[
 // 修改 handleSave 函数
 const handleSave = async (section: string): Promise<void> => {
   try {
+    console.log(`开始保存${section}部分数据`)
+
+    // 如果是images部分，添加特殊处理逻辑
+    if (section === 'images') {
+      console.log('保存图片数据，当前图片信息:', formData.value.images)
+    }
+
     // 保存数据
     await handleSaveData(section)
+    console.log(`${section}部分数据保存成功`)
 
     // 保存成功后，处理需要删除的图片
     if (tempUploadedImages.value[section] && tempUploadedImages.value[section].length > 0) {
@@ -1012,6 +785,7 @@ const handleSave = async (section: string): Promise<void> => {
       for (const path of tempUploadedImages.value[section]) {
         if (path && path.startsWith('http')) {
           try {
+            console.log('准备删除图片:', path)
             await getFilesRemove({filePath: path})
             console.log('已从服务器删除图片:', path)
           } catch (error) {
@@ -1028,6 +802,7 @@ const handleSave = async (section: string): Promise<void> => {
     if (section === 'images' && tempUploadedImages.value['newUploads']) {
       // 找出该部分使用的图片
       const usedImages = Object.values(formData.value[section]).filter(val => typeof val === 'string' && val.startsWith('http')) as string[]
+      console.log('保存后使用的图片:', usedImages)
 
       // 从newUploads中移除已保存的图片
       tempUploadedImages.value['newUploads'] = tempUploadedImages.value['newUploads'].filter(path => !usedImages.includes(path))
@@ -1046,6 +821,9 @@ const handleSave = async (section: string): Promise<void> => {
     ElMessage.success('保存成功')
   } catch (error) {
     console.error('保存失败:', error)
+    if (section === 'images') {
+      console.error('图片保存失败，当前图片数据:', formData.value.images)
+    }
     ElMessage.error('保存失败')
   }
 }
@@ -1082,10 +860,15 @@ const handleCancel = async (section: string) => {
       console.log(`取消编辑时需要删除的图片:`, imagesToDelete)
 
       // 删除所有需要删除的图片
+      const deletePromises = []
       for (const path of imagesToDelete) {
         try {
-          await getFilesRemove({filePath: path})
-          console.log('已删除编辑过程中上传的图片:', path)
+          // 将删除操作添加到Promise数组，但不等待
+          deletePromises.push(
+            getFilesRemove({filePath: path})
+              .then(() => console.log('已删除编辑过程中上传的图片:', path))
+              .catch(error => console.error('删除图片失败:', error))
+          )
         } catch (error) {
           console.error('删除图片失败:', error)
         }
@@ -1098,13 +881,29 @@ const handleCancel = async (section: string) => {
       for (const path of newUploads) {
         if (path && path.startsWith('http') && !imagesToDelete.includes(path)) {
           try {
-            await getFilesRemove({filePath: path})
-            console.log('已删除临时上传的图片:', path)
+            // 将删除操作添加到Promise数组，但不等待
+            deletePromises.push(
+              getFilesRemove({filePath: path})
+                .then(() => console.log('已删除临时上传的图片:', path))
+                .catch(error => console.error('删除临时上传图片失败:', error))
+            )
           } catch (error) {
             console.error('删除临时上传图片失败:', error)
           }
         }
       }
+
+      // 等待所有删除操作完成（但不阻塞UI恢复）
+      Promise.allSettled(deletePromises).then(results => {
+        const successCount = results.filter(r => r.status === 'fulfilled').length
+        const failCount = results.filter(r => r.status === 'rejected').length
+        console.log(`图片删除操作完成: 成功=${successCount}, 失败=${failCount}`)
+
+        if (failCount > 0) {
+          // 如果有删除失败的图片，显示警告
+          ElMessage.warning(`有${failCount}张图片可能未能成功从服务器删除`)
+        }
+      })
 
       // 清空临时上传列表
       tempUploadedImages.value['newUploads'] = []
@@ -1147,7 +946,7 @@ const handleExport = async () => {
   try {
     // 初始化AbortController
     abortController.value = new AbortController()
-    const signal = abortController.value.signal
+    const signal = abortController.value?.signal
 
     // 确保 ID 存在且为字符串类型
     const productId = formData.value.products.id
@@ -1156,216 +955,38 @@ const handleExport = async () => {
     }
 
     // 检查是否取消
-    if (signal.aborted) {
+    if (signal?.aborted) {
       return
     }
 
-    const params = {id: productId}
-    const response = await getProductDtoGetById(params)
+    console.log('开始获取产品数据，ID:', productId)
+    let response
 
-    // 检查是否取消
-    if (signal.aborted) {
-      return
-    }
+    try {
+      const params = {id: productId}
+      const result = await getProductDtoGetById(params)
 
-    if (!response || !response.data) {
+      response = result
+      console.log('处理后的ProductDto数据:', response)
+    } catch (error) {
+      console.error('获取产品数据出错:', error)
       throw new Error('获取产品数据失败')
     }
 
-    const productData = response.data
-    console.log('从API获取的数据:', productData)
-
     // 检查是否取消
-    if (signal.aborted) {
+    if (signal?.aborted) {
       return
     }
 
-    // 创建适配的数据结构，以匹配exportToWord期望的格式
-    const adaptedData = {
-      // 基本信息和文件名
-      products: productData.products || {},
-      product_code: productData.products?.tccode || 'Unknown',
-
-      // TC GROUP INTERNAL USE ONLY 表格所需字段
-      initialMonthlyForecast: '', // 使用空字符串代替 'N/A'
-      productionColours: '', // 使用空字符串代替 'N/A'
-      customerProductCode: '', // 使用空字符串代替 'N/A'
-      customerBarcode: '', // 使用空字符串代替 'N/A'
-      customerProductName: '', // 使用空字符串代替 'N/A'
-      factoryProductName: '', // 使用空字符串代替 'N/A'
-
-      // 使用 TC 相关字段代替默认字段
-      tc_code: productData.products?.tccode || '',
-      tc_barcode: [productData.products?.barcode1 || '', productData.products?.barcode2 || '', productData.products?.barcode3 || ''].filter(Boolean).join(', '),
-      tc_product_name: productData.products?.name || '',
-      factory_code: productData.products?.factoryCode || '',
-
-      // seat inner 字段 - 确保所有需要的字段都存在
-      seatInner: {
-        materialCode: productData.seatInnerComponents?.materialCode || '',
-        thickness: String(productData.seatInnerComponents?.thickness || ''),
-        layersCount: String(productData.seatInnerComponents?.layersCount || ''),
-        dimensions: productData.seatInnerComponents?.dimensions || ''
-      },
-
-      // back inner 字段 - 确保所有需要的字段都存在
-      backInner: {
-        materialCode: productData.backInnerComponents?.materialCode || '',
-        thickness: String(productData.backInnerComponents?.thickness || ''),
-        layersCount: String(productData.backInnerComponents?.layersCount || ''),
-        dimensions: productData.backInnerComponents?.dimensions || ''
-      },
-
-      // seat outer 字段 - 确保所有需要的字段都存在
-      seatOuter: {
-        material: productData.seatOuterComponents?.material || '',
-        dimensions: productData.seatOuterComponents?.dimensions || '',
-        manufacturerName: productData.seatOuterComponents?.manufacturerName || ''
-      },
-
-      // back outer 字段 - 确保所有需要的字段都存在
-      backOuter: {
-        material: productData.backOuterComponents?.material || '',
-        dimensions: productData.backOuterComponents?.dimensions || '',
-        manufacturerName: productData.backOuterComponents?.manufacturerName || ''
-      },
-
-      // arms 字段 - 确保所有需要的字段都存在
-      arms: {
-        description: productData.arms?.description || '',
-        material: productData.arms?.material || '',
-        type: productData.arms?.type || '',
-        manufacturer: productData.arms?.manufacturer || '',
-        arm_height_from_seat: String(productData.arms?.armHeightFromSeat || ''),
-        arm_height_from_floor: String(productData.arms?.armHeightFromFloor || '')
-      },
-
-      // foam 字段 - 确保所有需要的字段都存在
-      foam: {
-        description: productData.foamDetails?.description || '',
-        seat_density: String(productData.foamDetails?.seatDensity || ''),
-        back_density: String(productData.foamDetails?.backDensity || ''),
-        seat_thickness: String(productData.foamDetails?.seatThickness || ''),
-        back_thickness: String(productData.foamDetails?.backThickness || '')
-      },
-
-      // castors 字段 - 确保所有需要的字段都存在
-      castors: {
-        description: productData.castors?.description || '',
-        pin_thickness: String(productData.castors?.pinThickness || ''),
-        wheel_diameter: String(productData.castors?.wheelDiameter || '')
-      },
-
-      // base 字段 - 确保所有需要的字段都存在
-      base: {
-        description: productData.bases?.description || '',
-        size_diameter: String(productData.bases?.sizeDiameter || ''),
-        material: productData.bases?.material || '',
-        type: productData.bases?.type || ''
-      },
-
-      // gasLift 字段 - 确保所有需要的字段都存在
-      gasLift: {
-        description: productData.gasLift?.description || '',
-        gasLiftClass: productData.gasLift?.gasLiftClass || '',
-        casingLength: String(productData.gasLift?.casingLength || ''),
-        extensionSize: String(productData.gasLift?.extensionSize || ''),
-        taper: String(productData.gasLift?.taper || '')
-      },
-
-      // gasLiftCover 字段 - 确保所有需要的字段都存在
-      gasLiftCover: {
-        description: productData.gasLiftCover?.description || '',
-        material: productData.gasLiftCover?.material || '',
-        colour: productData.gasLiftCover?.colour || ''
-      },
-
-      // mechanism 字段 - 确保所有需要的字段都存在
-      mechanism: {
-        description: productData.mechanism?.description || '',
-        leversCount: String(productData.mechanism?.leversCount || ''),
-        lockingPositions: productData.mechanism?.lockingPositions || '',
-        modelNo: productData.mechanism?.modelNo || '',
-        supplierName: productData.mechanism?.supplierName || ''
-      },
-
-      // fittings 字段 - 确保所有需要的字段都存在
-      fittings: {
-        fittingNumber: String(productData.fittings?.fittingNumber || ''),
-        description: productData.fittings?.description || '',
-        quantity: String(productData.fittings?.quantity || ''),
-        material: productData.fittings?.material || ''
-      },
-
-      // packaging 字段 - 确保所有需要的字段都存在
-      packaging: {
-        width: String(productData.cartonDetails?.width || ''),
-        depth: String(productData.cartonDetails?.depth || ''),
-        height: String(productData.cartonDetails?.height || ''),
-        boardType: productData.cartonDetails?.boardType || '',
-        itemsPerCarton: String(productData.cartonDetails?.itemsPerCarton || ''),
-        cartonVolume: String(productData.cartonDetails?.cartonVolume || '')
-      },
-
-      // logistics 字段 - 确保字段名与 exportToWord 中的一致
-      logistics: {
-        production_time: String(productData.productionLogistics?.productionTime || ''),
-        effective_volume: String(productData.productionLogistics?.effectiveVolume || ''),
-        loading_quantity_20gp: String(productData.productionLogistics?.loadingQuantity20gp || ''),
-        loading_quantity_40hc: String(productData.productionLogistics?.loadingQuantity40hc || ''),
-        net_weight: String(productData.productionLogistics?.netWeight || ''),
-        gross_weight: String(productData.productionLogistics?.grossWeight || '')
-      },
-
-      // dimensions 字段 - 确保字段名与 exportToWord 中的一致
-      dimensions: {
-        seat_width: String(productData.productDimensions?.seatWidth || ''),
-        seat_depth: String(productData.productDimensions?.seatDepth || ''),
-        back_width: String(productData.productDimensions?.backWidth || ''),
-        back_height: String(productData.productDimensions?.backHeight || ''),
-        seat_height_min: String(productData.productDimensions?.seatHeightMin || ''),
-        seat_height_max: String(productData.productDimensions?.seatHeightMax || ''),
-        back_height_from_seat: String(productData.productDimensions?.backHeightFromSeat || ''),
-        overall_width: String(productData.productDimensions?.overallWidth || ''),
-        overall_depth: String(productData.productDimensions?.overallDepth || ''),
-        overall_height_min: String(productData.productDimensions?.overallHeightMin || ''),
-        overall_height_max: String(productData.productDimensions?.overallHeightMax || '')
-      },
-
-      // upholstery 字段 - 确保所有需要的字段都存在
-      upholstery: {
-        fabricManufacturer: productData.upholstery?.fabricManufacturer || '',
-        colourCode: productData.upholstery?.colourCode || '',
-        leatherGrade: productData.upholstery?.leatherGrade || '',
-        usagePerChair: String(productData.upholstery?.usagePerChair || '')
-      },
-
-      // 图片数据特殊处理：将驼峰命名的字段名转换为下划线格式
-      images: {
-        front_img_path: productData.productImages?.frontImgPath || '',
-        side_img_path: productData.productImages?.sideImgPath || '',
-        back_view_path: productData.productImages?.backImgPath || '',
-        angle_view_path: productData.productImages?.angleImgPath || ''
-      },
-
-      // 添加一个标记，表示这不是批量导出
-      is_batch_export: false
+    // 直接将ProductDto数据传递给exportToWord函数
+    console.log('开始生成Word文档...')
+    try {
+      await exportToWord(response)
+      ElMessage.success('导出成功')
+    } catch (error) {
+      console.error('生成Word文档出错:', error)
+      throw new Error('生成Word文档失败')
     }
-
-    // 检查是否取消
-    if (signal.aborted) {
-      return
-    }
-
-    console.log('适配后的导出数据:', adaptedData)
-    await exportToWord(adaptedData)
-
-    // 检查是否取消
-    if (signal.aborted) {
-      return
-    }
-
-    ElMessage.success('导出成功')
   } catch (error) {
     console.error('导出失败', error)
     if ((error as Error).message === '用户取消导出') {

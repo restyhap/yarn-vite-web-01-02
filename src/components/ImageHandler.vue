@@ -186,22 +186,9 @@ const handleFile = async (file: File) => {
       const response = await postFilesUpload({file})
       console.log('默认上传返回的响应:', response)
 
-      // 检查响应状态和数据结构
-      // 使用类型断言处理响应
-      const responseData = response as any
-
-      if (responseData && responseData.data) {
-        if (typeof responseData.data === 'string') {
-          // 直接返回字符串URL
-          imageUrl = responseData.data
-        } else if (responseData.code === '200' && responseData.data) {
-          // 标准成功响应
-          imageUrl = responseData.data
-        } else if (responseData.data && responseData.data.data) {
-          // 嵌套的data字段
-          imageUrl = responseData.data.data
-        }
-      }
+      // 从API返回中获取URL
+      // 根据规则，忽略linter错误，直接使用response作为URL
+      imageUrl = response as any
     }
 
     // 确保获取到了图片URL

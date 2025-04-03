@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-01-18 10:06:24
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-03-30 19:52:12
+ * @LastEditTime: 2025-04-01 17:54:51
  * @FilePath: /yarn-vite-web-01-02/src/utils/request.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -64,7 +64,7 @@ axiosInstance.interceptors.response.use(
       }
       return Promise.reject(new Error(res.message || '请求失败'));
     }
-    return res;
+    return res.data;
   },
   (error) => {
     // 详细的错误信息处理
@@ -111,16 +111,16 @@ axiosInstance.interceptors.response.use(
 // 创建请求方法
 const request = {
   get<T = ResultVo>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return axiosInstance.get(url, config).then(res => res.data as any) as Promise<T>;
+    return axiosInstance.get(url, config) as Promise<T>;
   },
   post<T = ResultVo>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    return axiosInstance.post(url, data, config).then(res => res.data as any) as Promise<T>;
+    return axiosInstance.post(url, data, config) as Promise<T>;
   },
   put<T = ResultVo>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    return axiosInstance.put(url, data, config).then(res => res.data as any) as Promise<T>;
+    return axiosInstance.put(url, data, config) as Promise<T>;
   },
   delete<T = ResultVo>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return axiosInstance.delete(url, config).then(res => res.data as any) as Promise<T>;
+    return axiosInstance.delete(url, config) as Promise<T>;
   }
 };
 

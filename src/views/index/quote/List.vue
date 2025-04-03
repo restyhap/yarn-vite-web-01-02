@@ -152,6 +152,13 @@ interface QuoteData {
   moq?: string
 }
 
+interface SearchParams {
+  currentPage: number
+  pageSize: number
+  keyword?: string
+  supplier?: string
+}
+
 const route = useRoute()
 const router = useRouter()
 const searchQuery = ref('')
@@ -224,13 +231,11 @@ watch(
 const fetchTableData = async () => {
   loading.value = true
   try {
-    // 构建请求参数
-    const params = {
+    const params: SearchParams = {
       currentPage: currentPage.value,
       pageSize: pageSize.value
     }
 
-    // 如果有搜索关键词，添加到查询参数中
     if (searchQuery.value) {
       params.keyword = searchQuery.value.trim()
     }
@@ -245,38 +250,47 @@ const fetchTableData = async () => {
     })
 
     console.log('API Response:', response)
+    if (response.code !== '200') {
+      ElMessage.error(response.message || '获取数据失败')
+      return
+    }
     // 确保每个数据项都符合QuoteData接口定义
-    tableData.value = response.dataList.map((item: any) => ({
-      id: item.id,
-      supplier: item.supplier || '',
-      supplierItemCode: item.supplierItemCode || '',
-      specificationDetails: item.specificationDetails || '',
-      sampleLeadTime: item.sampleLeadTime || '',
-      fobPrice: Number(item.fobPrice) || 0,
-      currency: Number(item.currency) || 0,
-      salesContacts: item.salesContacts || '',
-      createTime: item.createTime || '',
-      bifmaTested: Number(item.bifmaTested) || 0,
-      cadBlockAvailable: Number(item.cadBlockAvailable) || 0,
-      productDataAvailable: Number(item.productDataAvailable) || 0,
-      productImagesAvailable: Number(item.productImagesAvailable) || 0,
-      image: item.image || '',
-      validPeriod: item.validPeriod || '',
-      port: item.port || '',
-      remark: item.remark || '',
-      overallDimensionsWidth: Number(item.overallDimensionsWidth) || 0,
-      overallDimensionsDepth: Number(item.overallDimensionsDepth) || 0,
-      overallDimensionsHeight: Number(item.overallDimensionsHeight) || 0,
-      boxDimensionsWidth: Number(item.boxDimensionsWidth) || 0,
-      boxDimensionsDepth: Number(item.boxDimensionsDepth) || 0,
-      boxDimensionsHeight: Number(item.boxDimensionsHeight) || 0,
-      boxWeightNetWeighth: Number(item.boxWeightNetWeighth) || 0,
-      netWeightGrossWeight: item.netWeightGrossWeight || '',
-      effectiveVol: item.effectiveVol || '',
-      loadingQty: Number(item.loadingQty) || 0,
-      moq: item.moq || ''
-    }))
-    total.value = response.totalCount || 0
+    if (response.data?.records) {
+      tableData.value = response.data.records.map((item: any) => ({
+        id: item.id,
+        supplier: item.supplier || '',
+        supplierItemCode: item.supplierItemCode || '',
+        specificationDetails: item.specificationDetails || '',
+        sampleLeadTime: item.sampleLeadTime || '',
+        fobPrice: Number(item.fobPrice) || 0,
+        currency: Number(item.currency) || 0,
+        salesContacts: item.salesContacts || '',
+        createTime: item.createTime || '',
+        bifmaTested: Number(item.bifmaTested) || 0,
+        cadBlockAvailable: Number(item.cadBlockAvailable) || 0,
+        productDataAvailable: Number(item.productDataAvailable) || 0,
+        productImagesAvailable: Number(item.productImagesAvailable) || 0,
+        image: item.image || '',
+        validPeriod: item.validPeriod || '',
+        port: item.port || '',
+        remark: item.remark || '',
+        overallDimensionsWidth: Number(item.overallDimensionsWidth) || 0,
+        overallDimensionsDepth: Number(item.overallDimensionsDepth) || 0,
+        overallDimensionsHeight: Number(item.overallDimensionsHeight) || 0,
+        boxDimensionsWidth: Number(item.boxDimensionsWidth) || 0,
+        boxDimensionsDepth: Number(item.boxDimensionsDepth) || 0,
+        boxDimensionsHeight: Number(item.boxDimensionsHeight) || 0,
+        boxWeightNetWeighth: Number(item.boxWeightNetWeighth) || 0,
+        netWeightGrossWeight: item.netWeightGrossWeight || '',
+        effectiveVol: item.effectiveVol || '',
+        loadingQty: Number(item.loadingQty) || 0,
+        moq: item.moq || ''
+      }))
+      total.value = response.data.totalRow || 0
+    } else {
+      tableData.value = []
+      total.value = 0
+    }
   } catch (error) {
     console.error('获取数据失败:', error)
     ElMessage.error('获取数据失败')
@@ -346,14 +360,18 @@ const handleDelete = async (row: QuoteData) => {
     })
 
     // 确保 id 存在且转换为字符串
-    if (!row.id && row.id !== 0) {
+    if (row.id === undefined || row.id === null) {
       ElMessage.error('无效的记录ID')
       return
     }
 
     const id = String(row.id)
-
     const response = await deleteQuotationRemoveById({id})
+
+    if (response.code !== '200') {
+      ElMessage.error(response.message || '删除失败')
+      return
+    }
 
     ElMessage.success('删除成功')
     // 删除成功后刷新表格数据
@@ -378,7 +396,7 @@ const handleBatchDelete = async () => {
     })
 
     // 过滤掉无效的ID
-    const validRows = selectedRows.value.filter(row => row.id || row.id === 0)
+    const validRows = selectedRows.value.filter(row => row.id !== undefined && row.id !== null)
     if (validRows.length === 0) {
       ElMessage.error('所选记录均无有效ID')
       return
