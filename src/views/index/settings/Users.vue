@@ -3,54 +3,54 @@
     <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
       <div class="flex justify-between items-center py-2 px-6">
         <div class="flex-1">
-          <h2 class="text-xl font-bold text-gray-800">用户管理</h2>
+          <h2 class="text-xl font-bold text-gray-800">User Management</h2>
         </div>
         <div class="flex gap-2">
           <el-button type="success" class="bg-green-500 hover:bg-green-600 border-0 shadow-sm" @click="handleAdd">
             <el-icon class="mr-2"><Plus /></el-icon>
-            新增用户
+            Add User
           </el-button>
         </div>
       </div>
     </div>
     <div class="bg-white rounded-lg shadow p-4">
       <el-table :data="tableData" border style="width: 100%" :max-height="450">
-        <el-table-column prop="username" label="用户名" />
-        <el-table-column prop="realName" label="真实姓名" />
-        <el-table-column prop="email" label="邮箱" />
-        <el-table-column prop="phone" label="电话" />
-        <el-table-column prop="roleType" label="角色" width="120">
+        <el-table-column prop="username" label="Username" />
+        <el-table-column prop="realName" label="Real Name" />
+        <el-table-column prop="email" label="Email" />
+        <el-table-column prop="phone" label="Phone" />
+        <el-table-column prop="roleType" label="Role" width="120">
           <template #default="scope">
             <el-tag :type="getRoleType(scope.row.roleType)">
               {{ getRoleLabel(scope.row.roleType) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="120">
+        <el-table-column prop="status" label="Status" width="120">
           <template #default="scope">
             <div class="flex items-center">
               <el-switch v-model="scope.row.status" :active-value="1" :inactive-value="0" @change="() => handleStatusChange(scope.row)" />
               <span class="ml-2" :class="scope.row.status === 1 ? 'text-green-600' : 'text-red-600'">
-                {{ scope.row.status === 1 ? '启用' : '禁用' }}
+                {{ scope.row.status === 1 ? 'Enabled' : 'Disabled' }}
               </span>
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="createdAt" label="创建时间" width="180">
+        <el-table-column prop="createdAt" label="Created At" width="180">
           <template #default="scope">
             {{ formatDateTime(scope.row.createdAt) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="Actions" width="200" fixed="right">
           <template #default="scope">
             <div class="flex items-center justify-center space-x-3">
               <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleEdit(scope.row)">
                 <el-icon><Edit /></el-icon>
-                编辑
+                Edit
               </el-button>
               <el-button type="danger" link size="small" style="padding: 0; min-width: 35px" @click="handleDelete(scope.row)">
                 <el-icon><Delete /></el-icon>
-                删除
+                Delete
               </el-button>
             </div>
           </template>
@@ -64,31 +64,31 @@
     </div>
 
     <!-- 用户表单对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogType === 'add' ? '新增用户' : '编辑用户'" width="500px">
+    <el-dialog v-model="dialogVisible" :title="dialogType === 'add' ? 'Add User' : 'Edit User'" width="500px">
       <el-form ref="formRef" :model="formData" :rules="rules" label-width="100px" label-position="left" class="mx-auto">
         <div class="grid grid-cols-1 gap-2">
-          <el-form-item label="用户名" prop="username" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
-            <el-input v-model="formData.username" placeholder="请输入用户名" class="w-full !h-[38px]" />
+          <el-form-item label="Username" prop="username" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
+            <el-input v-model="formData.username" placeholder="Please enter username" class="w-full !h-[38px]" />
           </el-form-item>
 
-          <el-form-item label="真实姓名" prop="realName" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
-            <el-input v-model="formData.realName" placeholder="请输入真实姓名" class="w-full !h-[38px]" />
+          <el-form-item label="Real Name" prop="realName" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
+            <el-input v-model="formData.realName" placeholder="Please enter real name" class="w-full !h-[38px]" />
           </el-form-item>
 
-          <el-form-item v-if="dialogType === 'add'" label="密码" prop="password" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
-            <el-input v-model="formData.password" type="password" placeholder="请输入密码" class="w-full !h-[38px]" />
+          <el-form-item v-if="dialogType === 'add'" label="Password" prop="password" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
+            <el-input v-model="formData.password" type="password" placeholder="Please enter password" class="w-full !h-[38px]" />
           </el-form-item>
 
-          <el-form-item label="邮箱" prop="email" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
-            <el-input v-model="formData.email" placeholder="请输入邮箱" class="w-full !h-[38px]" />
+          <el-form-item label="Email" prop="email" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
+            <el-input v-model="formData.email" placeholder="Please enter email" class="w-full !h-[38px]" />
           </el-form-item>
 
-          <el-form-item label="电话" prop="phone" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
-            <el-input v-model="formData.phone" placeholder="请输入电话" class="w-full !h-[38px]" />
+          <el-form-item label="Phone" prop="phone" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
+            <el-input v-model="formData.phone" placeholder="Please enter phone number" class="w-full !h-[38px]" />
           </el-form-item>
 
-          <el-form-item label="角色" prop="roleType" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
-            <el-select v-model="formData.roleType" placeholder="请选择角色" class="w-full" style="height: 38px" popper-class="!mt-1">
+          <el-form-item label="Role" prop="roleType" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
+            <el-select v-model="formData.roleType" placeholder="Please select role" class="w-full" style="height: 38px" popper-class="!mt-1">
               <el-option :label="getRoleLabel(UserRoleType.ADMIN)" :value="UserRoleType.ADMIN" />
               <el-option :label="getRoleLabel(UserRoleType.SUPPLIER)" :value="UserRoleType.SUPPLIER" />
               <el-option :label="getRoleLabel(UserRoleType.EMPLOYEE)" :value="UserRoleType.EMPLOYEE" />
@@ -98,10 +98,10 @@
       </el-form>
       <template #footer>
         <span class="dialog-footer flex justify-end gap-4">
-          <el-button @click="dialogVisible = false" class="bg-gray-200 hover:bg-gray-300 border-0 shadow-sm">取消</el-button>
+          <el-button @click="dialogVisible = false" class="bg-gray-200 hover:bg-gray-300 border-0 shadow-sm">Cancel</el-button>
           <el-button type="success" class="bg-green-500 hover:bg-green-600 border-0 shadow-sm" @click="handleSubmit">
             <el-icon><Check /></el-icon>
-            确定
+            Confirm
           </el-button>
         </span>
       </template>
@@ -121,15 +121,15 @@ import type {DeleteUserRemoveByIdParams} from '@/api/controller/user-controller/
 
 // 用户角色类型枚举
 enum UserRoleType {
-  ADMIN = 0, // 管理员
-  SUPPLIER = 1, // 供应商
-  EMPLOYEE = 2 // 员工
+  ADMIN = 0, // Administrator
+  SUPPLIER = 1, // Supplier
+  EMPLOYEE = 2 // Employee
 }
 
 // 用户状态枚举
 enum UserStatus {
-  DISABLED = 0, // 禁用
-  ENABLED = 1 // 启用
+  DISABLED = 0, // Disabled
+  ENABLED = 1 // Enabled
 }
 
 // 查询参数
@@ -158,14 +158,14 @@ const formData = ref<User>({
 // 表单验证规则
 const rules = ref<FormRules>({
   username: [
-    {required: true, message: '请输入用户名', trigger: 'blur'},
-    {min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur'}
+    {required: true, message: 'Please enter username', trigger: 'blur'},
+    {min: 3, max: 20, message: 'Length should be 3 to 20 characters', trigger: 'blur'}
   ],
   password: [
-    {required: true, message: '请输入密码', trigger: 'blur'},
-    {min: 3, message: '密码长度不能小于6位', trigger: 'blur'}
+    {required: true, message: 'Please enter password', trigger: 'blur'},
+    {min: 3, message: 'Password must be at least 6 characters', trigger: 'blur'}
   ],
-  roleType: [{required: true, message: '请选择角色', trigger: 'change'}]
+  roleType: [{required: true, message: 'Please select role', trigger: 'change'}]
 })
 
 // 获取角色标签类型
@@ -181,11 +181,11 @@ const getRoleType = (roleType?: number) => {
 // 获取角色标签文本
 const getRoleLabel = (roleType?: number) => {
   const map: Record<number, string> = {
-    [UserRoleType.ADMIN]: '管理员',
-    [UserRoleType.SUPPLIER]: '供应商',
-    [UserRoleType.EMPLOYEE]: '员工'
+    [UserRoleType.ADMIN]: 'Administrator',
+    [UserRoleType.SUPPLIER]: 'Supplier',
+    [UserRoleType.EMPLOYEE]: 'Employee'
   }
-  return map[roleType || 0] || '未知'
+  return map[roleType || 0] || 'Unknown'
 }
 
 // 日期时间格式化函数

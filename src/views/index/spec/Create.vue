@@ -1,79 +1,79 @@
 <template>
   <div dir="ltr" class="flex-1 ps-1 min-w-0 overflow-hidden h-screen">
-    <!-- 固定在顶部的标题栏 -->
+    <!-- Fixed header at the top -->
     <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
       <div class="flex justify-between items-center py-3 px-6">
         <div class="flex-1">
-          <h2 class="text-lg font-semibold text-gray-800">创建质检报告</h2>
+          <h2 class="text-lg font-semibold text-gray-800">Create QC Report</h2>
         </div>
         <div class="flex gap-2">
           <el-button @click="router.back()">
             <el-icon><Back /></el-icon>
-            返回
+            Back
           </el-button>
         </div>
       </div>
     </div>
 
-    <!-- 可滚动的内容区域 -->
+    <!-- Scrollable content area -->
     <div class="bg-white overflow-auto" style="height: calc(100vh - 64px); padding-bottom: 72px">
       <div class="p-6">
         <el-form :model="formData" label-width="140px" class="w-full mx-auto px-4">
-          <!-- 质检信息 -->
+          <!-- QC Information -->
           <div class="mb-8">
-            <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">质检信息</h3>
+            <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">QC Information</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
-              <el-form-item label="型号代码" class="bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                <el-input v-model="formData.qcReports.modelCode" placeholder="请输入型号代码" class="w-full !h-[38px]" />
+              <el-form-item label="Model Code" class="bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                <el-input v-model="formData.qcReports.modelCode" placeholder="Enter model code" class="w-full !h-[38px]" />
               </el-form-item>
-              <el-form-item label="工厂代码" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                <el-input v-model="formData.qcReports.factoryCode" placeholder="请输入工厂代码" class="w-full !h-[38px]" />
+              <el-form-item label="Factory Code" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                <el-input v-model="formData.qcReports.factoryCode" placeholder="Enter factory code" class="w-full !h-[38px]" />
               </el-form-item>
-              <el-form-item label="供应商" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                <el-input v-model="formData.qcReports.supplier" placeholder="请输入供应商" class="w-full !h-[38px]" />
+              <el-form-item label="Supplier" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                <el-input v-model="formData.qcReports.supplier" placeholder="Enter supplier" class="w-full !h-[38px]" />
               </el-form-item>
-              <el-form-item label="客户" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                <el-input v-model="formData.qcReports.client" placeholder="请输入客户" class="w-full !h-[38px]" />
+              <el-form-item label="Client" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                <el-input v-model="formData.qcReports.client" placeholder="Enter client" class="w-full !h-[38px]" />
               </el-form-item>
-              <el-form-item label="PO编号" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                <el-input v-model="formData.qcReports.poNumber" placeholder="请输入PO编号" class="w-full !h-[38px]" />
+              <el-form-item label="PO Number" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                <el-input v-model="formData.qcReports.poNumber" placeholder="Enter PO number" class="w-full !h-[38px]" />
               </el-form-item>
-              <el-form-item label="检验日期" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                <el-date-picker v-model="formData.qcReports.inspectionDate" type="date" placeholder="选择日期" value-format="YYYY-MM-DD" style="width: 100%" class="w-full !h-[38px]" />
+              <el-form-item label="Inspection Date" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                <el-date-picker v-model="formData.qcReports.inspectionDate" type="date" placeholder="Select date" value-format="YYYY-MM-DD" style="width: 100%" class="w-full !h-[38px]" />
               </el-form-item>
-              <el-form-item label="订单数量" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                <el-input-number v-model="formData.qcReports.orderQty" :min="0" class="w-full !h-[38px]" placeholder="请输入订单数量" />
+              <el-form-item label="Order Quantity" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                <el-input-number v-model="formData.qcReports.orderQty" :min="0" class="w-full !h-[38px]" placeholder="Enter order quantity" />
               </el-form-item>
-              <el-form-item label="报告日期" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                <el-date-picker v-model="formData.qcReports.reportDate" type="date" placeholder="选择日期" value-format="YYYY-MM-DD" style="width: 100%" class="w-full !h-[38px]" />
+              <el-form-item label="Report Date" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                <el-date-picker v-model="formData.qcReports.reportDate" type="date" placeholder="Select date" value-format="YYYY-MM-DD" style="width: 100%" class="w-full !h-[38px]" />
               </el-form-item>
-              <el-form-item label="检验数量" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                <el-input-number v-model="formData.qcReports.inspectQty" :min="0" class="w-full !h-[38px]" placeholder="请输入检验数量" />
+              <el-form-item label="Inspection Qty" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                <el-input-number v-model="formData.qcReports.inspectQty" :min="0" class="w-full !h-[38px]" placeholder="Enter inspection quantity" />
               </el-form-item>
-              <el-form-item label="质检员" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                <el-input v-model="formData.qcReports.qcOfficer" placeholder="请输入质检员" class="w-full !h-[38px]" />
+              <el-form-item label="QC Officer" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                <el-input v-model="formData.qcReports.qcOfficer" placeholder="Enter QC officer" class="w-full !h-[38px]" />
               </el-form-item>
-              <el-form-item label="检验结果" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+              <el-form-item label="Result" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
                 <el-radio-group v-model="formData.qcReports.passFail">
-                  <el-radio label="Pass">通过</el-radio>
-                  <el-radio label="Fail">失败</el-radio>
+                  <el-radio label="Pass">Pass</el-radio>
+                  <el-radio label="Fail">Fail</el-radio>
                 </el-radio-group>
               </el-form-item>
-              <el-form-item label="二次质检日期" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                <el-date-picker v-model="formData.qcReports.secondQcDate" type="date" placeholder="选择日期" value-format="YYYY-MM-DD" style="width: 100%" class="w-full !h-[38px]" />
+              <el-form-item label="Second QC Date" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                <el-date-picker v-model="formData.qcReports.secondQcDate" type="date" placeholder="Select date" value-format="YYYY-MM-DD" style="width: 100%" class="w-full !h-[38px]" />
               </el-form-item>
-              <el-form-item label="评价内容" class="col-span-3 bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                <el-input v-model="formData.qcReports.comments" placeholder="请输入评价内容" class="w-full !h-[38px]" />
+              <el-form-item label="Comments" class="col-span-3 bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                <el-input v-model="formData.qcReports.comments" placeholder="Enter comments" class="w-full !h-[38px]" />
               </el-form-item>
             </div>
           </div>
-          <!-- 图片信息 -->
+          <!-- Image Information -->
           <div class="mb-8">
-            <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">图片信息</h3>
+            <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">Image Information</h3>
             <div class="grid gap-4 lg:gap-6" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))">
-              <!-- 遍历所有图片字段 -->
+              <!-- Iterate through all image fields -->
               <template v-for="(label, key) in basicFields" :key="key">
-                <!-- 只显示图片字段 -->
+                <!-- Only display image fields -->
                 <div v-if="isImageField(key)" class="bg-gray-100 p-2 rounded flex flex-col h-full">
                   <div class="text-sm text-gray-600 mb-2 font-medium">{{ label }}</div>
 
@@ -82,77 +82,77 @@
               </template>
             </div>
           </div>
-          <!-- 缺陷记录信息 -->
+          <!-- Defect Records -->
           <div class="mb-8" v-if="formData.defectsDTO.length > 0">
-            <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">缺陷记录信息</h3>
+            <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">Defect Records</h3>
 
-            <!-- 缺陷记录列表 -->
+            <!-- Defect Records List -->
             <div class="space-y-4">
               <div v-for="(defect, index) in formData.defectsDTO" :key="defect.defects.id" class="bg-gray-50 rounded-lg p-4 shadow-sm">
-                <!-- 缺陷记录标题栏 -->
+                <!-- Defect Record Title Bar -->
                 <div class="flex justify-between items-center mb-4">
-                  <h4 class="text-base font-medium text-gray-700">缺陷记录 #{{ index + 1 }}</h4>
+                  <h4 class="text-base font-medium text-gray-700">Defect Record #{{ index + 1 }}</h4>
                   <div class="flex gap-2">
                     <template v-if="defect.isEditing">
                       <el-button type="success" size="small" class="bg-green-500 hover:bg-green-600 border-0 shadow-sm !h-8" @click="saveDefectEdit(index)">
                         <el-icon><Check /></el-icon>
-                        保存
+                        Save
                       </el-button>
-                      <el-button size="small" class="bg-gray-200 hover:bg-gray-300 border-0 shadow-sm !h-8" @click="cancelDefectEdit(index)">取消</el-button>
+                      <el-button size="small" class="bg-gray-200 hover:bg-gray-300 border-0 shadow-sm !h-8" @click="cancelDefectEdit(index)">Cancel</el-button>
                     </template>
                     <template v-else>
                       <el-button type="primary" size="small" @click="startDefectEdit(index)" class="!h-8">
                         <el-icon><Edit /></el-icon>
-                        编辑
+                        Edit
                       </el-button>
                     </template>
                     <el-button type="danger" size="small" @click="removeDefect(index)" class="!h-8">
                       <el-icon><Delete /></el-icon>
-                      删除
+                      Delete
                     </el-button>
                   </div>
                 </div>
 
-                <!-- 缺陷记录内容 -->
+                <!-- Defect Record Content -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <el-form-item label="缺陷标题" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                  <el-form-item label="Defect Title" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
                     <template v-if="defect.isEditing">
-                      <el-input v-model="defect.editData.defects.defectTitle" placeholder="请输入缺陷标题" class="w-full !h-[38px]" />
+                      <el-input v-model="defect.editData.defects.defectTitle" placeholder="Enter defect title" class="w-full !h-[38px]" />
                     </template>
                     <div v-else class="w-full text-gray-700 bg-white p-2 rounded h-[38px] leading-[22px]">
                       {{ defect.defects.defectTitle }}
                     </div>
                   </el-form-item>
 
-                  <el-form-item label="检查人员" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                  <el-form-item label="Inspector" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
                     <template v-if="defect.isEditing">
-                      <el-input v-model="defect.editData.defects.inspector" placeholder="请输入检查人员" class="w-full !h-[38px]" />
+                      <el-input v-model="defect.editData.defects.inspector" placeholder="Enter inspector name" class="w-full !h-[38px]" />
                     </template>
                     <div v-else class="w-full text-gray-700 bg-white p-2 rounded h-[38px] leading-[22px]">
                       {{ defect.defects.inspector }}
                     </div>
                   </el-form-item>
 
-                  <el-form-item label="缺陷描述" class="col-span-2 bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                  <el-form-item label="Description" class="col-span-2 bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
                     <template v-if="defect.isEditing">
-                      <el-input v-model="defect.editData.defects.defectDescription" placeholder="请输入缺陷描述" class="w-full !h-[38px]" />
+                      <el-input v-model="defect.editData.defects.defectDescription" placeholder="Enter defect description" class="w-full !h-[38px]" />
                     </template>
                     <div v-else class="w-full text-gray-700 bg-white p-2 rounded h-[38px] leading-[22px]">
                       {{ defect.defects.defectDescription }}
                     </div>
                   </el-form-item>
 
-                  <el-form-item label="改进建议" class="col-span-2 bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                  <el-form-item label="Improvement" class="col-span-2 bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
                     <template v-if="defect.isEditing">
-                      <el-input v-model="defect.editData.defects.improvementSuggestion" placeholder="请输入改进建议" class="w-full !h-[38px]" />
+                      <el-input v-model="defect.editData.defects.improvementSuggestion" placeholder="Enter improvement suggestion" class="w-full !h-[38px]" />
                     </template>
                     <div v-else class="w-full text-gray-700 bg-white p-2 rounded h-[38px] leading-[22px]">
                       {{ defect.defects.improvementSuggestion }}
                     </div>
                   </el-form-item>
 
-                  <!-- 缺陷图片展示 -->
-                  <el-form-item label="缺陷图片" class="col-span-2 bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                  <!-- Defect Image Display -->
+                  <el-form-item label="Defect Images" class="col-span-2 bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
                     <div class="w-full">
                       <template v-if="defect.isEditing">
                         <ImageHandler v-model="defect.editData.defectImages" :limit="2" :size="120" :editable="true" @preview="handlePreview" />
@@ -167,10 +167,10 @@
             </div>
           </div>
 
-          <!-- 缺陷记录弹窗 -->
+          <!-- Defect Record Dialog -->
           <el-dialog
             v-model="defectDialogVisible"
-            title="添加缺陷记录"
+            title="Add Defect Record"
             width="800px"
             :close-on-click-modal="false"
             class="!fixed"
@@ -185,24 +185,24 @@
           >
             <el-form :model="currentDefect" label-width="100px">
               <div class="grid grid-cols-1 gap-4">
-                <el-form-item label="缺陷标题" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                  <el-input v-model="currentDefect.defects.defectTitle" placeholder="请输入缺陷标题" class="w-full !h-[38px]" />
+                <el-form-item label="Defect Title" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                  <el-input v-model="currentDefect.defects.defectTitle" placeholder="Enter defect title" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="检查人员" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                  <el-input v-model="currentDefect.defects.inspector" placeholder="请输入检查人员" class="w-full !h-[38px]" />
+                <el-form-item label="Inspector" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                  <el-input v-model="currentDefect.defects.inspector" placeholder="Enter inspector name" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="缺陷描述" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                  <el-input v-model="currentDefect.defects.defectDescription" type="textarea" :rows="3" placeholder="请输入缺陷描述" class="w-full" />
+                <el-form-item label="Description" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                  <el-input v-model="currentDefect.defects.defectDescription" type="textarea" :rows="3" placeholder="Enter defect description" class="w-full" />
                 </el-form-item>
 
-                <el-form-item label="改进建议" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
-                  <el-input v-model="currentDefect.defects.improvementSuggestion" type="textarea" :rows="3" placeholder="请输入改进建议" class="w-full" />
+                <el-form-item label="Improvement" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                  <el-input v-model="currentDefect.defects.improvementSuggestion" type="textarea" :rows="3" placeholder="Enter improvement suggestion" class="w-full" />
                 </el-form-item>
 
-                <!-- 缺陷图片 -->
-                <el-form-item label="缺陷图片" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                <!-- Defect Image -->
+                <el-form-item label="Defect Images" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
                   <div class="w-full">
                     <ImageHandler v-model="defectImageUrls" :editable="true" :size="120" :limit="2" :multiple="true" />
                   </div>
@@ -214,17 +214,17 @@
               <div class="flex justify-end gap-4">
                 <el-button type="success" class="bg-green-500 hover:bg-green-600 border-0 shadow-sm" @click="saveDefect">
                   <el-icon><Check /></el-icon>
-                  确定
+                  Confirm
                 </el-button>
-                <el-button class="bg-gray-200 hover:bg-gray-300 border-0 shadow-sm" @click="defectDialogVisible = false">取消</el-button>
+                <el-button class="bg-gray-200 hover:bg-gray-300 border-0 shadow-sm" @click="defectDialogVisible = false">Cancel</el-button>
               </div>
             </template>
           </el-dialog>
 
-          <!-- 图片预览弹窗 -->
+          <!-- Image Preview Dialog -->
           <el-dialog
             v-model="dialogVisible"
-            :title="'图片预览'"
+            :title="'Image Preview'"
             width="auto"
             :modal-class="'!w-[calc(100%-256px)] !left-[256px]'"
             class="!fixed preview-dialog"
@@ -241,17 +241,17 @@
       </div>
     </div>
 
-    <!-- 固定在底部的提交按钮 -->
+    <!-- Fixed bottom submit button -->
     <div class="fixed bottom-0 right-0 z-10 ps-1 min-w-0" style="width: calc(100% - 256px); margin-right: 0">
       <div class="bg-white shadow-[0_-2px_3px_rgba(0,0,0,0.1)]">
         <div class="p-4 flex justify-center items-center gap-4 mx-auto">
           <el-button type="primary" plain @click="addDefect">
             <el-icon><Plus /></el-icon>
-            添加缺陷记录
+            Add Defect Record
           </el-button>
           <el-button type="success" class="bg-green-500 hover:bg-green-600 border-0 shadow-sm" @click="submitForm">
             <el-icon><Check /></el-icon>
-            提交质检报告
+            Submit QC Report
           </el-button>
         </div>
       </div>
@@ -269,7 +269,7 @@ import ImageHandler from '@/components/ImageHandler.vue'
 import {getId} from '@/utils/idUtils'
 import {postQcReportsDtoSave} from '@/api/controller'
 
-// 添加编辑相关的类型
+// Add edit-related types
 interface DefectEditData {
   defects: {
     defectTitle: string
@@ -280,13 +280,13 @@ interface DefectEditData {
   defectImages: string[]
 }
 
-// 扩展DefectsDto接口，添加UI相关属性
+// Extend DefectsDto interface, add UI-related properties
 interface ExtendedDefectsDto extends DefectsDto {
   isEditing?: boolean
   editData?: DefectEditData
 }
 
-// 扩展QcReportsDto接口，使用ExtendedDefectsDto
+// Extend QcReportsDto interface, use ExtendedDefectsDto
 interface ExtendedQcReportsDto extends Omit<QcReportsDto, 'defectsDTO'> {
   defectsDTO?: ExtendedDefectsDto[]
 }
@@ -359,121 +359,121 @@ const formData = ref<ExtendedQcReportsDto>({
   defectsDTO: []
 })
 
-// 修改 defectImageUrls 的定义，确保它是响应式数组
+// Modify defectImageUrls definition, ensure it's reactive
 const defectImageUrls = ref<string[]>([])
 
-// 基本字段定义
+// Basic field definition
 const basicFields = {
-  // 基础信息字段
-  id: '序列号',
-  modelCode: '型号代码',
-  factoryCode: '工厂代码',
-  supplier: '供应商',
-  client: '客户',
-  poNumber: 'PO编号',
-  inspectionDate: '检验日期',
-  orderQty: '订单数量',
-  reportDate: '报告日期',
-  inspectQty: '检验数量',
-  qcOfficer: '质检员',
-  passFail: '检验结果',
-  secondQcDate: '二次质检日期',
-  comments: '评价内容',
+  // Basic Information Fields
+  id: 'Serial Number',
+  modelCode: 'Model Code',
+  factoryCode: 'Factory Code',
+  supplier: 'Supplier',
+  client: 'Client',
+  poNumber: 'PO Number',
+  inspectionDate: 'Inspection Date',
+  orderQty: 'Order Quantity',
+  reportDate: 'Report Date',
+  inspectQty: 'Inspection Quantity',
+  qcOfficer: 'QC Officer',
+  passFail: 'Inspection Result',
+  secondQcDate: 'Second QC Date',
+  comments: 'Comments',
 
-  // 产品外观图片
-  stocksInWarehouse: '仓库库存图片',
-  samplingOfProductsQuantity: '产品抽样数量图片',
-  shippingMarks: '运输标记图片',
-  barcode: '条形码图片',
-  packingOutside: '外包装图片',
-  packingInside: '内包装图片',
+  // Product Appearance Images
+  stocksInWarehouse: 'Warehouse Stock Image',
+  samplingOfProductsQuantity: 'Product Sampling Quantity Image',
+  shippingMarks: 'Shipping Marks Image',
+  barcode: 'Barcode Image',
+  packingOutside: 'Outer Packing Image',
+  packingInside: 'Inner Packing Image',
 
-  // 椅子组件图片
-  chairComponentsPacked: '椅子组件-已包装图片',
-  chairComponentsUnpacked: '椅子组件-未包装图片',
+  // Chair Components Images
+  chairComponentsPacked: 'Chair Components - Packed',
+  chairComponentsUnpacked: 'Chair Components - Unpacked',
 
-  // 配件包图片
-  fittingPackPacked: '配件包-已包装图片',
-  fittingPackUnpacked: '配件包-未包装图片',
-  productionLabel: '生产标签图片',
-  assemblyInstructions: '组装说明图片',
+  // Fitting Pack Images
+  fittingPackPacked: 'Fitting Pack - Packed',
+  fittingPackUnpacked: 'Fitting Pack - Unpacked',
+  productionLabel: 'Production Label',
+  assemblyInstructions: 'Assembly Instructions',
 
-  // 组件图片
-  imageOfComponentsSeat: '组件图片-座椅',
-  imageOfComponentsBack: '组件图片-靠背',
-  imageOfComponentsBase: '组件图片-底座',
-  imageOfComponentsCastors: '组件图片-脚轮',
-  imageOfComponentsGasLiftCover: '组件图片-气压棒外罩',
-  imageOfComponentsGasLiftStamp: '组件图片-气压棒标记',
-  imageOfComponentsArmrest: '组件图片-扶手',
-  imageOfComponentMechanism: '组件图片-机构',
-  imageOfComponentsHeadrest: '组件图片-头枕',
+  // Component Images
+  imageOfComponentsSeat: 'Component Image - Seat',
+  imageOfComponentsBack: 'Component Image - Back',
+  imageOfComponentsBase: 'Component Image - Base',
+  imageOfComponentsCastors: 'Component Image - Castors',
+  imageOfComponentsGasLiftCover: 'Component Image - Gas Lift Cover',
+  imageOfComponentsGasLiftStamp: 'Component Image - Gas Lift Stamp',
+  imageOfComponentsArmrest: 'Component Image - Armrest',
+  imageOfComponentMechanism: 'Component Image - Mechanism',
+  imageOfComponentsHeadrest: 'Component Image - Headrest',
 
-  // 成品图片
-  imageOfProductBuiltFront: '成品图片-正视图',
-  imageOfProductBuiltSide: '成品图片-侧视图',
-  imageOfProductBuiltBack: '成品图片-背视图',
-  imageOfProductBuilt45Degree: '成品图片-45度视图',
-  frontImageOfProductBuiltCompare1: '成品图片-样品对比图1',
-  frontImageOfProductBuiltCompare2: '成品图片-样品对比图2',
+  // Finished Product Images
+  imageOfProductBuiltFront: 'Product Image - Front View',
+  imageOfProductBuiltSide: 'Product Image - Side View',
+  imageOfProductBuiltBack: 'Product Image - Back View',
+  imageOfProductBuilt45Degree: 'Product Image - 45 Degree View',
+  frontImageOfProductBuiltCompare1: 'Product Image - Sample Comparison 1',
+  frontImageOfProductBuiltCompare2: 'Product Image - Sample Comparison 2',
 
-  // 功能检查图片
-  functionCheckSeatHeightExtension: '功能检查-座椅高度调节',
-  functionCheckMechanismAdjustment: '功能检查-机构调节',
-  functionCheckArmrestAdjustment: '功能检查-扶手调节',
-  functionCheckHeadrestAdjustment: '功能检查-头枕调节',
-  functionCheckOther1: '功能检查-其他1',
-  functionCheckOther2: '功能检查-其他2'
+  // Function Check Images
+  functionCheckSeatHeightExtension: 'Function Check - Seat Height Adjustment',
+  functionCheckMechanismAdjustment: 'Function Check - Mechanism Adjustment',
+  functionCheckArmrestAdjustment: 'Function Check - Armrest Adjustment',
+  functionCheckHeadrestAdjustment: 'Function Check - Headrest Adjustment',
+  functionCheckOther1: 'Function Check - Other 1',
+  functionCheckOther2: 'Function Check - Other 2'
 }
 
-// 修改 isImageField 函数的实现
+// Modify isImageField function implementation
 const isImageField = (key: string): boolean => {
-  // 排除基础字段
+  // Exclude basic fields
   const basicFieldKeys = ['id', 'modelCode', 'factoryCode', 'supplier', 'client', 'poNumber', 'inspectionDate', 'orderQty', 'reportDate', 'inspectQty', 'qcOfficer', 'passFail', 'secondQcDate', 'comments']
   return !basicFieldKeys.includes(key)
 }
 
-// 判断是否为日期字段
+// Check if it's a date field
 const isDateField = (key: keyof QcReportsDto['qcReports']): boolean => {
   const dateFields = ['inspectionDate', 'reportDate', 'secondQcDate']
   return dateFields.includes(key)
 }
 
-// 添加删除缺陷记录的函数
+// Add function to remove defect record
 const removeDefect = (index: number) => {
   if (formData.value.defectsDTO) {
     formData.value.defectsDTO.splice(index, 1)
-    ElMessage.success('缺陷记录已删除')
+    ElMessage.success('Defect record deleted')
   }
 }
 
-// 修改 saveDefect 函数,添加编辑状态
+// Modify saveDefect function, add edit status
 const saveDefect = () => {
-  // 验证必填字段
+  // Validate required fields
   if (!currentDefect.value.defects?.defectTitle) {
-    ElMessage.warning('请输入缺陷标题')
+    ElMessage.warning('Please enter defect title')
     return
   }
   if (!currentDefect.value.defects?.defectDescription) {
-    ElMessage.warning('请输入缺陷描述')
+    ElMessage.warning('Please enter defect description')
     return
   }
   if (!currentDefect.value.defects?.improvementSuggestion) {
-    ElMessage.warning('请输入改进建议')
+    ElMessage.warning('Please enter improvement suggestion')
     return
   }
   if (!currentDefect.value.defects?.inspector) {
-    ElMessage.warning('请输入检查人员')
+    ElMessage.warning('Please enter inspector')
     return
   }
 
-  // 验证是否有图片
+  // Validate if there are images
   if (defectImageUrls.value.length === 0) {
-    ElMessage.warning('请至少上传一张缺陷图片')
+    ElMessage.warning('Please upload at least one defect image')
     return
   }
 
-  // 创建新的缺陷记录对象
+  // Create new defect record object
   const newDefect: ExtendedDefectsDto = {
     defects: {
       ...currentDefect.value.defects,
@@ -492,14 +492,14 @@ const saveDefect = () => {
     isEditing: false
   }
 
-  // 添加到表单数据中
+  // Add to form data
   if (formData.value.defectsDTO) {
     formData.value.defectsDTO.push(newDefect)
   } else {
     formData.value.defectsDTO = [newDefect]
   }
 
-  // 重置表单和图片数组
+  // Reset form and image array
   currentDefect.value = {
     defects: {
       id: getId(),
@@ -513,10 +513,10 @@ const saveDefect = () => {
   defectImageUrls.value = []
 
   defectDialogVisible.value = false
-  ElMessage.success('缺陷记录添加成功')
+  ElMessage.success('Defect record added successfully')
 }
 
-// 开始编辑
+// Start edit
 const startDefectEdit = (index: number) => {
   if (!formData.value.defectsDTO) return
   const defect = formData.value.defectsDTO[index]
@@ -529,35 +529,35 @@ const startDefectEdit = (index: number) => {
   }
 }
 
-// 保存编辑
+// Save edit
 const saveDefectEdit = (index: number) => {
   if (!formData.value.defectsDTO) return
   const defect = formData.value.defectsDTO[index]
   if (!defect.editData || !defect.defects) return
 
-  // 验证必填字段
+  // Validate required fields
   if (!defect.editData.defects.defectTitle) {
-    ElMessage.warning('请输入缺陷标题')
+    ElMessage.warning('Please enter defect title')
     return
   }
   if (!defect.editData.defects.defectDescription) {
-    ElMessage.warning('请输入缺陷描述')
+    ElMessage.warning('Please enter defect description')
     return
   }
   if (!defect.editData.defects.improvementSuggestion) {
-    ElMessage.warning('请输入改进建议')
+    ElMessage.warning('Please enter improvement suggestion')
     return
   }
   if (!defect.editData.defects.inspector) {
-    ElMessage.warning('请输入检查人员')
+    ElMessage.warning('Please enter inspector')
     return
   }
   if (defect.editData.defectImages.length === 0) {
-    ElMessage.warning('请至少上传一张缺陷图片')
+    ElMessage.warning('Please upload at least one defect image')
     return
   }
 
-  // 更新数据
+  // Update data
   if (defect.defects) {
     Object.assign(defect.defects, defect.editData.defects)
   }
@@ -572,10 +572,10 @@ const saveDefectEdit = (index: number) => {
 
   defect.isEditing = false
   defect.editData = undefined
-  ElMessage.success('修改成功')
+  ElMessage.success('Modification successful')
 }
 
-// 取消编辑
+// Cancel edit
 const cancelDefectEdit = (index: number) => {
   if (!formData.value.defectsDTO) return
   const defect = formData.value.defectsDTO[index]
@@ -583,7 +583,7 @@ const cancelDefectEdit = (index: number) => {
   defect.editData = undefined
 }
 
-// 添加缺陷记录时重置所有数据
+// Reset all data when adding a defect record
 const addDefect = () => {
   currentDefect.value = {
     defects: {
@@ -595,53 +595,53 @@ const addDefect = () => {
     },
     defectImages: []
   }
-  defectImageUrls.value = [] // 确保重置图片数组
+  defectImageUrls.value = [] // Ensure reset image array
   defectDialogVisible.value = true
 }
 
-// 处理图片预览
+// Handle image preview
 const handlePreview = (url: string) => {
   dialogImageUrl.value = url
   dialogVisible.value = true
 }
 
-// 添加提交表单函数
+// Add submit form function
 const submitForm = async () => {
   try {
-    // 确保formData已初始化
+    // Ensure formData is initialized
     initializeFormData()
 
-    // 表单验证
+    // Form validation
     if (!formData.value.qcReports?.modelCode) {
-      ElMessage.warning('请输入型号代码')
+      ElMessage.warning('Please enter model code')
       return
     }
     if (!formData.value.qcReports?.factoryCode) {
-      ElMessage.warning('请输入工厂代码')
+      ElMessage.warning('Please enter factory code')
       return
     }
     if (!formData.value.qcReports?.supplier) {
-      ElMessage.warning('请输入供应商')
+      ElMessage.warning('Please enter supplier')
       return
     }
     if (!formData.value.qcReports?.client) {
-      ElMessage.warning('请输入客户')
+      ElMessage.warning('Please enter client')
       return
     }
     if (!formData.value.qcReports?.poNumber) {
-      ElMessage.warning('请输入PO编号')
+      ElMessage.warning('Please enter PO number')
       return
     }
     if (!formData.value.qcReports?.inspectionDate) {
-      ElMessage.warning('请选择检验日期')
+      ElMessage.warning('Please select inspection date')
       return
     }
     if (!formData.value.qcReports?.qcOfficer) {
-      ElMessage.warning('请输入质检员')
+      ElMessage.warning('Please enter QC officer')
       return
     }
 
-    // 确保所有必要的关联ID都已设置
+    // Ensure all necessary related IDs are set
     if (formData.value.defectsDTO) {
       formData.value.defectsDTO.forEach(dto => {
         if (formData.value.qcReports?.id && dto.defects) {
@@ -657,34 +657,34 @@ const submitForm = async () => {
       })
     }
 
-    // 打印formData内容，用于调试
-    console.log('提交的formData:', JSON.stringify(formData.value))
+    // Print formData content, for debugging
+    console.log('Submitted formData:', JSON.stringify(formData.value))
 
-    // 转换为API需要的格式
+    // Convert to API needed format
     const apiData: QcReportsDto = {
       qcReports: formData.value.qcReports,
       defectsDTO: formData.value.defectsDTO
     }
 
-    // 调用保存API
+    // Call save API
     const response = await postQcReportsDtoSave(apiData)
-    console.log('API响应:', response)
+    console.log('API response:', response)
     if (response?.data) {
-      ElMessage.success('质检报告提交成功')
-      // 跳转到列表页面
+      ElMessage.success('QC report submitted successfully')
+      // Redirect to list page
       router.push({
         name: 'specList'
       })
     } else {
-      ElMessage.error('提交失败')
+      ElMessage.error('Submission failed')
     }
   } catch (error: any) {
-    console.error('提交失败:', error)
-    ElMessage.error(`提交失败: ${error.message || '未知错误'}`)
+    console.error('Submission failed:', error)
+    ElMessage.error(`Submission failed: ${error.message || 'Unknown error'}`)
   }
 }
 
-// 修改 initializeImageFields 函数
+// Modify initializeImageFields function
 const initializeImageFields = () => {
   if (!formData.value.qcReports) return
 
@@ -697,21 +697,21 @@ const initializeImageFields = () => {
   })
 }
 
-// 修改 updateImageField 函数
+// Modify updateImageField function
 const updateImageField = (key: string, value: string[]) => {
   if (isImageField(key) && formData.value.qcReports) {
-    formData.value.qcReports[key] = value[0] || '' // 只取第一张图片
+    formData.value.qcReports[key] = value[0] || '' // Only take the first image
   }
 }
 
-// 在组件挂载时初始化
+// Initialize component
 onMounted(() => {
   initializeFormData()
 })
 
-// 初始化表单数据
+// Initialize form data
 const initializeFormData = () => {
-  // 确保qcReports对象存在
+  // Ensure qcReports object exists
   if (!formData.value.qcReports) {
     formData.value.qcReports = {
       id: getId(),
@@ -731,12 +731,12 @@ const initializeFormData = () => {
     }
   }
 
-  // 确保defectsDTO数组存在
+  // Ensure defectsDTO array exists
   if (!formData.value.defectsDTO) {
     formData.value.defectsDTO = []
   }
 
-  // 初始化图片字段
+  // Initialize image fields
   initializeImageFields()
 }
 </script>

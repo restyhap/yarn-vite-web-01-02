@@ -4,12 +4,12 @@
     <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
       <div class="flex justify-between items-center py-3 px-6">
         <div class="flex-1">
-          <h2 class="text-lg font-semibold text-gray-800">创建报价单</h2>
+          <h2 class="text-lg font-semibold text-gray-800">Create Quotation</h2>
         </div>
         <div class="flex gap-2">
           <el-button @click="router.back()">
             <el-icon><Back /></el-icon>
-            返回
+            Back
           </el-button>
         </div>
       </div>
@@ -22,30 +22,30 @@
           <!-- 基本信息 -->
           <div class="mb-8 bg-white rounded-lg shadow-sm">
             <div class="p-6">
-              <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">基本信息</h3>
+              <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">Basic Information</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <el-form-item label="供应商" prop="supplier" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
-                  <el-input v-model="formData.supplier" placeholder="请输入供应商名称" class="w-full !h-[38px]" />
+                <el-form-item label="Supplier" prop="supplier" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                  <el-input v-model="formData.supplier" placeholder="Enter supplier name" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="供应商项目代码" prop="supplierItemCode" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
-                  <el-input v-model="formData.supplierItemCode" placeholder="请输入供应商项目代码" class="w-full !h-[38px]" />
+                <el-form-item label="Supplier Item Code" prop="supplierItemCode" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                  <el-input v-model="formData.supplierItemCode" placeholder="Enter supplier item code" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="规格详细信息" prop="specificationDetails" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
-                  <el-input v-model="formData.specificationDetails" placeholder="请输入规格详细信息" class="w-full !h-[38px]" />
+                <el-form-item label="Specification Details" prop="specificationDetails" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                  <el-input v-model="formData.specificationDetails" placeholder="Enter specification details" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="样品交付周期" prop="sampleLeadTime" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
-                  <el-date-picker v-model="formData.sampleLeadTime" type="datetime" placeholder="选择日期时间" class="w-full !h-[38px]" />
+                <el-form-item label="Sample Lead Time" prop="sampleLeadTime" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                  <el-date-picker v-model="formData.sampleLeadTime" type="datetime" placeholder="Select date and time" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="创建时间" prop="createTime" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
-                  <el-date-picker v-model="formData.createTime" type="datetime" placeholder="选择日期时间" class="w-full !h-[38px]" />
+                <el-form-item label="Create Time" prop="createTime" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                  <el-date-picker v-model="formData.createTime" type="datetime" placeholder="Select date and time" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="有效期" prop="validPeriod" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
-                  <el-input v-model="formData.validPeriod" placeholder="例如: 2024-12-31" class="w-full !h-[38px]" />
+                <el-form-item label="Valid Period" prop="validPeriod" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                  <el-input v-model="formData.validPeriod" placeholder="e.g. 2024-12-31" class="w-full !h-[38px]" />
                 </el-form-item>
               </div>
             </div>
@@ -54,42 +54,42 @@
           <!-- 尺寸信息 -->
           <div class="mb-8 bg-white rounded-lg shadow-sm">
             <div class="p-6">
-              <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">尺寸信息</h3>
+              <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">Dimensions</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <el-form-item label="总体尺寸宽度" prop="overallDimensionsWidth" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-form-item label="Overall Width" prop="overallDimensionsWidth" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                   <el-input-number v-model="formData.overallDimensionsWidth" :precision="2" :step="0.1" :min="0" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="总体尺寸深度" prop="overallDimensionsDepth" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-form-item label="Overall Depth" prop="overallDimensionsDepth" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                   <el-input-number v-model="formData.overallDimensionsDepth" :precision="2" :step="0.1" :min="0" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="总体尺寸高度" prop="overallDimensionsHeight" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-form-item label="Overall Height" prop="overallDimensionsHeight" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                   <el-input-number v-model="formData.overallDimensionsHeight" :precision="2" :step="0.1" :min="0" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="箱体尺寸宽度" prop="boxDimensionsWidth" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-form-item label="Box Width" prop="boxDimensionsWidth" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                   <el-input-number v-model="formData.boxDimensionsWidth" :precision="2" :step="0.1" :min="0" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="箱体尺寸深度" prop="boxDimensionsDepth" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-form-item label="Box Depth" prop="boxDimensionsDepth" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                   <el-input-number v-model="formData.boxDimensionsDepth" :precision="2" :step="0.1" :min="0" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="箱体尺寸高度" prop="boxDimensionsHeight" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-form-item label="Box Height" prop="boxDimensionsHeight" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                   <el-input-number v-model="formData.boxDimensionsHeight" :precision="2" :step="0.1" :min="0" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="箱体重量净重" prop="boxWeightNetWeighth" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-form-item label="Net Weight" prop="boxWeightNetWeighth" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                   <el-input-number v-model="formData.boxWeightNetWeighth" :precision="2" :step="0.1" :min="0" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="箱体重量毛重" prop="netWeightGrossWeight" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
-                  <el-input v-model="formData.netWeightGrossWeight" placeholder="例如: 10/12" class="w-full !h-[38px]" />
+                <el-form-item label="Net/Gross Weight" prop="netWeightGrossWeight" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                  <el-input v-model="formData.netWeightGrossWeight" placeholder="e.g. 10/12" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="有效体积" prop="effectiveVol" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
-                  <el-input v-model="formData.effectiveVol" placeholder="请输入有效体积" class="w-full !h-[38px]" />
+                <el-form-item label="Effective Volume" prop="effectiveVol" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                  <el-input v-model="formData.effectiveVol" placeholder="Enter effective volume" class="w-full !h-[38px]" />
                 </el-form-item>
               </div>
             </div>
@@ -98,33 +98,33 @@
           <!-- 价格与订单信息 -->
           <div class="mb-8 bg-white rounded-lg shadow-sm">
             <div class="p-6">
-              <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">价格与订单信息</h3>
+              <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">Price & Order Information</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <el-form-item label="装载量" prop="loadingQty" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-form-item label="Loading Qty" prop="loadingQty" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                   <el-input-number v-model="formData.loadingQty" :precision="0" :step="1" :min="0" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="最小订单量" prop="moq" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
-                  <el-input v-model="formData.moq" placeholder="请输入最小订单量" class="w-full !h-[38px]" />
+                <el-form-item label="MOQ" prop="moq" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                  <el-input v-model="formData.moq" placeholder="Enter minimum order quantity" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="港口" prop="port" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
-                  <el-input v-model="formData.port" placeholder="请输入港口" class="w-full !h-[38px]" />
+                <el-form-item label="Port" prop="port" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                  <el-input v-model="formData.port" placeholder="Enter port" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="供货商成本价" prop="fobPrice" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-form-item label="FOB Price" prop="fobPrice" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                   <el-input-number v-model="formData.fobPrice" :precision="2" :step="0.1" :min="0" class="w-full !h-[38px]" />
                 </el-form-item>
 
-                <el-form-item label="货币单位" prop="currency" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-form-item label="Currency" prop="currency" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                   <el-select v-model="formData.currency" class="w-full !h-[38px]">
-                    <el-option label="人民币" :value="0" />
-                    <el-option label="美元" :value="1" />
+                    <el-option label="CNY" :value="0" />
+                    <el-option label="USD" :value="1" />
                   </el-select>
                 </el-form-item>
 
-                <el-form-item label="销售" prop="salesContacts" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
-                  <el-input v-model="formData.salesContacts" placeholder="请输入销售联系人" class="w-full !h-[38px]" />
+                <el-form-item label="Sales Contact" prop="salesContacts" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                  <el-input v-model="formData.salesContacts" placeholder="Enter sales contact" class="w-full !h-[38px]" />
                 </el-form-item>
               </div>
             </div>
@@ -133,33 +133,33 @@
           <!-- 产品特性 -->
           <div class="mb-8 bg-white rounded-lg shadow-sm">
             <div class="p-6">
-              <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">产品特性</h3>
+              <h3 class="text-lg font-medium text-gray-800 mb-4 border-b pb-2">Product Features</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <el-form-item label="测试标准" prop="bifmaTested" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-form-item label="BIFMA Tested" prop="bifmaTested" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                   <el-switch v-model="formData.bifmaTested" :active-value="1" :inactive-value="0" />
                 </el-form-item>
 
-                <el-form-item label="3D模块" prop="cadBlockAvailable" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-form-item label="CAD Block" prop="cadBlockAvailable" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                   <el-switch v-model="formData.cadBlockAvailable" :active-value="1" :inactive-value="0" />
                 </el-form-item>
 
-                <el-form-item label="产品数据" prop="productDataAvailable" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-form-item label="Product Data" prop="productDataAvailable" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                   <el-switch v-model="formData.productDataAvailable" :active-value="1" :inactive-value="0" />
                 </el-form-item>
 
-                <el-form-item label="产品图片" prop="productImagesAvailable" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-form-item label="Product Images" prop="productImagesAvailable" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                   <el-switch v-model="formData.productImagesAvailable" :active-value="1" :inactive-value="0" />
                 </el-form-item>
               </div>
 
-              <el-form-item label="备注" prop="remark" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
-                <el-input v-model="formData.remark" type="textarea" :rows="3" placeholder="请输入备注信息" class="w-full" />
+              <el-form-item label="Remarks" prop="remark" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+                <el-input v-model="formData.remark" type="textarea" :rows="3" placeholder="Enter remarks" class="w-full" />
               </el-form-item>
 
-              <el-form-item label="产品图片" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
+              <el-form-item label="Product Image" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
                 <div class="w-full h-[200px] border border-dashed border-gray-300 rounded-lg flex justify-center items-center">
                   <div class="w-[200px] h-[200px] flex justify-center items-center">
-                    <ImageHandler :model-value="formData.image ? [formData.image] : []" @update:model-value="val => (formData.image = val[0] || '')" alt="产品图片" :editable="true" :size="200" :limit="1" @temp-file="handleTempFile" class="!flex !justify-center !items-center" />
+                    <ImageHandler :model-value="formData.image ? [formData.image] : []" @update:model-value="val => (formData.image = val[0] || '')" alt="Product Image" :editable="true" :size="200" :limit="1" @temp-file="handleTempFile" class="!flex !justify-center !items-center" />
                   </div>
                 </div>
               </el-form-item>
@@ -175,7 +175,7 @@
         <div class="p-4 flex justify-center items-center">
           <el-button type="primary" size="large" @click="handleSubmit" :loading="submitting">
             <el-icon><Check /></el-icon>
-            提交
+            Submit
           </el-button>
         </div>
       </div>
@@ -229,9 +229,9 @@ const formData = reactive({
 
 // 表单验证规则
 const rules = {
-  supplier: [{required: true, message: '请输入供应商名称', trigger: 'blur'}],
-  supplierItemCode: [{required: true, message: '请输入供应商项目代码', trigger: 'blur'}],
-  fobPrice: [{required: true, message: '请输入供货商成本价', trigger: 'blur'}]
+  supplier: [{required: true, message: 'Please enter supplier name', trigger: 'blur'}],
+  supplierItemCode: [{required: true, message: 'Please enter supplier item code', trigger: 'blur'}],
+  fobPrice: [{required: true, message: 'Please enter FOB price', trigger: 'blur'}]
 }
 
 // 处理临时文件
@@ -245,7 +245,7 @@ const handleSubmit = async () => {
 
   await formRef.value.validate(async valid => {
     if (!valid) {
-      ElMessage.error('请完善表单信息')
+      ElMessage.error('Please complete the form')
       return
     }
 

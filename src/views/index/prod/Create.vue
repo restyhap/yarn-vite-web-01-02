@@ -4,30 +4,30 @@
  * @LastEditors: resty restyhap@hotmail.com
  * @LastEditTime: 2025-03-24 09:16:13
  * @FilePath: /yarn-vite-web-01-02/src/views/index/prod/Create.vue
- * @Description: 产品规格创建表单
+ * @Description: Product Specification Creation Form
 -->
 <template>
   <div dir="ltr" class="flex-1 ps-1 min-w-0 overflow-hidden h-screen">
-    <!-- 固定在顶部的标题和步骤条 -->
+    <!-- Fixed header and steps at the top -->
     <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
-      <!-- 顶部操作栏 -->
+      <!-- Top action bar -->
       <div class="flex justify-between items-center py-3 px-6">
         <div class="flex-1">
-          <h2 class="text-lg font-semibold text-gray-800">创建规格表</h2>
+          <h2 class="text-lg font-semibold text-gray-800">Create Specification</h2>
         </div>
         <div class="flex gap-2">
           <el-button type="primary" @click="fillTestData">
             <el-icon><DataLine /></el-icon>
-            模拟数据
+            Test Data
           </el-button>
           <el-button @click="router.back()">
             <el-icon><Back /></el-icon>
-            返回
+            Back
           </el-button>
         </div>
       </div>
 
-      <!-- 步骤条 -->
+      <!-- Steps -->
       <div class="px-6 py-4 border-t border-gray-200">
         <el-steps :active="activeStep" finish-status="success">
           <template v-for="(step, index) in steps" :key="index">
@@ -37,370 +37,370 @@
       </div>
     </div>
 
-    <!-- 可滚动的内容区域 -->
+    <!-- Scrollable content area -->
     <div class="bg-white overflow-auto" style="height: calc(100vh - 116px - 64px)">
       <div class="p-6">
-        <!-- 基本信息表单 -->
+        <!-- Basic information form -->
         <el-form v-if="activeStep === 0" :model="basicForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="产品代码">
+          <el-form-item label="Product Code">
             <el-input v-model="basicForm.tccode" />
           </el-form-item>
-          <el-form-item label="供应商">
+          <el-form-item label="Supplier">
             <el-input v-model="basicForm.supplier" />
           </el-form-item>
-          <el-form-item label="供应商代码">
+          <el-form-item label="Supplier Code">
             <el-input v-model="basicForm.supplierCode" />
           </el-form-item>
-          <el-form-item label="供应商名称">
+          <el-form-item label="Supplier Name">
             <el-input v-model="basicForm.supplierName" />
           </el-form-item>
-          <el-form-item label="防火标准">
+          <el-form-item label="Fire Standard">
             <el-input v-model="basicForm.fireStandard" />
           </el-form-item>
-          <el-form-item label="20尺柜FOB价格">
+          <el-form-item label="20ft Container FOB Price">
             <el-input-number v-model="basicForm.fob20ContainerPrice" :precision="2" class="w-full" />
           </el-form-item>
-          <el-form-item label="40尺柜FOB价格">
+          <el-form-item label="40ft Container FOB Price">
             <el-input-number v-model="basicForm.fob40ContainerPrice" :precision="2" class="w-full" />
           </el-form-item>
-          <el-form-item label="发货港口">
+          <el-form-item label="Shipping Port">
             <el-input v-model="basicForm.shippingPort" />
           </el-form-item>
         </el-form>
 
-        <!-- 面料信息表单 -->
+        <!-- Upholstery information form -->
         <el-form v-if="activeStep === 1" :model="upholsteryForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="面料制造商">
+          <el-form-item label="Fabric Manufacturer">
             <el-input v-model="upholsteryForm.fabricManufacturer" />
           </el-form-item>
-          <el-form-item label="颜色代码">
+          <el-form-item label="Color Code">
             <el-input v-model="upholsteryForm.colourCode" />
           </el-form-item>
-          <el-form-item label="皮革等级">
+          <el-form-item label="Leather Grade">
             <el-input v-model="upholsteryForm.leatherGrade" />
           </el-form-item>
-          <el-form-item label="每把椅子用料">
+          <el-form-item label="Usage Per Chair">
             <el-input-number v-model="upholsteryForm.usagePerChair" :precision="2" class="w-full" />
           </el-form-item>
         </el-form>
 
-        <!-- 包装信息表单 -->
+        <!-- Packaging information form -->
         <el-form v-if="activeStep === 2" :model="cartonForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="包装箱宽度">
+          <el-form-item label="Carton Width">
             <el-input-number v-model="cartonForm.width" class="w-full" />
           </el-form-item>
-          <el-form-item label="包装箱深度">
+          <el-form-item label="Carton Depth">
             <el-input-number v-model="cartonForm.depth" class="w-full" />
           </el-form-item>
-          <el-form-item label="包装箱高度">
+          <el-form-item label="Carton Height">
             <el-input-number v-model="cartonForm.height" class="w-full" />
           </el-form-item>
-          <el-form-item label="纸板类型">
+          <el-form-item label="Board Type">
             <el-input v-model="cartonForm.boardType" />
           </el-form-item>
-          <el-form-item label="每箱数量">
+          <el-form-item label="Items Per Carton">
             <el-input-number v-model="cartonForm.itemsPerCarton" class="w-full" />
           </el-form-item>
-          <el-form-item label="箱体体积">
+          <el-form-item label="Carton Volume">
             <el-input-number v-model="cartonForm.cartonVolume" :precision="3" class="w-full" />
           </el-form-item>
         </el-form>
 
-        <!-- 生产物流信息表单 -->
+        <!-- Production and logistics information form -->
         <el-form v-if="activeStep === 3" :model="logisticsForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="生产时间">
+          <el-form-item label="Production Time">
             <el-input-number v-model="logisticsForm.productionTime" class="w-full" />
           </el-form-item>
-          <el-form-item label="有效体积">
+          <el-form-item label="Effective Volume">
             <el-input-number v-model="logisticsForm.effectiveVolume" :precision="3" class="w-full" />
           </el-form-item>
-          <el-form-item label="20尺柜装载数量">
+          <el-form-item label="20ft Container Loading Qty">
             <el-input-number v-model="logisticsForm.loadingQuantity20gp" class="w-full" />
           </el-form-item>
-          <el-form-item label="40尺高柜装载数量">
+          <el-form-item label="40ft HQ Container Loading Qty">
             <el-input-number v-model="logisticsForm.loadingQuantity40hc" class="w-full" />
           </el-form-item>
-          <el-form-item label="净重">
+          <el-form-item label="Net Weight">
             <el-input-number v-model="logisticsForm.netWeight" :precision="2" class="w-full" />
           </el-form-item>
-          <el-form-item label="毛重">
+          <el-form-item label="Gross Weight">
             <el-input-number v-model="logisticsForm.grossWeight" :precision="2" class="w-full" />
           </el-form-item>
         </el-form>
 
-        <!-- 产品尺寸表单 -->
+        <!-- Product dimensions form -->
         <el-form v-if="activeStep === 4" :model="dimensionsForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="座位宽度">
+          <el-form-item label="Seat Width">
             <el-input-number v-model="dimensionsForm.seatWidth" class="w-full" />
           </el-form-item>
-          <el-form-item label="座位深度">
+          <el-form-item label="Seat Depth">
             <el-input-number v-model="dimensionsForm.seatDepth" class="w-full" />
           </el-form-item>
-          <el-form-item label="最低座高">
+          <el-form-item label="Min Seat Height">
             <el-input-number v-model="dimensionsForm.seatHeightMin" class="w-full" />
           </el-form-item>
-          <el-form-item label="最高座高">
+          <el-form-item label="Max Seat Height">
             <el-input-number v-model="dimensionsForm.seatHeightMax" class="w-full" />
           </el-form-item>
-          <el-form-item label="靠背宽度">
+          <el-form-item label="Back Width">
             <el-input-number v-model="dimensionsForm.backWidth" class="w-full" />
           </el-form-item>
-          <el-form-item label="靠背高度">
+          <el-form-item label="Back Height">
             <el-input-number v-model="dimensionsForm.backHeight" class="w-full" />
           </el-form-item>
-          <el-form-item label="靠背离座高度">
+          <el-form-item label="Back Height From Seat">
             <el-input-number v-model="dimensionsForm.backHeightFromSeat" class="w-full" />
           </el-form-item>
-          <el-form-item label="整体宽度">
+          <el-form-item label="Overall Width">
             <el-input-number v-model="dimensionsForm.overallWidth" class="w-full" />
           </el-form-item>
-          <el-form-item label="整体深度">
+          <el-form-item label="Overall Depth">
             <el-input-number v-model="dimensionsForm.overallDepth" class="w-full" />
           </el-form-item>
-          <el-form-item label="最低整体高度">
+          <el-form-item label="Min Overall Height">
             <el-input-number v-model="dimensionsForm.overallHeightMin" class="w-full" />
           </el-form-item>
-          <el-form-item label="最高整体高度">
+          <el-form-item label="Max Overall Height">
             <el-input-number v-model="dimensionsForm.overallHeightMax" class="w-full" />
           </el-form-item>
         </el-form>
 
-        <!-- 座椅内部结构表单 -->
+        <!-- Seat inner structure form -->
         <el-form v-if="activeStep === 5" :model="seatInnerForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="材料代码">
+          <el-form-item label="Material Code">
             <el-input v-model="seatInnerForm.materialCode" />
           </el-form-item>
-          <el-form-item label="厚度">
+          <el-form-item label="Thickness">
             <el-input-number v-model="seatInnerForm.thickness" class="w-full" />
           </el-form-item>
-          <el-form-item label="层数">
+          <el-form-item label="Layers Count">
             <el-input-number v-model="seatInnerForm.layersCount" class="w-full" />
           </el-form-item>
-          <el-form-item label="尺寸规格">
+          <el-form-item label="Dimensions">
             <el-input v-model="seatInnerForm.dimensions" />
           </el-form-item>
         </el-form>
 
-        <!-- 背部内部结构表单 -->
+        <!-- Back inner structure form -->
         <el-form v-if="activeStep === 6" :model="backInnerForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="材料代码">
+          <el-form-item label="Material Code">
             <el-input v-model="backInnerForm.materialCode" />
           </el-form-item>
-          <el-form-item label="厚度">
+          <el-form-item label="Thickness">
             <el-input-number v-model="backInnerForm.thickness" class="w-full" />
           </el-form-item>
-          <el-form-item label="层数">
+          <el-form-item label="Layers Count">
             <el-input-number v-model="backInnerForm.layersCount" class="w-full" />
           </el-form-item>
-          <el-form-item label="尺寸规格">
+          <el-form-item label="Dimensions">
             <el-input v-model="backInnerForm.dimensions" />
           </el-form-item>
         </el-form>
 
-        <!-- 座椅外部结构表单 -->
+        <!-- Seat outer structure form -->
         <el-form v-if="activeStep === 7" :model="seatOuterForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="材料">
+          <el-form-item label="Material">
             <el-input v-model="seatOuterForm.material" />
           </el-form-item>
-          <el-form-item label="尺寸">
+          <el-form-item label="Dimensions">
             <el-input v-model="seatOuterForm.dimensions" />
           </el-form-item>
-          <el-form-item label="制造商名称">
+          <el-form-item label="Manufacturer Name">
             <el-input v-model="seatOuterForm.manufacturerName" />
           </el-form-item>
         </el-form>
 
-        <!-- 背部外部结构表单 -->
+        <!-- Back outer structure form -->
         <el-form v-if="activeStep === 8" :model="backOuterForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="材料">
+          <el-form-item label="Material">
             <el-input v-model="backOuterForm.material" />
           </el-form-item>
-          <el-form-item label="尺寸">
+          <el-form-item label="Dimensions">
             <el-input v-model="backOuterForm.dimensions" />
           </el-form-item>
-          <el-form-item label="制造商名称">
+          <el-form-item label="Manufacturer Name">
             <el-input v-model="backOuterForm.manufacturerName" />
           </el-form-item>
         </el-form>
 
-        <!-- 扶手信息表单 -->
+        <!-- Armrest information form -->
         <el-form v-if="activeStep === 9" :model="armsForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="材料">
+          <el-form-item label="Material">
             <el-input v-model="armsForm.material" />
           </el-form-item>
-          <el-form-item label="类型">
+          <el-form-item label="Type">
             <el-input v-model="armsForm.type" />
           </el-form-item>
-          <el-form-item label="制造商">
+          <el-form-item label="Manufacturer">
             <el-input v-model="armsForm.manufacturer" />
           </el-form-item>
-          <el-form-item label="描述">
+          <el-form-item label="Description">
             <el-input v-model="armsForm.description" type="textarea" />
           </el-form-item>
-          <el-form-item label="扶手离座高度">
+          <el-form-item label="Arm Height From Seat">
             <el-input-number v-model="armsForm.armHeightFromSeat" class="w-full" />
           </el-form-item>
-          <el-form-item label="扶手离地高度">
+          <el-form-item label="Arm Height From Floor">
             <el-input-number v-model="armsForm.armHeightFromFloor" class="w-full" />
           </el-form-item>
         </el-form>
 
-        <!-- 泡棉信息表单 -->
+        <!-- Foam information form -->
         <el-form v-if="activeStep === 10" :model="foamForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="描述">
+          <el-form-item label="Description">
             <el-input v-model="foamForm.description" type="textarea" />
           </el-form-item>
-          <el-form-item label="座椅密度">
+          <el-form-item label="Seat Density">
             <el-input-number v-model="foamForm.seatDensity" class="w-full" />
           </el-form-item>
-          <el-form-item label="靠背密度">
+          <el-form-item label="Back Density">
             <el-input-number v-model="foamForm.backDensity" class="w-full" />
           </el-form-item>
-          <el-form-item label="座椅厚度">
+          <el-form-item label="Seat Thickness">
             <el-input-number v-model="foamForm.seatThickness" class="w-full" />
           </el-form-item>
-          <el-form-item label="靠背厚度">
+          <el-form-item label="Back Thickness">
             <el-input-number v-model="foamForm.backThickness" class="w-full" />
           </el-form-item>
         </el-form>
 
-        <!-- 脚轮信息表单 -->
+        <!-- Footrest information form -->
         <el-form v-if="activeStep === 11" :model="castorsForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="描述">
+          <el-form-item label="Description">
             <el-input v-model="castorsForm.description" type="textarea" />
           </el-form-item>
-          <el-form-item label="销轴直径">
+          <el-form-item label="Pin Thickness">
             <el-input-number v-model="castorsForm.pinThickness" class="w-full" />
           </el-form-item>
-          <el-form-item label="轮子直径">
+          <el-form-item label="Wheel Diameter">
             <el-input-number v-model="castorsForm.wheelDiameter" class="w-full" />
           </el-form-item>
         </el-form>
 
-        <!-- 底座信息表单 -->
+        <!-- Base information form -->
         <el-form v-if="activeStep === 12" :model="baseForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="描述">
+          <el-form-item label="Description">
             <el-input v-model="baseForm.description" type="textarea" />
           </el-form-item>
-          <el-form-item label="底盘直径">
+          <el-form-item label="Base Diameter">
             <el-input-number v-model="baseForm.sizeDiameter" class="w-full" />
           </el-form-item>
-          <el-form-item label="材料">
+          <el-form-item label="Material">
             <el-input v-model="baseForm.material" />
           </el-form-item>
-          <el-form-item label="类型">
+          <el-form-item label="Type">
             <el-input v-model="baseForm.type" />
           </el-form-item>
         </el-form>
 
-        <!-- 气压棒信息表单 -->
+        <!-- Gas lift information form -->
         <el-form v-if="activeStep === 13" :model="gasLiftForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="描述">
+          <el-form-item label="Description">
             <el-input v-model="gasLiftForm.description" type="textarea" />
           </el-form-item>
-          <el-form-item label="气压等级">
+          <el-form-item label="Gas Lift Class">
             <el-input v-model="gasLiftForm.gasLiftClass" />
           </el-form-item>
-          <el-form-item label="外管长度">
+          <el-form-item label="Casing Length">
             <el-input-number v-model="gasLiftForm.casingLength" class="w-full" />
           </el-form-item>
-          <el-form-item label="行程">
+          <el-form-item label="Extension Size">
             <el-input-number v-model="gasLiftForm.extensionSize" class="w-full" />
           </el-form-item>
-          <el-form-item label="锥度">
+          <el-form-item label="Taper">
             <el-input-number v-model="gasLiftForm.taper" class="w-full" />
           </el-form-item>
         </el-form>
 
-        <!-- 气压罩信息表单 -->
+        <!-- Gas lift cover information form -->
         <el-form v-if="activeStep === 14" :model="gasLiftCoverForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="描述">
+          <el-form-item label="Description">
             <el-input v-model="gasLiftCoverForm.description" type="textarea" />
           </el-form-item>
-          <el-form-item label="材料">
+          <el-form-item label="Material">
             <el-input v-model="gasLiftCoverForm.material" />
           </el-form-item>
-          <el-form-item label="颜色">
+          <el-form-item label="Colour">
             <el-input v-model="gasLiftCoverForm.colour" />
           </el-form-item>
         </el-form>
 
-        <!-- 机构信息表单 -->
+        <!-- Mechanism information form -->
         <el-form v-if="activeStep === 15" :model="mechanismForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="描述">
+          <el-form-item label="Description">
             <el-input v-model="mechanismForm.description" type="textarea" />
           </el-form-item>
-          <el-form-item label="手柄数量">
+          <el-form-item label="Lever Count">
             <el-input-number v-model="mechanismForm.leversCount" class="w-full" />
           </el-form-item>
-          <el-form-item label="锁定位置">
+          <el-form-item label="Locking Positions">
             <el-input v-model="mechanismForm.lockingPositions" />
           </el-form-item>
-          <el-form-item label="型号">
+          <el-form-item label="Model No">
             <el-input v-model="mechanismForm.modelNo" />
           </el-form-item>
-          <el-form-item label="机构供应商">
+          <el-form-item label="Supplier Name">
             <el-input v-model="mechanismForm.supplierName" />
           </el-form-item>
         </el-form>
 
-        <!-- 配件信息表单 -->
+        <!-- Fitting information form -->
         <el-form v-if="activeStep === 16" :model="fittingsForm" label-width="140px" class="max-w-4xl mx-auto">
-          <el-form-item label="配件编号">
+          <el-form-item label="Fitting Number">
             <el-input-number v-model="fittingsForm.fittingNumber" class="w-full" />
           </el-form-item>
-          <el-form-item label="描述">
+          <el-form-item label="Description">
             <el-input v-model="fittingsForm.description" />
           </el-form-item>
-          <el-form-item label="数量">
+          <el-form-item label="Quantity">
             <el-input-number v-model="fittingsForm.quantity" class="w-full" />
           </el-form-item>
-          <el-form-item label="材料">
+          <el-form-item label="Material">
             <el-input v-model="fittingsForm.material" />
           </el-form-item>
         </el-form>
 
-        <!-- 产品图片表单 -->
+        <!-- Product image form -->
         <el-form v-if="activeStep === 17" :model="productImagesForm" label-width="140px" class="max-w-6xl mx-auto">
           <div class="grid grid-cols-4 gap-6">
             <div class="w-full">
               <div class="flex flex-col">
-                <div class="text-sm text-gray-600 mb-2">正视图</div>
+                <div class="text-sm text-gray-600 mb-2">Front View</div>
                 <ImageHandler v-model="productImagesForm.frontImgPath" class="aspect-square w-full" :limit="1" :editable="true" @preview="handlePreview" />
               </div>
             </div>
             <div class="w-full">
               <div class="flex flex-col">
-                <div class="text-sm text-gray-600 mb-2">侧视图</div>
+                <div class="text-sm text-gray-600 mb-2">Side View</div>
                 <ImageHandler v-model="productImagesForm.sideImgPath" class="aspect-square w-full" :limit="1" :editable="true" @preview="handlePreview" />
               </div>
             </div>
             <div class="w-full">
               <div class="flex flex-col">
-                <div class="text-sm text-gray-600 mb-2">背视图</div>
+                <div class="text-sm text-gray-600 mb-2">Back View</div>
                 <ImageHandler v-model="productImagesForm.backImgPath" class="aspect-square w-full" :limit="1" :editable="true" @preview="handlePreview" />
               </div>
             </div>
             <div class="w-full">
               <div class="flex flex-col">
-                <div class="text-sm text-gray-600 mb-2">角视图</div>
+                <div class="text-sm text-gray-600 mb-2">Angle View</div>
                 <ImageHandler v-model="productImagesForm.angleImgPath" class="aspect-square w-full" :limit="1" :editable="true" @preview="handlePreview" />
               </div>
             </div>
           </div>
         </el-form>
 
-        <!-- 步骤控制按钮 -->
+        <!-- Step control buttons -->
         <div class="fixed bottom-0 right-0 z-10 ps-1 min-w-0" style="width: calc(100% - 256px); margin-right: 0">
           <div class="bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.1)]">
             <div class="flex justify-center items-center gap-4 h-16 px-5 mx-auto max-w-4xl">
-              <el-button @click="prevStep" :disabled="activeStep === 0">上一步</el-button>
-              <el-button type="primary" @click="nextStep" v-if="activeStep < 17">下一步</el-button>
-              <el-button type="success" @click="submitForm" v-else>提交</el-button>
+              <el-button @click="prevStep" :disabled="activeStep === 0">Previous Step</el-button>
+              <el-button type="primary" @click="nextStep" v-if="activeStep < 17">Next Step</el-button>
+              <el-button type="success" @click="submitForm" v-else>Submit</el-button>
             </div>
           </div>
         </div>
-        <!-- 添加底部空白区域防止内容被固定按钮遮挡 -->
+        <!-- Add bottom blank area to prevent content from being fixed button遮挡 -->
         <div class="h-20"></div>
       </div>
     </div>
@@ -420,7 +420,7 @@ import ImageHandler from '@/components/ImageHandler.vue'
 
 const activeStep = ref(0)
 
-// 表单数据
+// Form data
 const basicForm = reactive<Partial<Products>>({
   tccode: '',
   supplier: '',
@@ -471,7 +471,7 @@ const dimensionsForm = reactive<Partial<ProductDimensions>>({
   overallHeightMax: 0
 })
 
-// 座椅内部结构数据
+// Seat inner structure data
 const seatInnerForm = reactive<Partial<SeatInnerComponents>>({
   materialCode: '',
   thickness: 0,
@@ -479,7 +479,7 @@ const seatInnerForm = reactive<Partial<SeatInnerComponents>>({
   dimensions: ''
 })
 
-// 背部内部结构数据
+// Back inner structure data
 const backInnerForm = reactive<Partial<BackInnerComponents>>({
   materialCode: '',
   thickness: 0,
@@ -487,14 +487,14 @@ const backInnerForm = reactive<Partial<BackInnerComponents>>({
   dimensions: ''
 })
 
-// 座椅外部结构数据
+// Seat outer structure data
 const seatOuterForm = reactive<Partial<SeatOuterComponents>>({
   material: '',
   dimensions: '',
   manufacturerName: ''
 })
 
-// 背部外部结构数据
+// Back outer structure data
 const backOuterForm = reactive<Partial<BackOuterComponents>>({
   material: '',
   dimensions: '',
@@ -553,7 +553,7 @@ const mechanismForm = reactive<Partial<Mechanism>>({
   supplierName: ''
 })
 
-// 配件信息数据
+// Fitting information data
 const fittingsForm = reactive<Partial<Fittings>>({
   fittingNumber: 0,
   description: '',
@@ -561,7 +561,7 @@ const fittingsForm = reactive<Partial<Fittings>>({
   material: ''
 })
 
-// 产品图片表单
+// Product image form
 const productImagesForm = ref<{
   frontImgPath: string[]
   sideImgPath: string[]
@@ -574,51 +574,51 @@ const productImagesForm = ref<{
   angleImgPath: []
 })
 
-// 修改 ImagePathKey 的类型定义
+// Modify ImagePathKey type definition
 type ImagePathKey = 'frontImgPath' | 'sideImgPath' | 'backImgPath' | 'angleImgPath'
 
-// 处理图片上传前的验证
+// Handle image upload before validation
 const beforeUpload: UploadProps['beforeUpload'] = file => {
   const isImage = file.type.startsWith('image/')
   const isLt2M = file.size / 1024 / 1024 < 2
 
   if (!isImage) {
-    ElMessage.error('只能上传图片文件!')
+    ElMessage.error('Only image files can be uploaded!')
     return false
   }
   if (!isLt2M) {
-    ElMessage.error('图片大小不能超过 2MB!')
+    ElMessage.error('Image size cannot exceed 2MB!')
     return false
   }
   return true
 }
 
-// 创建处理函数工厂
+// Create handle function factory
 const createHandleSuccess = (type: ImagePathKey) => {
   return (response: any, uploadFile: UploadFile) => {
     handleSuccess(response, uploadFile, type)
   }
 }
 
-// 处理图片上传成功
+// Handle image upload success
 const handleSuccess = (response: any, uploadFile: UploadFile, type: ImagePathKey) => {
   if (uploadFile.raw) {
     productImagesForm.value[type].push(URL.createObjectURL(uploadFile.raw))
-    ElMessage.success('上传成功')
+    ElMessage.success('Upload successful')
   }
 }
 
-// 处理图片上传失败
+// Handle image upload failure
 const handleError = () => {
   ElMessage.error('上传失败，请重试')
 }
 
-// 处理图片移除
+// Handle image removal
 const handleRemove = (type: ImagePathKey) => {
   productImagesForm.value[type] = []
 }
 
-// 步骤控制
+// Step control
 const nextStep = () => {
   if (activeStep.value < 17) {
     activeStep.value++
@@ -631,15 +631,15 @@ const prevStep = () => {
   }
 }
 
-// 在 setup 中获取 router 实例
+// Get router instance in setup
 const router = useRouter()
 
-// 修改提交函数
+// Modify submit function
 const submitForm = async () => {
   try {
     const productId = getId()
 
-    // 转换图片数组为字符串
+    // Convert image array to string
     const processedImages = {
       id: getId(),
       prodId: productId,
@@ -737,46 +737,46 @@ const submitForm = async () => {
       productImages: processedImages
     }
 
-    // 在发送请求前打印数据，检查数据结构
-    console.log('提交的表单数据：', JSON.stringify(formData, null, 2))
+    // Print data before sending request to check data structure
+    console.log('Submitted form data:', JSON.stringify(formData, null, 2))
 
     await postProductDtoSave(formData)
-    ElMessage.success('提交成功')
+    ElMessage.success('Submission successful')
 
-    // 提交成功后跳转到列表页面
+    // Redirect to list page after submission
     router.push('/prod/list')
   } catch (error) {
-    console.error('提交失败:', error)
-    ElMessage.error('提交失败，请重试')
+    console.error('Submission failed:', error)
+    ElMessage.error('Submission failed, please try again')
   }
 }
 
-// 修改键盘事件处理函数
+// Modify keyboard event handling function
 const handleKeyDown = (event: KeyboardEvent) => {
-  // Alt + F 填充测试数据
+  // Alt + F fill test data
   if (event.altKey && event.key.toLowerCase() === 'f') {
     fillTestData()
     return
   }
 
-  // Alt + 左箭头 上一步
+  // Alt + Left arrow fill previous step
   if (event.altKey && event.key === 'ArrowLeft') {
     prevStep()
     return
   }
 
-  // Alt + 右箭头 下一步
+  // Alt + Right arrow fill next step
   if (event.altKey && event.key === 'ArrowRight') {
     nextStep()
     return
   }
 
-  // 如果当前焦点在输入框或文本框中，不处理回车事件
+  // If current focus is in input or text area, do not handle Enter event
   if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
     return
   }
 
-  // 处理回车键
+  // Handle Enter key
   if (event.key === 'Enter') {
     if (activeStep.value < 17) {
       nextStep()
@@ -786,155 +786,155 @@ const handleKeyDown = (event: KeyboardEvent) => {
   }
 }
 
-// 在组件挂载时添加快捷键支持
+// Add shortcut support when component mounts
 onMounted(() => {
-  // 添加快捷键监听
+  // Add shortcut listener
   document.addEventListener('keydown', handleKeyDown)
 })
 
 onUnmounted(() => {
-  // 移除快捷键监听
+  // Remove shortcut listener
   document.removeEventListener('keydown', handleKeyDown)
 })
 
-// 步骤配置
+// Step configuration
 const steps = [
   {
-    title: '基本信息',
-    description: '填写产品基本信息',
+    title: 'Basic Information',
+    description: 'Fill in product basic information',
     content: basicForm
   },
   {
-    title: '面料信息',
-    description: '填写面料相关信息',
+    title: 'Upholstery Information',
+    description: 'Fill in upholstery related information',
     content: upholsteryForm
   },
   {
-    title: '包装信息',
-    description: '填写包装相关信息',
+    title: 'Packaging Information',
+    description: 'Fill in packaging related information',
     content: cartonForm
   },
   {
-    title: '生产物流',
-    description: '填写生产和物流信息',
+    title: 'Production and Logistics',
+    description: 'Fill in production and logistics information',
     content: logisticsForm
   },
   {
-    title: '产品尺寸',
-    description: '填写产品尺寸信息',
+    title: 'Product Dimensions',
+    description: 'Fill in product dimension information',
     content: dimensionsForm
   },
   {
-    title: '座椅内部结构',
-    description: '填写座椅内部结构信息',
+    title: 'Seat Inner Structure',
+    description: 'Fill in seat inner structure information',
     content: seatInnerForm
   },
   {
-    title: '背部内部结构',
-    description: '填写背部内部结构信息',
+    title: 'Back Inner Structure',
+    description: 'Fill in back inner structure information',
     content: backInnerForm
   },
   {
-    title: '座椅外部结构',
-    description: '填写座椅外部结构信息',
+    title: 'Seat Outer Structure',
+    description: 'Fill in seat outer structure information',
     content: seatOuterForm
   },
   {
-    title: '背部外部结构',
-    description: '填写背部外部结构信息',
+    title: 'Back Outer Structure',
+    description: 'Fill in back outer structure information',
     content: backOuterForm
   },
   {
-    title: '扶手信息',
-    description: '填写扶手相关信息',
+    title: 'Armrest Information',
+    description: 'Fill in armrest related information',
     content: armsForm
   },
   {
-    title: '泡棉信息',
-    description: '填写泡棉相关信息',
+    title: 'Foam Information',
+    description: 'Fill in foam related information',
     content: foamForm
   },
   {
-    title: '脚轮信息',
-    description: '填写脚轮相关信息',
+    title: 'Footrest Information',
+    description: 'Fill in footrest related information',
     content: castorsForm
   },
   {
-    title: '底座信息',
-    description: '填写底座相关信息',
+    title: 'Base Information',
+    description: 'Fill in base related information',
     content: baseForm
   },
   {
-    title: '气压棒',
-    description: '填写气压棒相关信息',
+    title: 'Gas Lift',
+    description: 'Fill in gas lift related information',
     content: gasLiftForm
   },
   {
-    title: '气压罩',
-    description: '填写气压罩相关信息',
+    title: 'Gas Lift Cover',
+    description: 'Fill in gas lift cover related information',
     content: gasLiftCoverForm
   },
   {
-    title: '机构信息',
-    description: '填写机构相关信息',
+    title: 'Mechanism Information',
+    description: 'Fill in mechanism related information',
     content: mechanismForm
   },
   {
-    title: '配件信息',
-    description: '填写配件相关信息',
+    title: 'Fitting Information',
+    description: 'Fill in fitting related information',
     content: fittingsForm
   },
   {
-    title: '产品图片',
-    description: '上传产品各角度图片',
+    title: 'Product Image',
+    description: 'Upload product images from various angles',
     content: productImagesForm
   }
 ]
 
-// 在 script setup 部分添加 goToStep 函数
+// Add goToStep function in script setup
 const goToStep = (step: number) => {
   activeStep.value = step
 }
 
-// 添加新的 handlePreview 函数
+// Add new handlePreview function
 const handlePreview = (imageUrl: string) => {
-  // 处理图片预览逻辑
-  console.log('预览图片:', imageUrl)
+  // Handle image preview logic
+  console.log('Preview image:', imageUrl)
 }
 
-// 添加测试数据填充函数
+// Add test data fill function
 const fillTestData = () => {
-  // 填充基本信息
+  // Fill basic information
   Object.assign(basicForm, {
     tccode: 'TC-2025001',
     supplier: 'Test Supplier',
     supplierCode: 'SUP001',
-    supplierName: '测试供应商',
+    supplierName: 'Test Supplier',
     fireStandard: 'BS 5852',
     fob20ContainerPrice: 100,
     fob40ContainerPrice: 180,
-    shippingPort: '深圳港'
+    shippingPort: 'Shenzhen Port'
   })
 
-  // 填充面料信息
+  // Fill upholstery information
   Object.assign(upholsteryForm, {
-    fabricManufacturer: '测试面料厂商',
+    fabricManufacturer: 'Test Upholstery Manufacturer',
     colourCode: 'BLACK-001',
-    leatherGrade: 'A级',
+    leatherGrade: 'A Grade',
     usagePerChair: 2.5
   })
 
-  // 填充包装信息
+  // Fill packaging information
   Object.assign(cartonForm, {
     width: 60,
     depth: 60,
     height: 120,
-    boardType: '五层瓦楞纸',
+    boardType: '5-layer corrugated board',
     itemsPerCarton: 1,
     cartonVolume: 0.432
   })
 
-  // 填充生产物流信息
+  // Fill production and logistics information
   Object.assign(logisticsForm, {
     productionTime: 30,
     effectiveVolume: 0.4,
@@ -944,7 +944,7 @@ const fillTestData = () => {
     grossWeight: 18.2
   })
 
-  // 填充产品尺寸信息
+  // Fill product dimension information
   Object.assign(dimensionsForm, {
     seatWidth: 50,
     seatDepth: 50,
@@ -959,7 +959,7 @@ const fillTestData = () => {
     overallHeightMax: 125
   })
 
-  // 填充座椅内部结构信息
+  // Fill seat inner structure information
   Object.assign(seatInnerForm, {
     materialCode: 'PP-001',
     thickness: 5,
@@ -967,7 +967,7 @@ const fillTestData = () => {
     dimensions: '500x500mm'
   })
 
-  // 填充背部内部结构信息
+  // Fill back inner structure information
   Object.assign(backInnerForm, {
     materialCode: 'PP-002',
     thickness: 5,
@@ -975,88 +975,88 @@ const fillTestData = () => {
     dimensions: '450x600mm'
   })
 
-  // 填充座椅外部结构信息
+  // Fill seat outer structure information
   Object.assign(seatOuterForm, {
-    material: 'PP塑料',
+    material: 'PP Plastic',
     dimensions: '520x520mm',
-    manufacturerName: '测试制造商'
+    manufacturerName: 'Test Manufacturer'
   })
 
-  // 填充背部外部结构信息
+  // Fill back outer structure information
   Object.assign(backOuterForm, {
-    material: 'PP塑料',
+    material: 'PP Plastic',
     dimensions: '470x620mm',
-    manufacturerName: '测试制造商'
+    manufacturerName: 'Test Manufacturer'
   })
 
-  // 填充扶手信息
+  // Fill armrest information
   Object.assign(armsForm, {
-    material: 'PP+钢架',
-    type: '可调节扶手',
-    manufacturer: '明泰五金',
-    description: '3D调节扶手，带软垫',
+    material: 'PP+Steel Frame',
+    type: 'Adjustable Armrest',
+    manufacturer: 'Mingtai Hardware',
+    description: '3D Adjustable Armrest, with Soft Pad',
     armHeightFromSeat: 20,
     armHeightFromFloor: 65
   })
 
-  // 填充泡棉信息
+  // Fill foam information
   Object.assign(foamForm, {
-    description: '高密度记忆海绵',
+    description: 'High Density Memory Foam',
     seatDensity: 55,
     backDensity: 45,
     seatThickness: 6,
     backThickness: 4
   })
 
-  // 填充脚轮信息
+  // Fill footrest information
   Object.assign(castorsForm, {
-    description: '静音PU轮',
+    description: 'Silent PU Wheel',
     pinThickness: 11,
     wheelDiameter: 60
   })
 
-  // 填充底座信息
+  // Fill base information
   Object.assign(baseForm, {
-    description: '铝合金五星脚',
+    description: 'Aluminum 5-star Foot',
     sizeDiameter: 680,
-    material: '铝合金',
-    type: '五星脚'
+    material: 'Aluminum',
+    type: '5-star Foot'
   })
 
-  // 填充气压棒信息
+  // Fill gas lift information
   Object.assign(gasLiftForm, {
-    description: '4级气压棒',
+    description: '4-level Gas Lift',
     gasLiftClass: 'Class 4',
     casingLength: 240,
     extensionSize: 100,
     taper: 28
   })
 
-  // 填充气压罩信息
+  // Fill gas lift cover information
   Object.assign(gasLiftCoverForm, {
-    description: '伸缩防尘罩',
+    description: 'Adjustable Dust Cover',
     material: 'PP',
-    colour: '黑色'
+    colour: 'Black'
   })
 
-  // 填充机构信息
+  // Fill mechanism information
   Object.assign(mechanismForm, {
-    description: '多功能底盘',
+    description: 'Multi-function Base',
     leversCount: 3,
-    lockingPositions: '5档',
+    lockingPositions: '5-speed',
     modelNo: 'JG-001',
-    supplierName: '金冠机械'
+    supplierName: 'Jinguan Machinery'
   })
 
-  // 填充配件信息
+  // Fill fitting information
   Object.assign(fittingsForm, {
     fittingNumber: 1001,
-    description: '安装螺丝套件',
+    description: 'Installation Screw Kit',
     quantity: 12,
-    material: '碳钢'
+    material: 'Carbon Steel'
   })
 
-  // 填充产品图片信息（这里只设置空数组，因为实际图片需要用户上传）
+  // Fill product image information (Here only set empty arrays, as actual images need to be uploaded by user)
   productImagesForm.value = {
     frontImgPath: [],
     sideImgPath: [],
@@ -1064,10 +1064,10 @@ const fillTestData = () => {
     angleImgPath: []
   }
 
-  ElMessage.success('所有表单已填充模拟数据')
+  ElMessage.success('All forms have been filled with simulated data')
 }
 
-// 导出必要的变量和函数供模板使用
+// Export necessary variables and functions for template use
 defineExpose({
   steps,
   goToStep,

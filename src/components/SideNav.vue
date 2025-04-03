@@ -1,11 +1,11 @@
 <template>
   <div class="w-64 bg-white h-screen shadow-lg flex flex-col">
-    <!-- 顶部系统信息 -->
+    <!-- System Information -->
     <div class="p-4 border-b">
-      <h1 class="text-xl font-bold text-gray-800">企业表单管理系统</h1>
+      <h1 class="text-xl font-bold text-gray-800">Enterprise Form Management System</h1>
     </div>
 
-    <!-- 用户信息区 -->
+    <!-- User Information -->
     <div class="p-4 border-b flex items-center gap-3">
       <el-avatar :size="40" :icon="User" />
       <div class="flex flex-col">
@@ -14,102 +14,102 @@
       </div>
     </div>
 
-    <!-- 导航菜单 -->
+    <!-- Navigation Menu -->
     <el-menu class="border-0 flex-1" :default-active="activeMenu" @select="handleSelect" :router="true" :unique-opened="true">
-      <!-- 产品规格管理 -->
+      <!-- Product Specifications -->
       <el-sub-menu v-if="hasPermission(ModuleType.PROD, PermissionAction.VIEW)" index="/prod">
         <template #title>
           <div class="flex items-center">
             <Document class="menu-icon" />
-            <span>规格表管理</span>
+            <span>Specifications</span>
           </div>
         </template>
         <el-menu-item index="/prod/list">
           <div class="flex items-center">
             <View class="menu-icon" />
-            <span>查看规格表</span>
+            <span>View Specifications</span>
           </div>
         </el-menu-item>
         <el-menu-item v-if="hasPermission(ModuleType.PROD, PermissionAction.CREATE)" index="/prod/create">
           <div class="flex items-center">
             <Plus class="menu-icon" />
-            <span>创建规格表</span>
+            <span>Create Specification</span>
           </div>
         </el-menu-item>
       </el-sub-menu>
 
-      <!-- 质检表管理 -->
+      <!-- QC Reports -->
       <el-sub-menu v-if="hasPermission(ModuleType.SPEC, PermissionAction.VIEW)" index="/spec">
         <template #title>
           <div class="flex items-center">
             <Document class="menu-icon" />
-            <span>质检表管理</span>
+            <span>QC Reports</span>
           </div>
         </template>
         <el-menu-item index="/spec/list">
           <div class="flex items-center">
             <View class="menu-icon" />
-            <span>查看质检表</span>
+            <span>View QC Reports</span>
           </div>
         </el-menu-item>
         <el-menu-item v-if="hasPermission(ModuleType.SPEC, PermissionAction.CREATE)" index="/spec/create">
           <div class="flex items-center">
             <Plus class="menu-icon" />
-            <span>创建质检表</span>
+            <span>Create QC Report</span>
           </div>
         </el-menu-item>
       </el-sub-menu>
 
-      <!-- 报价单管理 -->
+      <!-- Quotations -->
       <el-sub-menu v-if="hasPermission(ModuleType.QUOTE, PermissionAction.VIEW)" index="/quote">
         <template #title>
           <div class="flex items-center">
             <Document class="menu-icon" />
-            <span>报价单管理</span>
+            <span>Quotations</span>
           </div>
         </template>
         <el-menu-item index="/quote/list">
           <div class="flex items-center">
             <View class="menu-icon" />
-            <span>查看报价单</span>
+            <span>View Quotations</span>
           </div>
         </el-menu-item>
         <el-menu-item v-if="hasPermission(ModuleType.QUOTE, PermissionAction.CREATE)" index="/quote/create">
           <div class="flex items-center">
             <Plus class="menu-icon" />
-            <span>创建报价单</span>
+            <span>Create Quotation</span>
           </div>
         </el-menu-item>
       </el-sub-menu>
 
-      <!-- 系统设置 -->
+      <!-- System Settings -->
       <el-sub-menu v-if="hasSettingsPermission" index="/settings">
         <template #title>
           <div class="flex items-center">
             <Tools class="menu-icon" />
-            <span>系统设置</span>
+            <span>System Settings</span>
           </div>
         </template>
         <el-menu-item v-if="hasPermission(ModuleType.SETTINGS, PermissionAction.USERS)" index="/settings/users">
           <div class="flex items-center">
             <User class="menu-icon" />
-            <span>用户管理</span>
+            <span>User Management</span>
           </div>
         </el-menu-item>
         <el-menu-item v-if="hasPermission(ModuleType.SETTINGS, PermissionAction.PERMISSIONS)" index="/settings/permissions">
           <div class="flex items-center">
             <Lock class="menu-icon" />
-            <span>权限设置</span>
+            <span>Permission Settings</span>
           </div>
         </el-menu-item>
       </el-sub-menu>
     </el-menu>
 
-    <!-- 底部操作区 -->
+    <!-- Bottom Action Area -->
     <div class="p-4 border-t">
       <el-button link class="w-full flex items-center justify-center gap-2" @click="handleLogout">
         <SwitchButton class="menu-icon" />
-        退出登录
+        Logout
       </el-button>
     </div>
   </div>
@@ -129,14 +129,14 @@ const route = useRoute()
 const userStore = useUserStore()
 const {userInfo} = storeToRefs(userStore)
 
-// 用户信息
+// User information
 const userName = computed(() => userInfo.value?.username)
-const userRole = computed(() => (userInfo.value?.roleType === 0 ? '系统管理员' : userInfo.value?.roleType === 1 ? '供应商' : '员工'))
+const userRole = computed(() => (userInfo.value?.roleType === 0 ? 'System Admin' : userInfo.value?.roleType === 1 ? 'Supplier' : 'Staff'))
 
-// 当前激活的菜单项，使用 route.path
+// Currently active menu item, using route.path
 const activeMenu = ref(route.path)
 
-// 监听路由变化
+// Watch route changes
 watch(
   () => route.path,
   newPath => {
@@ -145,43 +145,43 @@ watch(
   {immediate: true}
 )
 
-// 权限检查
+// Permission cache
 const permissionCache = ref<Record<string, boolean>>({})
 
-// 检查是否有权限
+// Check if has permission
 const hasPermission = (module: ModuleType, action: PermissionAction) => {
   const key = `${module}_${action}`
 
-  // 管理员默认拥有所有权限
+  // Admin has all permissions by default
   if (userInfo.value?.roleType === 0) {
     return true
   }
 
-  // 如果没有token，说明未登录
+  // If no token, means not logged in
   if (!userStore.token) {
     return false
   }
 
-  // 如果缓存中有，直接返回
+  // If in cache, return directly
   if (permissionCache.value[key] !== undefined) {
     return permissionCache.value[key]
   }
 
-  // 否则异步检查权限并缓存结果
+  // Otherwise check permission asynchronously and cache result
   checkPermission(module, action)
     .then(result => {
       permissionCache.value[key] = result
     })
     .catch(error => {
-      console.error(`权限检查失败 ${module}_${action}:`, error)
+      console.error(`Permission check failed ${module}_${action}:`, error)
       permissionCache.value[key] = false
     })
 
-  // 默认返回false，等待异步检查结果
+  // Return false by default, waiting for async check result
   return false
 }
 
-// 是否显示系统设置菜单
+// Whether to show system settings menu
 const hasSettingsPermission = computed(() => {
   return hasPermission(ModuleType.SETTINGS, PermissionAction.USERS) || hasPermission(ModuleType.SETTINGS, PermissionAction.PERMISSIONS)
 })
@@ -191,9 +191,9 @@ const handleSelect = (key: string) => {
 }
 
 const handleLogout = () => {
-  ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm('Are you sure you want to logout?', 'Confirmation', {
+    confirmButtonText: 'Confirm',
+    cancelButtonText: 'Cancel',
     type: 'warning'
   })
     .then(() => {
@@ -203,11 +203,11 @@ const handleLogout = () => {
     .catch(() => {})
 }
 
-// 确保在组件挂载后重新计算一次激活菜单
+// Ensure recalculating active menu after component mount
 onMounted(() => {
   activeMenu.value = route.path
 
-  // 预加载权限
+  // Preload permissions
   Object.values(ModuleType).forEach(module => {
     Object.values(PermissionAction).forEach(action => {
       checkPermission(module, action).then(result => {

@@ -1,42 +1,27 @@
 <template>
-  <div dir="ltr" class="flex-1 ps-1 min-w-0 overflow-hidden">
-    <div class="bg-white shadow-md p-6 h-screen overflow-auto">
-      <!-- Search and Action Area -->
-      <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center min-w-[800px]">
-          <div class="left-actions w-[200px]">
-            <h2 class="text-2xl font-bold text-gray-800">Product Specifications</h2>
-          </div>
-          <div class="flex items-center ml-8 w-[450px]">
-            <el-input v-model="searchQuery" placeholder="Search product code/supplier..." class="w-[350px] h-8 mt-1" clearable @keyup.enter="handleSearch">
-              <template #append>
-                <el-button @click="handleSearch" class="w-[50px]">
-                  <el-icon><Search /></el-icon>
-                </el-button>
-              </template>
-            </el-input>
-          </div>
-        </div>
-
-        <div class="right-actions flex gap-4">
-          <el-button v-permission="{module: 'prod', action: 'Export'}" type="primary" :loading="exporting" :disabled="!selectedRows.length" @click="handleBatchExport" class="w-24">
-            <el-icon><Document /></el-icon>
-            {{ exporting ? 'Exporting...' : 'Batch Export' }}
-          </el-button>
-          <el-button v-permission="{module: 'prod', action: 'Delete'}" type="danger" :disabled="!selectedRows.length" @click="handleBatchDelete" class="min-w-[120px]">
-            <el-icon class="mr-2"><Delete /></el-icon>
-            Batch Delete
-          </el-button>
-        </div>
-      </div>
+  <div dir="ltr" class="flex-1 ps-1 min-w-0">
+    <div class="bg-white shadow-md p-6 h-screen">
+      <ListHeader
+        title="Product Specifications"
+        search-placeholder="Search product code/supplier..."
+        v-model="searchQuery"
+        :show-export="true"
+        :show-delete="true"
+        :exporting="exporting"
+        :has-selected="selectedRows.length > 0"
+        @search="handleSearch"
+        @clear="handleSearch"
+        @batch-export="handleBatchExport"
+        @batch-delete="handleBatchDelete"
+      />
 
       <!-- Table Area -->
-      <div class="overflow-auto mt-16">
+      <div class="overflow-auto mt-4">
         <el-table
           :data="tableData"
           border
           class="w-full"
-          :style="{height: 'calc(100vh - 340px)'}"
+          :style="{height: '600px'}"
           v-loading="loading"
           :empty-text="loading ? 'Loading...' : 'No Data'"
           @selection-change="handleSelectionChange"
@@ -57,9 +42,9 @@
             <template #default="scope">¥{{ scope.row.fob40ContainerPrice?.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}</template>
           </el-table-column>
           <el-table-column prop="shippingPort" label="Shipping Port" min-width="120" show-overflow-tooltip />
-          <el-table-column label="Actions" width="170" fixed="right" align="center">
+          <el-table-column label="Actions" width="200" fixed="right" align="center">
             <template #default="scope">
-              <div class="flex items-center justify-center space-x-3">
+              <div class="flex items-center justify-center space-x-4">
                 <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleView(scope.row)">
                   <el-icon><View /></el-icon>
                   View
@@ -80,7 +65,7 @@
 
       <!-- Pagination Area -->
       <div class="flex justify-center mt-4">
-        <el-pagination v-model:current-page="pagination.pageNumber" v-model:page-size="pagination.pageSize" :total="total" :page-sizes="[10, 20, 50, 100]" layout="sizes, prev, pager, next, total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+        <el-pagination v-model:current-page="pagination.pageNumber" v-model:page-size="pagination.pageSize" :total="total" layout="prev, pager, next, total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
       </div>
     </div>
   </div>
@@ -96,12 +81,50 @@ import JSZip from 'jszip'
 import {onMounted, ref} from 'vue'
 import {useRouter} from 'vue-router'
 import {useUserStore} from '@/pinia/user'
+import ListHeader from '@/components/ListHeader.vue'
 
 const router = useRouter()
 const searchQuery = ref('')
 const total = ref(0)
-const selectedRows = ref<ProdData[]>([])
+const selectedRows = ref<Products[]>([])
 const loading = ref(false)
+
+interface IPageProducts extends PageProducts {
+  tccode?: string
+  supplier?: string
+  supplierCode?: string
+  startDate?: string
+  endDate?: string
+}
+
+interface SearchParams {
+  page: {
+    currentPage: number | undefined
+    pageSize: number | undefined
+    keyword: string
+    supplier?: string
+  }
+}
+
+interface SearchResponse {
+  code: string
+  message: string
+  data: {
+    list: Products[]
+    total: number
+  }
+}
+
+interface PageResponse {
+  code: string
+  message: string
+  data: {
+    records: Products[]
+    totalRow: number
+    pageNumber: number
+    pageSize: number
+  }
+}
 
 // 表格数据
 const tableData = ref<Products[]>([])
@@ -114,14 +137,6 @@ const pagination = ref<PageProducts>({
   pageNumber: 1,
   pageSize: 10
 })
-
-interface IPageProducts extends PageProducts {
-  tccode?: string
-  supplier?: string
-  supplierCode?: string
-  startDate?: string
-  endDate?: string
-}
 
 // 查询参数
 const queryParams = ref<IPageProducts>({
@@ -150,32 +165,34 @@ const fetchTableData = async () => {
   loading.value = true
   try {
     const userStore = useUserStore()
-    const params = {
+    const params: SearchParams = {
       page: {
         currentPage: pagination.value.pageNumber,
         pageSize: pagination.value.pageSize,
         keyword: queryParams.value.tccode || ''
       }
     }
-    // 只有非管理员用户才添加 supplier 参数
+    // Only add supplier parameter for non-admin users
     if (userStore.userInfo?.roleType !== 1) {
       params.page.supplier = userStore.userInfo?.username
     }
-    const res = await getProductsPage(params)
-    tableData.value = res.records || []
-    total.value = res.totalRow || 0
-    pagination.value.pageNumber = res.pageNumber
-    pagination.value.pageSize = res.pageSize
+    const res = (await getProductsPage(params)) as unknown as PageResponse
+    if (res.data) {
+      tableData.value = res.data.records || []
+      total.value = res.data.totalRow || 0
+      pagination.value.pageNumber = res.data.pageNumber
+      pagination.value.pageSize = res.data.pageSize
+    }
   } catch (error) {
-    console.error('获取数据失败:', error)
-    ElMessage.error('获取数据失败')
+    console.error('Failed to fetch data:', error)
+    ElMessage.error('Failed to fetch data')
   } finally {
     loading.value = false
   }
 }
 
 // 表格选择处理
-const handleSelectionChange = (rows: any[]) => {
+const handleSelectionChange = (rows: Products[]) => {
   selectedRows.value = rows
 }
 
@@ -185,22 +202,24 @@ const handleSearch = async () => {
   loading.value = true
   try {
     const userStore = useUserStore()
-    const params = {
+    const searchParams: any = {
       keyword: searchQuery.value,
       currentPage: pagination.value.pageNumber,
       pageSize: pagination.value.pageSize
     }
-    // 只有非管理员用户才添加 supplier 参数
+    // Only add supplier parameter for non-admin users
     console.log('userStore.userInfo?.roleType : ', userStore.userInfo?.roleType)
     if (userStore.userInfo?.roleType === 1) {
-      params.supplier = userStore.userInfo?.username
+      searchParams.supplier = userStore.userInfo?.username
     }
-    const res = await getProductsSearch({params})
-    tableData.value = res.dataList || []
-    total.value = res.totalCount || 0
+    const res = (await getProductsSearch({params: searchParams})) as unknown as SearchResponse
+    if (res.data) {
+      tableData.value = res.data.list || []
+      total.value = res.data.total || 0
+    }
   } catch (error) {
-    console.error('搜索失败:', error)
-    ElMessage.error('搜索失败')
+    console.error('Search failed:', error)
+    ElMessage.error('Search failed')
   } finally {
     loading.value = false
   }
@@ -218,6 +237,52 @@ const handleCurrentChange = (val: number) => {
   fetchTableData()
 }
 
+interface ProductData {
+  tccode: string
+  supplier: string
+  supplier_code: string
+  supplier_name: string
+  fire_standard: string
+  fob_20_container_price: number
+  fob_40_container_price: number
+  shipping_port: string
+  upholstery: {
+    fabric_manufacturer: string
+    colour_code: string
+    leather_grade: string
+    usage_per_chair: string
+  }
+  packaging: {
+    carton_length: string
+    carton_width: string
+    carton_height: string
+    board_type: string
+    items_per_carton: string
+    carton_volume: string
+  }
+  logistics: {
+    production_time: string
+    effective_volume: string
+    loading_quantity_20gp: string
+    loading_quantity_40hc: string
+    net_weight: string
+    gross_weight: string
+  }
+  dimensions: {
+    seat_width: string
+    seat_depth: string
+    seat_height_min: string
+    seat_height_max: string
+    back_width: string
+    back_height: string
+    back_height_from_seat: string
+    overall_width: string
+    overall_depth: string
+    overall_height_min: string
+    overall_height_max: string
+  }
+}
+
 // 批量导出
 const handleBatchExport = async () => {
   exporting.value = true
@@ -230,18 +295,18 @@ const handleBatchExport = async () => {
     loading.value = true
     const zip = new JSZip()
 
-    // 使用模拟数据
-    const getMockProdData = (item: ProdData) => {
+    // Mock data generator
+    const getMockProdData = (item: Products): ProductData => {
       return {
         // Basic Information
-        tccode: item.tccode,
-        supplier: item.supplier,
-        supplier_code: item.supplier_code,
-        supplier_name: item.supplier_name,
-        fire_standard: item.fire_standard,
-        fob_20_container_price: item.fob_20_container_price,
-        fob_40_container_price: item.fob_40_container_price,
-        shipping_port: item.shipping_port,
+        tccode: item.tccode || '',
+        supplier: item.supplier || '',
+        supplier_code: item.supplierCode || '',
+        supplier_name: item.supplierName || '',
+        fire_standard: item.fireStandard || '',
+        fob_20_container_price: item.fob20ContainerPrice || 0,
+        fob_40_container_price: item.fob40ContainerPrice || 0,
+        shipping_port: item.shippingPort || '',
         // Upholstery Information
         upholstery: {
           fabric_manufacturer: 'Sample Manufacturer',
@@ -284,10 +349,10 @@ const handleBatchExport = async () => {
       }
     }
 
-    const exportTasks = selectedRows.value.map(async (item: ProdData) => {
+    const exportTasks = selectedRows.value.map(async (item: Products) => {
       try {
         const formData = getMockProdData(item)
-        const doc = await exportToWord(formData)
+        const doc = await exportToWord(formData as any)
         const fileName = `Product_Spec_${formData.tccode || 'Unknown'}.docx`
         return {fileName, doc}
       } catch (error) {
@@ -341,9 +406,14 @@ const handleBatchDelete = async () => {
       type: 'warning'
     })
 
-    const deletePromises = selectedRows.value.map(row => deleteProductDtoDeleteById({id: row.id.toString()}))
-    await Promise.all(deletePromises)
+    const deletePromises = selectedRows.value.map(row => {
+      if (!row.id) {
+        return Promise.reject(new Error(`Invalid ID for product ${row.tccode || 'Unknown'}`))
+      }
+      return deleteProductDtoDeleteById({id: row.id})
+    })
 
+    await Promise.all(deletePromises)
     ElMessage.success('Batch delete successful')
     fetchTableData()
   } catch (error) {
@@ -370,7 +440,12 @@ const handleEdit = (row: any) => {
   })
 }
 
-const handleDelete = async (id: string) => {
+const handleDelete = async (id: string | undefined) => {
+  if (!id) {
+    ElMessage.error('Invalid product ID')
+    return
+  }
+
   try {
     await ElMessageBox.confirm('Are you sure you want to delete this product?', 'Confirmation', {
       type: 'warning'
@@ -434,5 +509,36 @@ onMounted(() => {
 /* 修复表格底部边框 */
 :deep(.el-table::before) {
   height: 0;
+}
+
+/* Button icon alignment */
+.el-button :deep(.el-icon) {
+  margin-right: 4px;
+}
+
+/* Search button style */
+.el-input :deep(.el-input-group__append) {
+  padding: 0;
+}
+
+.el-input :deep(.el-input__wrapper) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.el-input :deep(.el-input-group__append .el-button) {
+  border: none;
+  height: 100%;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* Header background transition */
+.bg-gray-50 {
+  transition: background-color 0.2s ease;
+}
+
+.bg-gray-50:hover {
+  background-color: #f8fafc;
 }
 </style>

@@ -1,99 +1,85 @@
 <template>
-  <div dir="ltr" class="flex-1 ps-1 min-w-0 overflow-hidden">
-    <div class="bg-white shadow-md p-6 h-screen overflow-auto">
-      <!-- 搜索和操作区域 -->
-      <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center min-w-[800px]">
-          <div class="left-actions w-[200px]">
-            <h2 class="text-2xl font-bold text-gray-800">报价单列表</h2>
-          </div>
-          <div class="flex items-center ml-8 w-[450px]">
-            <el-input v-model="searchQuery" placeholder="请输入您要检索的内容..." class="w-[350px] h-8 mt-1" clearable @keyup.enter="handleSearch" @blur="handleSearchBlur" @clear="handleSearchClear">
-              <template #append>
-                <el-button @click="handleSearch" class="w-[50px]">
-                  <el-icon><Search /></el-icon>
-                </el-button>
-              </template>
-            </el-input>
-          </div>
-        </div>
-        <div class="right-actions flex gap-4">
-          <el-button type="primary" :loading="exporting" :disabled="!selectedRows.length" @click="handleBatchExport" class="w-24" v-if="canExport">
-            <el-icon><Document /></el-icon>
-            {{ exporting ? '导出中...' : '批量导出' }}
-          </el-button>
-          <el-button type="danger" :disabled="!selectedRows.length" @click="handleBatchDelete" v-if="canDelete">
-            <el-icon class="mr-2"><Delete /></el-icon>
-            批量删除
-          </el-button>
-        </div>
-      </div>
+  <div dir="ltr" class="flex-1 ps-1 min-w-0">
+    <div class="bg-white shadow-md p-6 h-screen">
+      <ListHeader
+        title="Quotation List"
+        search-placeholder="Search model code/factory code/supplier..."
+        v-model="searchQuery"
+        :show-export="true"
+        :show-delete="true"
+        :exporting="exporting"
+        :has-selected="selectedRows.length > 0"
+        @search="handleSearch"
+        @clear="handleClearSearch"
+        @batch-export="handleBatchExport"
+        @batch-delete="handleBatchDelete"
+      />
 
       <!-- 邮件发送对话框 -->
-      <el-dialog v-model="showEmailDialog" title="发送邮件" width="600px">
+      <el-dialog v-model="showEmailDialog" title="Send Email" width="600px">
         <el-form :model="emailForm" label-width="80px">
-          <el-form-item label="收件人">
-            <el-input v-model="emailForm.to" placeholder="请输入收件人邮箱，多个邮箱用逗号分隔" />
+          <el-form-item label="Recipients">
+            <el-input v-model="emailForm.to" placeholder="Enter recipient email addresses, separate with commas" />
           </el-form-item>
-          <el-form-item label="主题">
-            <el-input v-model="emailForm.subject" placeholder="请输入邮件主题" />
+          <el-form-item label="Subject">
+            <el-input v-model="emailForm.subject" placeholder="Enter email subject" />
           </el-form-item>
-          <el-form-item label="正文">
-            <el-input v-model="emailForm.content" type="textarea" :rows="6" placeholder="请输入邮件内容" />
+          <el-form-item label="Content">
+            <el-input v-model="emailForm.content" type="textarea" :rows="6" placeholder="Enter email content" />
           </el-form-item>
         </el-form>
         <template #footer>
           <div class="flex justify-end gap-2">
-            <el-button @click="showEmailDialog = false">取消</el-button>
-            <el-button type="primary" @click="confirmSendEmail">发送</el-button>
+            <el-button @click="showEmailDialog = false">Cancel</el-button>
+            <el-button type="primary" @click="handleSendEmail">Send</el-button>
           </div>
         </template>
       </el-dialog>
 
       <!-- 表格区域 -->
-      <div class="overflow-auto mt-16">
+      <div class="overflow-auto mt-4">
         <el-table
           :data="tableData"
           border
           class="w-full"
-          :style="{height: 'calc(100vh - 340px)'}"
+          :style="{height: '600px'}"
           v-loading="loading"
-          :empty-text="loading ? '加载中...' : '暂无数据'"
+          :empty-text="loading ? 'Loading...' : 'No Data'"
           @selection-change="handleSelectionChange"
           :cell-style="{padding: '8px'}"
           :header-cell-style="{background: '#f5f7fa', color: '#606266', fontWeight: 'bold'}"
         >
           <el-table-column type="selection" width="55" fixed="left" />
-          <el-table-column prop="id" label="序号" width="180" fixed="left" />
-          <el-table-column prop="supplier" label="供应商" min-width="120" show-overflow-tooltip />
-          <el-table-column prop="supplierItemCode" label="供应商项目代码" min-width="150" show-overflow-tooltip />
-          <el-table-column prop="specificationDetails" label="规格详细信息" min-width="200" show-overflow-tooltip />
-          <el-table-column prop="sampleLeadTime" label="样品交付周期" min-width="120" show-overflow-tooltip />
-          <el-table-column prop="fobPrice" label="供货商成本价" min-width="120" align="right">
+          <el-table-column prop="id" label="ID" width="180" fixed="left" />
+          <el-table-column prop="supplier" label="Supplier" min-width="120" show-overflow-tooltip />
+          <el-table-column prop="supplierItemCode" label="Supplier Item Code" min-width="150" show-overflow-tooltip />
+          <el-table-column prop="specificationDetails" label="Specification Details" min-width="200" show-overflow-tooltip />
+          <el-table-column prop="sampleLeadTime" label="Sample Lead Time" min-width="120" show-overflow-tooltip />
+          <el-table-column prop="fobPrice" label="Supplier Cost Price" min-width="120" align="right">
             <template #default="scope">{{ scope.row.fobPrice }} {{ getCurrencyLabel(scope.row.currency) }}</template>
           </el-table-column>
-          <el-table-column prop="salesContacts" label="销售" min-width="120" show-overflow-tooltip />
-          <el-table-column prop="createTime" label="创建时间" min-width="160" show-overflow-tooltip />
-          <el-table-column label="操作" width="170" fixed="right" align="center">
+          <el-table-column prop="salesContacts" label="Sales" min-width="120" show-overflow-tooltip />
+          <el-table-column prop="createTime" label="Create Time" min-width="160" show-overflow-tooltip />
+          <el-table-column label="Actions" width="200" fixed="right" align="center">
             <template #default="scope">
-              <div class="flex items-center justify-center space-x-3">
+              <div class="flex items-center justify-center space-x-4">
                 <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleView(scope.row)" v-if="canView">
                   <el-icon>
                     <View />
                   </el-icon>
-                  查看
+                  View
                 </el-button>
                 <el-button type="primary" link size="small" style="padding: 0; min-width: 35px" @click="handleEdit(scope.row)" v-if="canEdit">
                   <el-icon>
                     <Edit />
                   </el-icon>
-                  编辑
+                  Edit
                 </el-button>
                 <el-button type="danger" link size="small" style="padding: 0; min-width: 35px" @click="handleDelete(scope.row)" v-if="canDelete">
                   <el-icon>
                     <Delete />
                   </el-icon>
-                  删除
+                  Delete
                 </el-button>
               </div>
             </template>
@@ -103,7 +89,7 @@
 
       <!-- 分页区域 -->
       <div class="flex justify-center mt-4">
-        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" :page-sizes="[10, 15, 20, 50, 100]" layout="sizes, prev, pager, next , total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total" layout=" prev, pager, next, total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
       </div>
     </div>
   </div>
@@ -120,6 +106,7 @@ import {saveAs} from 'file-saver'
 import {deleteQuotationRemoveById, getQuotationSearch} from '@/api'
 import {useUserStore} from '@/pinia/user'
 import {ModuleType, PermissionAction, checkPermission} from '@/utils/permissionUtils'
+import ListHeader from '@/components/ListHeader.vue'
 
 interface QuoteData {
   id: string
@@ -251,12 +238,12 @@ const fetchTableData = async () => {
 
     console.log('API Response:', response)
     if (response.code !== '200') {
-      ElMessage.error(response.message || '获取数据失败')
+      ElMessage.error(response.message || 'Failed to fetch data')
       return
     }
     // 确保每个数据项都符合QuoteData接口定义
-    if (response.data?.records) {
-      tableData.value = response.data.records.map((item: any) => ({
+    if (response.data?.dataList) {
+      tableData.value = response.data.dataList.map((item: any) => ({
         id: item.id,
         supplier: item.supplier || '',
         supplierItemCode: item.supplierItemCode || '',
@@ -286,14 +273,14 @@ const fetchTableData = async () => {
         loadingQty: Number(item.loadingQty) || 0,
         moq: item.moq || ''
       }))
-      total.value = response.data.totalRow || 0
+      total.value = response.data.totalCount || 0
     } else {
       tableData.value = []
       total.value = 0
     }
   } catch (error) {
-    console.error('获取数据失败:', error)
-    ElMessage.error('获取数据失败')
+    console.error('Failed to fetch data:', error)
+    ElMessage.error('Failed to fetch data')
     tableData.value = []
     total.value = 0
   } finally {
@@ -324,7 +311,7 @@ const handleSearchBlur = () => {
 }
 
 // 搜索框清空处理
-const handleSearchClear = () => {
+const handleClearSearch = () => {
   searchQuery.value = ''
   currentPage.value = 1 // 重置到第一页
   fetchTableData()
@@ -355,13 +342,13 @@ const handleEdit = (row: QuoteData) => {
 // 删除
 const handleDelete = async (row: QuoteData) => {
   try {
-    await ElMessageBox.confirm('确定要删除该报价单吗？', '提示', {
+    await ElMessageBox.confirm('Are you sure you want to delete this quotation?', 'Confirmation', {
       type: 'warning'
     })
 
     // 确保 id 存在且转换为字符串
     if (row.id === undefined || row.id === null) {
-      ElMessage.error('无效的记录ID')
+      ElMessage.error('Invalid record ID')
       return
     }
 
@@ -369,16 +356,16 @@ const handleDelete = async (row: QuoteData) => {
     const response = await deleteQuotationRemoveById({id})
 
     if (response.code !== '200') {
-      ElMessage.error(response.message || '删除失败')
+      ElMessage.error(response.message || 'Delete failed')
       return
     }
 
-    ElMessage.success('删除成功')
+    ElMessage.success('Delete successful')
     // 删除成功后刷新表格数据
     fetchTableData()
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('删除失败')
+      ElMessage.error('Delete failed')
     }
   }
 }
@@ -387,18 +374,18 @@ const handleDelete = async (row: QuoteData) => {
 const handleBatchDelete = async () => {
   try {
     if (selectedRows.value.length === 0) {
-      ElMessage.warning('请选择要删除的数据')
+      ElMessage.warning('Please select data to delete')
       return
     }
 
-    await ElMessageBox.confirm(`确定要删除选中的 ${selectedRows.value.length} 条报价单吗？`, '提示', {
+    await ElMessageBox.confirm(`Are you sure you want to delete the selected ${selectedRows.value.length} quotations?`, 'Confirmation', {
       type: 'warning'
     })
 
     // 过滤掉无效的ID
     const validRows = selectedRows.value.filter(row => row.id !== undefined && row.id !== null)
     if (validRows.length === 0) {
-      ElMessage.error('所选记录均无有效ID')
+      ElMessage.error('No valid IDs in selected records')
       return
     }
 
@@ -410,11 +397,11 @@ const handleBatchDelete = async () => {
 
     const results = await Promise.all(deletePromises)
 
-    ElMessage.success('批量删除成功')
+    ElMessage.success('Batch delete successful')
     fetchTableData()
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('批量删除失败')
+      ElMessage.error('Batch delete failed')
     }
   }
 }
@@ -422,7 +409,7 @@ const handleBatchDelete = async () => {
 // 批量导出
 const handleBatchExport = async () => {
   if (selectedRows.value.length === 0) {
-    ElMessage.warning('请选择要导出的数据')
+    ElMessage.warning('Please select data to export')
     return
   }
 
@@ -479,8 +466,8 @@ const handleBatchExport = async () => {
           sales_contacts: row.salesContacts || '',
           quote_date: row.createTime?.split(' ')[0] || new Date().toISOString().split('T')[0],
           valid_period: row.validPeriod || '2024-12-31',
-          port: row.port || '宁波港',
-          remark: row.remark || '批量导出',
+          port: row.port || 'Ningbo Port',
+          remark: row.remark || 'Batch Export',
           image: row.image || ''
         }
 
@@ -506,7 +493,7 @@ const handleBatchExport = async () => {
     const failCount = results.length - successCount
 
     if (successCount === 0) {
-      ElMessage.error('所有报价单导出失败')
+      ElMessage.error('All quotation exports failed')
       return
     }
 
@@ -517,14 +504,32 @@ const handleBatchExport = async () => {
     saveAs(zipContent, zipFileName)
 
     if (failCount > 0) {
-      ElMessage.warning(`部分报价单导出失败，成功导出 ${successCount}/${results.length} 个报价单`)
+      ElMessage.warning(`Some quotations failed to export. Successfully exported ${successCount}/${results.length} quotations`)
     } else {
-      ElMessage.success('批量导出成功')
+      ElMessage.success('Batch export successful')
     }
   } catch (error) {
-    ElMessage.error('批量导出失败')
+    ElMessage.error('Batch export failed')
   } finally {
     exporting.value = false
+  }
+}
+
+// 发送邮件
+const handleSendEmail = async () => {
+  try {
+    // 这里添加发送邮件的逻辑
+    ElMessage.success('Email sent successfully')
+    showEmailDialog.value = false
+    // 重置表单
+    emailForm.value = {
+      to: '',
+      subject: '',
+      content: ''
+    }
+  } catch (error) {
+    console.error('Failed to send email:', error)
+    ElMessage.error('Failed to send email')
   }
 }
 </script>

@@ -1,7 +1,7 @@
-<!-- 代码已包含 CSS：使用 TailwindCSS , 安装 TailwindCSS 后方可看到布局样式效果 -->
+<!-- Code includes CSS: Using TailwindCSS, layout styles will be visible after installing TailwindCSS -->
 <template>
   <div class="min-h-screen bg-gray-50">
-    <!-- 登录页 -->
+    <!-- Login Page -->
     <div class="min-h-screen flex items-center justify-center bg-gray-50">
       <div class="max-w-lg w-full space-y-8 p-10 bg-white rounded-xl shadow-lg">
         <div class="text-center">
@@ -10,23 +10,23 @@
         </div>
         <el-form ref="loginFormRef" :model="loginForm" :rules="rules" class="mt-8 space-y-8">
           <el-form-item prop="username">
-            <el-input v-model="loginForm.username" placeholder="用户名" class="!rounded-button" clearable>
+            <el-input v-model="loginForm.username" placeholder="Username" class="!rounded-button" clearable>
               <template #prefix>
-                <el-icon><User /></el-icon>
+                <el-icon><UserIcon /></el-icon>
               </template>
             </el-input>
           </el-form-item>
           <el-form-item prop="password">
-            <el-input v-model="loginForm.password" type="password" placeholder="密码" class="!rounded-button" clearable>
+            <el-input v-model="loginForm.password" type="password" placeholder="Password" class="!rounded-button" clearable>
               <template #prefix>
                 <el-icon><Lock /></el-icon>
               </template>
             </el-input>
           </el-form-item>
           <div class="flex items-center justify-between">
-            <el-checkbox v-model="loginForm.remember">记住密码</el-checkbox>
+            <el-checkbox v-model="loginForm.remember">Remember Password</el-checkbox>
           </div>
-          <el-button type="primary" class="w-full !rounded-button" @click="handleLogin">登录</el-button>
+          <el-button type="primary" class="w-full !rounded-button" @click="handleLogin">Login</el-button>
         </el-form>
       </div>
     </div>
@@ -34,27 +34,28 @@
 </template>
 <script lang="ts" setup>
 import {useUserStore} from '@/pinia/user'
-import {Lock, User} from '@element-plus/icons-vue'
+import {Lock, User as UserIcon} from '@element-plus/icons-vue'
 import {ElMessage} from 'element-plus'
 import {ref} from 'vue'
 import {useRouter} from 'vue-router'
-import {User as IUser, postUserLogin, ResultVo} from '@/api'
+import {postUserLogin, User, ResultVo} from '@/api'
 
 const router = useRouter()
 const userStore = useUserStore()
 
-const login = async (user_name: string, password: string): Promise<ResultVo> => {
+const login = async (user_name: string, password: string): Promise<User> => {
   try {
     const result = await postUserLogin({username: user_name, password: password})
-    // result 已经是用户列表数据
-    console.log('登录成功，用户数据：', result)
-    if (!Array.isArray(result) || result.length === 0) {
-      throw new Error('用户不存在')
+    // result is already user list data
+    console.log('Login successful, user data:', result)
+    if (!Array.isArray(result.data) || result.data.length === 0) {
+      throw new Error('User does not exist')
     }
-    console.log('登录成功，用户数据：', result[0])
-    return result[0]
+    const userData = result.data[0] as User
+    console.log('Login successful, user data:', userData)
+    return userData
   } catch (error) {
-    console.error('登录失败：', error)
+    console.error('Login failed:', error)
     throw error
   }
 }
@@ -71,25 +72,24 @@ const loginForm = ref({
 })
 
 const validateUsername = (rule: any, value: string, callback: any) => {
-  // 用户名规则: 使用变量控制长度，字母、数字或下划线
+  // Username rules: length controlled by variables, letters, numbers or underscores
   const usernameRegex = new RegExp(`^[a-zA-Z0-9_]{${minLength},${maxLength}}$`)
   if (!value) {
-    callback(new Error('请输入用户名'))
+    callback(new Error('Please enter username'))
   } else if (!usernameRegex.test(value)) {
-    callback(new Error(`用户名必须为${minLength}-${maxLength}位字母、数字或下划线`))
+    callback(new Error(`Username must be ${minLength}-${maxLength} characters long and can only contain letters, numbers or underscores`))
   } else {
     callback()
   }
 }
 
 const validatePassword = (rule: any, value: string, callback: any) => {
-  // 密码规则: 使用变量控制长度，必须包含字母和数字
-  // const passwordRegex = new RegExp(`^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{${minLength},${maxLength}}$`);
+  // Password rules: length controlled by variables, must contain letters and numbers
   const passwordRegex = new RegExp(`^[a-zA-Z0-9_]{${minLength},${maxLength}}$`)
   if (!value) {
-    callback(new Error('请输入密码'))
+    callback(new Error('Please enter password'))
   } else if (!passwordRegex.test(value)) {
-    callback(new Error(`密码必须为${minLength}-${maxLength}位，且包含字母和数字`))
+    callback(new Error(`Password must be ${minLength}-${maxLength} characters long and contain both letters and numbers`))
   } else {
     callback()
   }
@@ -108,19 +108,19 @@ const handleLogin = () => {
       try {
         const user = await login(loginForm.value.username, loginForm.value.password)
         if (!user.id || !user.username || user.status !== 1) {
-          throw new Error('用户状态异常')
+          throw new Error('User status is abnormal')
         }
-        // 设置用户信息
+        // Set user information
         userStore.setUserInfo(user)
-        // 设置token
+        // Set token
         userStore.setToken(user.id)
-        // 加载用户权限
+        // Load user permissions
         await userStore.loadPermissions()
-        // 登录成功后跳转
+        // Redirect after successful login
         router.push('/index')
       } catch (error: any) {
-        console.error('登录失败：', error)
-        ElMessage.error(error.message || '用户名不存在或密码错误')
+        console.error('Login failed:', error)
+        ElMessage.error(error.message || 'Username does not exist or password is incorrect')
       }
     }
   })

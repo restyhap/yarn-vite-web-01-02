@@ -14,28 +14,28 @@
         <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
           <div class="flex justify-between items-center py-3 px-6">
             <div class="flex-1">
-              <h2 class="text-lg font-semibold text-gray-800">质检报告详情</h2>
+              <h2 class="text-lg font-semibold text-gray-800">QC Report Details</h2>
             </div>
             <div class="flex gap-2">
               <el-button type="primary" @click="handleEdit('basic')" v-if="!isEditing">
                 <el-icon><Edit /></el-icon>
-                编辑
+                Edit
               </el-button>
               <el-button type="success" @click="handleSave" v-if="isEditing">
                 <el-icon><Check /></el-icon>
-                保存
+                Save
               </el-button>
               <el-button type="danger" @click="handleCancel" v-if="isEditing">
                 <el-icon><Close /></el-icon>
-                取消
+                Cancel
               </el-button>
               <el-button type="primary" :loading="exporting" @click="handleExport" class="min-w-[120px]">
                 <el-icon><Document /></el-icon>
-                {{ exporting ? '导出中...' : '导出文档' }}
+                {{ exporting ? 'Exporting...' : 'Export Document' }}
               </el-button>
               <el-button @click="router.back()">
                 <el-icon><Back /></el-icon>
-                返回
+                Back
               </el-button>
             </div>
           </div>
@@ -48,7 +48,7 @@
             <div class="mb-8">
               <div class="flex items-center mb-4">
                 <h3 class="text-lg font-medium text-gray-800 w-full border-b pb-2 flex justify-between items-center">
-                  <span>基本信息</span>
+                  <span>Basic Information</span>
                 </h3>
               </div>
 
@@ -59,7 +59,7 @@
                     <el-form-item v-if="key !== 'comments'" :label="label" class="bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
                       <!-- 编辑状态显示输入框 -->
                       <template v-if="editingSections.includes('basic')">
-                        <el-input v-model="tempFormData.qcReports[key]" :placeholder="`请输入${label}`" class="w-full !h-[38px]" />
+                        <el-input v-model="tempFormData.qcReports[key]" :placeholder="`Please enter ${label}`" class="w-full !h-[38px]" />
                       </template>
                       <!-- 非编辑状态显示文本 -->
                       <template v-else>
@@ -80,7 +80,7 @@
                     <div class="w-full px-2">
                       <!-- 编辑状态显示文本域 -->
                       <template v-if="editingSections.includes('basic')">
-                        <el-input v-model="tempFormData.qcReports.comments" type="textarea" :rows="3" placeholder="请输入评价内容" class="w-full" />
+                        <el-input v-model="tempFormData.qcReports.comments" type="textarea" :rows="3" placeholder="Please enter comments" class="w-full" />
                       </template>
                       <!-- 非编辑状态显示文本 -->
                       <template v-else>
@@ -130,16 +130,16 @@
             <div class="mb-8">
               <div class="flex items-center mb-4">
                 <h3 class="text-lg font-medium text-gray-800 w-full border-b pb-2 flex justify-between items-center">
-                  <span>缺陷记录</span>
+                  <span>Defect Records</span>
                   <el-button type="primary" @click="addDefectDialogVisible = true">
                     <el-icon><Plus /></el-icon>
-                    添加缺陷记录
+                    Add Defect Record
                   </el-button>
                 </h3>
               </div>
 
               <!-- 添加缺陷记录弹窗 -->
-              <DefectDialog v-model:visible="addDefectDialogVisible" title="添加缺陷记录" :loading="loading" :custom-upload="handleCustomUpload" @save="handleSaveNewDefect" @close="handleCloseDialog" />
+              <DefectDialog v-model:visible="addDefectDialogVisible" title="Add Defect Record" :loading="loading" :custom-upload="handleCustomUpload" @save="handleSaveNewDefect" @close="handleCloseDialog" />
 
               <div class="mt-4 space-y-6">
                 <template v-for="(defectDto, index) in formData.defectsDTO" :key="defectDto.defects?.id">
@@ -150,11 +150,11 @@
                       <div class="w-1/2 mr-4">
                         <div class="bg-gray-100 p-1 rounded">
                           <div class="flex items-center mb-2">
-                            <div class="min-w-[140px] px-2 text-gray-600 font-medium">标题内容</div>
+                            <div class="min-w-[140px] px-2 text-gray-600 font-medium">Title</div>
                           </div>
                           <div class="w-full px-2">
                             <template v-if="editingSections.includes(`defect-${index}`)">
-                              <el-input v-model="tempFormData.defectsDTO[index].defects.defectTitle" placeholder="请输入标题内容" class="w-full !h-[38px]" />
+                              <el-input v-model="tempFormData.defectsDTO[index].defects.defectTitle" placeholder="Please enter title" class="w-full !h-[38px]" />
                             </template>
                             <template v-else>
                               <div class="w-full text-gray-700 bg-gray-50 p-2 rounded min-h-[38px] leading-[22px]">
@@ -170,21 +170,21 @@
                         <template v-if="editingSections.includes(`defect-${index}`)">
                           <el-button type="success" @click="handleSaveDefect(index, tempFormData.defectsDTO[index].defects)">
                             <el-icon><Check /></el-icon>
-                            保存
+                            Save
                           </el-button>
                           <el-button type="danger" @click="handleCancelDefect(index)">
                             <el-icon><Close /></el-icon>
-                            取消
+                            Cancel
                           </el-button>
                         </template>
                         <template v-else>
                           <el-button type="primary" @click="handleEditDefect(index)">
                             <el-icon><Edit /></el-icon>
-                            编辑
+                            Edit
                           </el-button>
                           <el-button type="danger" @click="handleDeleteDefect(index)">
                             <el-icon><Delete /></el-icon>
-                            删除
+                            Delete
                           </el-button>
                         </template>
                       </div>
@@ -195,11 +195,11 @@
                       <!-- 问题描述 -->
                       <div class="bg-gray-100 p-1 rounded">
                         <div class="flex items-center mb-2">
-                          <div class="min-w-[140px] px-2 text-gray-600 font-medium">问题描述</div>
+                          <div class="min-w-[140px] px-2 text-gray-600 font-medium">Description</div>
                         </div>
                         <div class="w-full px-2">
                           <template v-if="editingSections.includes(`defect-${index}`)">
-                            <el-input v-model="tempFormData.defectsDTO[index].defects.defectDescription" placeholder="请输入问题描述" class="w-full !h-[38px]" />
+                            <el-input v-model="tempFormData.defectsDTO[index].defects.defectDescription" placeholder="Please enter description" class="w-full !h-[38px]" />
                           </template>
                           <template v-else>
                             <div class="w-full text-gray-700 bg-gray-50 p-2 rounded min-h-[38px] leading-[22px]">
@@ -212,11 +212,11 @@
                       <!-- 质检员 -->
                       <div class="bg-gray-100 p-1 rounded">
                         <div class="flex items-center mb-2">
-                          <div class="min-w-[140px] px-2 text-gray-600 font-medium">质检员</div>
+                          <div class="min-w-[140px] px-2 text-gray-600 font-medium">Inspector</div>
                         </div>
                         <div class="w-full px-2">
                           <template v-if="editingSections.includes(`defect-${index}`)">
-                            <el-input v-model="tempFormData.defectsDTO[index].defects.inspector" placeholder="请输入质检员" class="w-full !h-[38px]" />
+                            <el-input v-model="tempFormData.defectsDTO[index].defects.inspector" placeholder="Please enter inspector" class="w-full !h-[38px]" />
                           </template>
                           <template v-else>
                             <div class="w-full text-gray-700 bg-gray-50 p-2 rounded min-h-[38px] leading-[22px]">
@@ -231,11 +231,11 @@
                     <div class="mb-4">
                       <div class="bg-gray-100 p-1 rounded">
                         <div class="flex items-center mb-2">
-                          <div class="min-w-[140px] px-2 text-gray-600 font-medium">改进建议</div>
+                          <div class="min-w-[140px] px-2 text-gray-600 font-medium">Improvement Suggestion</div>
                         </div>
                         <div class="w-full px-2">
                           <template v-if="editingSections.includes(`defect-${index}`)">
-                            <el-input v-model="tempFormData.defectsDTO[index].defects.improvementSuggestion" type="textarea" :rows="3" placeholder="请输入改进建议" class="w-full" />
+                            <el-input v-model="tempFormData.defectsDTO[index].defects.improvementSuggestion" type="textarea" :rows="3" placeholder="Please enter improvement suggestion" class="w-full" />
                           </template>
                           <template v-else>
                             <div class="w-full text-gray-700 bg-gray-50 p-2 rounded min-h-[38px] leading-[22px]">
@@ -248,7 +248,7 @@
 
                     <!-- 缺陷图片 -->
                     <div class="bg-gray-100 p-4 rounded">
-                      <div class="text-center text-sm text-gray-600 mb-2 font-medium">缺陷图片</div>
+                      <div class="text-center text-sm text-gray-600 mb-2 font-medium">Defect Images</div>
                       <div class="w-full h-[200px] bg-white rounded-lg overflow-hidden">
                         <div class="w-full h-full flex items-center justify-center">
                           <ImageHandler
@@ -310,85 +310,85 @@ const tempFiles = ref<string[]>([])
 
 // 基本字段映射
 const basicFields = {
-  modelCode: '型号',
-  factoryCode: '工厂代码',
-  poNumber: '订单号',
-  inspectionDate: '检验日期',
-  inspectQty: '检验数量',
-  qcOfficer: '质检员',
-  passFail: '检验结果',
-  secondQcDate: '二次检验日期',
-  comments: '评价内容'
+  modelCode: 'Model Code',
+  factoryCode: 'Factory Code',
+  poNumber: 'PO Number',
+  inspectionDate: 'Inspection Date',
+  inspectQty: 'Inspection Quantity',
+  qcOfficer: 'QC Officer',
+  passFail: 'Inspection Result',
+  secondQcDate: 'Second Inspection Date',
+  comments: 'Comments'
 } as const
 
 // 图片部分定义
 const imageSections = {
   appearance: {
-    title: '产品外观',
+    title: 'Product Appearance',
     fields: {
-      stocksInWarehouse: '仓库库存',
-      samplingOfProductsQuantity: '产品抽样数量',
-      shippingMarks: '运输标记',
-      barcode: '条形码',
-      packingOutside: '外包装',
-      packingInside: '内包装'
+      stocksInWarehouse: 'Warehouse Stock',
+      samplingOfProductsQuantity: 'Product Sampling Quantity',
+      shippingMarks: 'Shipping Marks',
+      barcode: 'Barcode',
+      packingOutside: 'Outer Packaging',
+      packingInside: 'Inner Packaging'
     }
   },
   chairComponents: {
-    title: '椅子组件',
+    title: 'Chair Components',
     fields: {
-      chairComponentsPacked: '已包装',
-      chairComponentsUnpacked: '未包装'
+      chairComponentsPacked: 'Packed',
+      chairComponentsUnpacked: 'Unpacked'
     }
   },
   fittingPack: {
-    title: '配件包',
+    title: 'Fitting Pack',
     fields: {
-      fittingPackPacked: '已包装',
-      fittingPackUnpacked: '未包装'
+      fittingPackPacked: 'Packed',
+      fittingPackUnpacked: 'Unpacked'
     }
   },
   labelsAndInstructions: {
-    title: '标签和说明',
+    title: 'Labels and Instructions',
     fields: {
-      productionLabel: '生产标签',
-      assemblyInstructions: '组装说明'
+      productionLabel: 'Production Label',
+      assemblyInstructions: 'Assembly Instructions'
     }
   },
   components: {
-    title: '组件图片',
+    title: 'Component Images',
     fields: {
-      imageOfComponentsSeat: '座椅',
-      imageOfComponentsBack: '靠背',
-      imageOfComponentsBase: '底座',
-      imageOfComponentsCastors: '脚轮',
-      imageOfComponentsGasLiftCover: '气压棒外罩',
-      imageOfComponentsGasLiftStamp: '气压棒标记',
-      imageOfComponentsArmrest: '扶手',
-      imageOfComponentMechanism: '机构',
-      imageOfComponentsHeadrest: '头枕'
+      imageOfComponentsSeat: 'Seat',
+      imageOfComponentsBack: 'Back',
+      imageOfComponentsBase: 'Base',
+      imageOfComponentsCastors: 'Castors',
+      imageOfComponentsGasLiftCover: 'Gas Lift Cover',
+      imageOfComponentsGasLiftStamp: 'Gas Lift Mark',
+      imageOfComponentsArmrest: 'Armrest',
+      imageOfComponentMechanism: 'Mechanism',
+      imageOfComponentsHeadrest: 'Headrest'
     }
   },
   finishedProduct: {
-    title: '成品图片',
+    title: 'Finished Product Images',
     fields: {
-      imageOfProductBuiltFront: '正视图',
-      imageOfProductBuiltSide: '侧视图',
-      imageOfProductBuiltBack: '背视图',
-      imageOfProductBuilt45Degree: '45度视图',
-      frontImageOfProductBuiltCompare1: '样品对比图1',
-      frontImageOfProductBuiltCompare2: '样品对比图2'
+      imageOfProductBuiltFront: 'Front View',
+      imageOfProductBuiltSide: 'Side View',
+      imageOfProductBuiltBack: 'Back View',
+      imageOfProductBuilt45Degree: '45 Degree View',
+      frontImageOfProductBuiltCompare1: 'Sample Comparison 1',
+      frontImageOfProductBuiltCompare2: 'Sample Comparison 2'
     }
   },
   functionCheck: {
-    title: '功能检查',
+    title: 'Function Check',
     fields: {
-      functionCheckSeatHeightExtension: '座椅高度调节',
-      functionCheckMechanismAdjustment: '机构调节',
-      functionCheckArmrestAdjustment: '扶手调节',
-      functionCheckHeadrestAdjustment: '头枕调节',
-      functionCheckOther1: '其他1',
-      functionCheckOther2: '其他2'
+      functionCheckSeatHeightExtension: 'Seat Height Adjustment',
+      functionCheckMechanismAdjustment: 'Mechanism Adjustment',
+      functionCheckArmrestAdjustment: 'Armrest Adjustment',
+      functionCheckHeadrestAdjustment: 'Headrest Adjustment',
+      functionCheckOther1: 'Other 1',
+      functionCheckOther2: 'Other 2'
     }
   }
 } as const
@@ -401,121 +401,121 @@ const getData = async () => {
   console.log((' route.params.id as string ======== ' + route.params.id) as string)
   const res = await getQcReportsDtoGetById({id: route.params.id as string})
 
-  // 打印原始数据，用于调试
-  console.log('原始res.data ======== ' + JSON.stringify(res.data))
+  // Print original data for debugging
+  console.log('Original res.data ======== ' + JSON.stringify(res.data))
 
-  // 检查defectsDTO数据
+  // Check defectsDTO data
   if (res.data && Array.isArray(res.data.defectsDTO)) {
-    console.log('缺陷记录数量:', res.data.defectsDTO.length)
+    console.log('Number of defect records:', res.data.defectsDTO.length)
 
-    // 打印每条记录的ID，用于检查是否有重复
+    // Print each record's ID to check for duplicates
     res.data.defectsDTO.forEach((dto: DefectsDto, index: number) => {
-      console.log(`缺陷记录 #${index + 1}:`, dto.defects?.id, dto.defects?.defectTitle, '图片数量:', dto.defectImages?.length || 0)
+      console.log(`Defect record #${index + 1}:`, dto.defects?.id, dto.defects?.defectTitle, 'Number of images:', dto.defectImages?.length || 0)
     })
 
-    // 确保每个defectsDTO对象都是独立的（深拷贝）
+    // Ensure each defectsDTO object is independent (deep copy)
     res.data.defectsDTO = res.data.defectsDTO.map((dto: DefectsDto) => {
-      // 使用JSON序列化和反序列化进行深拷贝
+      // Use JSON serialization and deserialization for deep copy
       return JSON.parse(JSON.stringify(dto))
     })
 
-    // 使用Map去重，确保没有重复的defectId
+    // Use Map for deduplication to ensure no duplicate defectId
     const uniqueMap = new Map()
     const uniqueDefects: DefectsDto[] = []
 
     for (const defectDto of res.data.defectsDTO) {
       if (defectDto.defects) {
         const defectId = defectDto.defects.id
-        // 如果这个ID还没有被添加过，则添加到结果中
+        // If this ID hasn't been added yet, add it to the result
         if (!uniqueMap.has(defectId)) {
           uniqueMap.set(defectId, true)
           uniqueDefects.push(defectDto)
         } else {
-          console.warn(`发现重复的缺陷记录ID: ${defectId}`)
+          console.warn(`Duplicate defect record ID found: ${defectId}`)
         }
       }
     }
 
-    // 用去重后的数据替换原数据
+    // Replace original data with deduplicated data
     res.data.defectsDTO = uniqueDefects
 
-    // 打印处理后的数据，用于验证
-    console.log('处理后的缺陷记录数量:', res.data.defectsDTO.length)
+    // Print processed data for verification
+    console.log('Number of defect records after processing:', res.data.defectsDTO.length)
     res.data.defectsDTO.forEach((dto: DefectsDto, index: number) => {
-      console.log(`处理后缺陷记录 #${index + 1}:`, dto.defects?.id, dto.defects?.defectTitle)
+      console.log(`Processed defect record #${index + 1}:`, dto.defects?.id, dto.defects?.defectTitle)
     })
   }
 
-  // 使用深拷贝确保formData不会受到后续操作的影响
+  // Use deep copy to ensure formData won't be affected by subsequent operations
   formData.value = JSON.parse(JSON.stringify(res.data))
   loading.value = false
 }
 
-// 添加初始化
+// Add initialization
 onMounted(() => {
   getData()
 
-  // 检查 URL 查询参数，如果有 edit=true，则自动进入编辑状态
+  // Check URL query parameters, if edit=true, automatically enter edit mode
   if (route.query.edit === 'true') {
-    // 确保数据已加载
+    // Ensure data is loaded
     if (formData.value) {
       handleEdit('basic')
     } else {
-      ElMessage.warning('数据加载失败，无法进入编辑模式')
+      ElMessage.warning('Failed to load data, cannot enter edit mode')
     }
   }
 })
 
-// 添加缺失的变量和函数
+// Add missing variables and functions
 const addDefectDialogVisible = ref(false)
 const isEditing = ref(false)
 
-// 根据编辑状态获取图片值
+// Get image value based on edit state
 const getImageValue = (key: string) => {
   if (isEditing.value && tempFormData.value?.qcReports) {
-    // 编辑状态下从临时数据获取
+    // Get from temporary data in edit mode
     const value = tempFormData.value.qcReports[key as keyof typeof tempFormData.value.qcReports]
 
-    // 处理不同类型的值
+    // Handle different types of values
     if (typeof value === 'string') {
-      // 如果是字符串，且不为空，则包装为数组返回
+      // If it's a string and not empty, wrap it in an array
       return value ? [value] : []
     } else if (Array.isArray(value)) {
-      // 如果已经是数组，则直接返回
+      // If it's already an array, return directly
       return value
     } else if (value === null || value === undefined) {
-      // 如果是null或undefined，返回空数组
+      // If it's null or undefined, return empty array
       return []
     } else {
-      // 其他类型（如数字等），转为字符串后包装为数组
+      // For other types (like numbers), convert to string and wrap in array
       return [String(value)]
     }
   } else if (formData.value?.qcReports) {
-    // 非编辑状态下从正式数据获取
+    // Get from official data in non-edit mode
     const value = formData.value.qcReports[key as keyof typeof formData.value.qcReports]
 
-    // 处理不同类型的值
+    // Handle different types of values
     if (typeof value === 'string') {
-      // 如果是字符串，且不为空，则包装为数组返回
+      // If it's a string and not empty, wrap it in an array
       return value ? [value] : []
     } else if (Array.isArray(value)) {
-      // 如果已经是数组，则直接返回
+      // If it's already an array, return directly
       return value
     } else if (value === null || value === undefined) {
-      // 如果是null或undefined，返回空数组
+      // If it's null or undefined, return empty array
       return []
     } else {
-      // 其他类型（如数字等），转为字符串后包装为数组
+      // For other types (like numbers), convert to string and wrap in array
       return [String(value)]
     }
   }
   return []
 }
 
-// 临时存储上传的图片路径，用于取消时删除
+// Temporarily store uploaded image paths for cancellation
 const tempUploadedImages = ref<{[key: string]: string[]}>({})
 
-// 存储待执行的操作（添加、删除、更新）
+// Store pending operations (add, delete, update)
 const pendingOperations = ref<{
   [key: string]: {
     toDelete: {id?: string; path: string}[]
@@ -524,7 +524,7 @@ const pendingOperations = ref<{
   }
 }>({})
 
-// 初始化待执行操作
+// Initialize pending operations
 const initPendingOperations = (key: string) => {
   if (!pendingOperations.value[key]) {
     pendingOperations.value[key] = {
@@ -535,63 +535,63 @@ const initPendingOperations = (key: string) => {
   }
 }
 
-// 处理图片值更新
+// Handle image value update
 const updateImageValue = async (key: string, val: string | string[]) => {
-  console.log(`更新图片值 - 键: ${key}, 值:`, val)
-  console.log('当前编辑状态:', isEditing.value)
+  console.log(`Update image value - Key: ${key}, Value:`, val)
+  console.log('Current edit state:', isEditing.value)
 
-  // 确保val是有效值
+  // Ensure val is valid
   let newValue = ''
 
-  // 处理不同类型的输入值
+  // Handle different types of input values
   if (Array.isArray(val)) {
-    // 如果是数组（图片URL数组）
+    // If it's an array (image URL array)
     if (val.length > 0) {
       newValue = val[0]
-      console.log('处理数组值，使用第一个元素:', newValue)
+      console.log('Processing array value, using first element:', newValue)
     }
   } else if (typeof val === 'string') {
-    // 如果是字符串（直接是字符串值）
+    // If it's a string (direct string value)
     newValue = val
-    console.log('处理字符串值:', newValue)
+    console.log('Processing string value:', newValue)
   }
 
-  // 根据编辑状态决定更新哪个数据对象
+  // Decide which data object to update based on edit state
   if (isEditing.value && tempFormData.value?.qcReports) {
-    // 编辑状态下更新临时数据
-    console.log('更新前的临时数据:', JSON.stringify(tempFormData.value.qcReports[key as keyof typeof tempFormData.value.qcReports]))
+    // Update temporary data in edit mode
+    console.log('Temporary data before update:', JSON.stringify(tempFormData.value.qcReports[key as keyof typeof tempFormData.value.qcReports]))
 
-    // 获取旧值，用于检查是否需要删除服务器上的图片
+    // Get old value to check if server image needs to be deleted
     const oldValue = tempFormData.value.qcReports[key as keyof typeof tempFormData.value.qcReports]
 
-    // 初始化basic操作
+    // Initialize basic operations
     initPendingOperations('basic')
 
-    // 检查是否是删除操作（旧值存在但新值为空）
+    // Check if it's a delete operation (old value exists but new value is empty)
     if (oldValue && !newValue) {
-      console.log(`检测到删除操作 - 键: ${key}, 旧值:`, oldValue)
+      console.log(`Delete operation detected - Key: ${key}, Old value:`, oldValue)
 
-      // 记录被删除的图片路径
+      // Record deleted image path
       if (typeof oldValue === 'string' && oldValue.startsWith('http')) {
         pendingOperations.value['basic'].toDelete.push({path: oldValue})
-        console.log(`记录需要删除的图片路径: ${oldValue} 到 basic`)
+        console.log(`Record image path to delete: ${oldValue} to basic`)
       }
     } else if (newValue && oldValue !== newValue) {
-      // 如果是新上传的图片，记录旧图片路径用于可能的删除
+      // If it's a newly uploaded image, record old image path for possible deletion
       if (oldValue && typeof oldValue === 'string' && oldValue.startsWith('http')) {
-        // 记录被替换的图片路径
+        // Record replaced image path
         pendingOperations.value['basic'].toDelete.push({path: oldValue})
-        console.log(`记录被替换的图片路径: ${oldValue} 到 basic`)
+        console.log(`Record replaced image path: ${oldValue} to basic`)
       }
 
-      // 记录新上传的图片路径
+      // Record newly uploaded image path
       if (newValue.startsWith('http')) {
-        // 初始化临时存储
+        // Initialize temporary storage
         if (!tempUploadedImages.value['newUploads']) {
           tempUploadedImages.value['newUploads'] = []
         }
         tempUploadedImages.value['newUploads'].push(newValue)
-        console.log(`记录新上传的图片到 newUploads: ${newValue}`)
+        console.log(`Record newly uploaded image to newUploads: ${newValue}`)
       }
     }
 
@@ -600,27 +600,27 @@ const updateImageValue = async (key: string, val: string | string[]) => {
       [key]: newValue
     }
 
-    console.log('更新后的临时数据:', JSON.stringify(tempFormData.value.qcReports[key as keyof typeof tempFormData.value.qcReports]))
+    console.log('Updated temporary data:', JSON.stringify(tempFormData.value.qcReports[key as keyof typeof tempFormData.value.qcReports]))
   } else if (formData.value?.qcReports) {
     // 非编辑状态下更新正式数据
-    console.log('更新前的正式数据:', JSON.stringify(formData.value.qcReports[key as keyof typeof formData.value.qcReports]))
+    console.log('Update official data:', JSON.stringify(formData.value.qcReports[key as keyof typeof formData.value.qcReports]))
 
     // 获取旧值，用于检查是否需要删除服务器上的图片
     const oldValue = formData.value.qcReports[key as keyof typeof formData.value.qcReports]
 
     // 检查是否是删除操作（旧值存在但新值为空）
     if (oldValue && !newValue) {
-      console.log(`检测到删除操作 - 键: ${key}, 旧值:`, oldValue)
+      console.log(`Delete operation detected - Key: ${key}, Old value:`, oldValue)
 
       try {
         // 从服务器删除图片文件
         if (typeof oldValue === 'string' && oldValue.startsWith('http')) {
           await getFilesRemove({filePath: oldValue})
-          console.log(`已从服务器删除图片文件: ${oldValue}`)
+          console.log(`Deleted image file from server: ${oldValue}`)
         }
       } catch (error) {
-        console.error(`删除服务器图片文件失败: ${oldValue}`, error)
-        ElMessage.warning('图片文件删除失败，但已从记录中移除')
+        console.error(`Failed to delete image file from server: ${oldValue}`, error)
+        ElMessage.warning('Image file deletion failed, but removed from record')
       }
     }
 
@@ -629,61 +629,61 @@ const updateImageValue = async (key: string, val: string | string[]) => {
       [key]: newValue
     }
 
-    console.log('更新后的正式数据:', JSON.stringify(formData.value.qcReports[key as keyof typeof formData.value.qcReports]))
+    console.log('Updated official data:', JSON.stringify(formData.value.qcReports[key as keyof typeof formData.value.qcReports]))
   }
 }
 
-// 自定义上传图片处理函数
+// Custom image upload processing function
 const handleCustomUpload = async (params: {file: File}) => {
   try {
     // 直接使用File对象
     const res = await postFilesUpload({file: params.file})
     const imagePath = res.data
 
-    // 初始化临时存储
+    // Initialize temporary storage
     if (!tempUploadedImages.value['newDefect']) {
       tempUploadedImages.value['newDefect'] = []
     }
 
-    // 添加到临时上传图片列表
+    // Add to temporary upload image list
     tempUploadedImages.value['newDefect'].push(imagePath)
-    console.log(`已添加临时图片: ${imagePath} 到 newDefect`)
+    console.log(`Added temporary image: ${imagePath} to newDefect`)
 
     return imagePath
   } catch (error) {
-    console.error('上传图片失败', error)
-    ElMessage.error('上传图片失败')
+    console.error('Image upload failed', error)
+    ElMessage.error('Image upload failed')
     return ''
   }
 }
 
 const handleCloseDialog = async () => {
-  // 如果有临时上传的图片，需要删除
+  // If there are temporary uploaded images, delete them
   if (tempUploadedImages.value['newDefect'] && tempUploadedImages.value['newDefect'].length > 0) {
     try {
-      // 删除已上传的图片
+      // Delete uploaded images
       for (const imagePath of tempUploadedImages.value['newDefect']) {
         if (imagePath && imagePath.startsWith('http')) {
           await getFilesRemove({filePath: imagePath})
-          console.log(`已从服务器删除临时图片: ${imagePath}`)
+          console.log(`Temporary image deleted from server: ${imagePath}`)
         }
       }
-      tempUploadedImages.value['newDefect'] = [] // 清空临时图片列表
+      tempUploadedImages.value['newDefect'] = [] // Clear temporary image list
     } catch (error) {
-      console.error('删除临时图片失败', error)
+      console.error('Failed to delete temporary images', error)
     }
   }
 
   addDefectDialogVisible.value = false
 }
 
-// 处理编辑
+// Handle edit
 const handleEdit = (section: string) => {
   isEditing.value = true
-  // 创建临时表单数据的深拷贝
+  // Create a deep copy of temporary form data
   tempFormData.value = JSON.parse(JSON.stringify(formData.value))
 
-  // 确保tempFormData.qcReports存在
+  // Ensure tempFormData.qcReports exists
   if (!tempFormData.value.qcReports) {
     tempFormData.value.qcReports = {}
   }
@@ -691,24 +691,24 @@ const handleEdit = (section: string) => {
   editingSections.value.push(section)
 }
 
-// 处理缺陷记录相关函数
+// Handle defect record related functions
 const handleSaveNewDefect = async (defect: any) => {
   try {
     loading.value = true
 
-    // 设置报告ID
+    // Set report ID
     defect.reportId = formData.value.qcReports?.id
 
-    // 1. 先保存缺陷记录
+    // 1. Save defect record first
     const saveDefectRes = await postDefectsSave(defect)
     const defectId = saveDefectRes.data.id
 
     if (!defectId) {
-      ElMessage.error('保存缺陷记录失败')
+      ElMessage.error('Failed to save defect record')
       return
     }
 
-    // 2. 保存缺陷图片
+    // 2. Save defect images
     const defectImages =
       defect.images?.map((img: any) => ({
         defectId,
@@ -719,12 +719,12 @@ const handleSaveNewDefect = async (defect: any) => {
       await postDefectImagesSave(defectImages)
     }
 
-    // 3. 更新本地数据
+    // 3. Update local data
     if (!formData.value.defectsDTO) {
       formData.value.defectsDTO = []
     }
 
-    // 获取最新的缺陷记录数据
+    // Get latest defect record data
     const updatedDefect = {
       defects: {
         id: defectId,
@@ -747,10 +747,10 @@ const handleSaveNewDefect = async (defect: any) => {
     }
 
     formData.value.defectsDTO.push(updatedDefect)
-    ElMessage.success('添加缺陷记录成功')
+    ElMessage.success('Defect record added successfully')
   } catch (error) {
-    console.error('添加缺陷记录失败', error)
-    ElMessage.error('添加缺陷记录失败')
+    console.error('Failed to add defect record', error)
+    ElMessage.error('Failed to add defect record')
   } finally {
     loading.value = false
     addDefectDialogVisible.value = false
@@ -762,13 +762,13 @@ const handleEditDefect = (index: number) => {
     tempFormData.value = JSON.parse(JSON.stringify(formData.value))
   }
 
-  // 初始化该缺陷记录的临时图片存储和操作
+  // Initialize temporary image storage and operations for this defect record
   const defectKey = `defect-${index}`
   if (!tempUploadedImages.value[defectKey]) {
     tempUploadedImages.value[defectKey] = []
   }
 
-  // 初始化待执行操作
+  // Initialize pending operations
   initPendingOperations(defectKey)
 
   editingSections.value.push(defectKey)
@@ -779,38 +779,38 @@ const handleSaveDefect = async (index: number, defect: any) => {
     loading.value = true
     const defectKey = `defect-${index}`
 
-    // 1. 更新缺陷基本信息
+    // 1. Update defect basic information
     await putDefectsUpdate(defect)
 
-    // 2. 获取当前缺陷记录的图片数据
+    // 2. Get current defect record image data
     const currentDefectDto = formData.value.defectsDTO?.[index]
     const tempDefectDto = tempFormData.value.defectsDTO?.[index]
 
     if (currentDefectDto && tempDefectDto) {
-      // 3. 执行待执行的操作
+      // 3. Execute pending operations
       if (pendingOperations.value[defectKey]) {
         const operations = pendingOperations.value[defectKey]
 
-        // 3.1 执行删除操作
+        // 3.1 Execute delete operations
         for (const item of operations.toDelete) {
           try {
             if (item.id) {
-              // 从数据库中删除图片记录
+              // Delete image record from database
               await deleteDefectImagesRemoveById({id: item.id})
-              console.log(`已从数据库删除图片记录: ${item.id}`)
+              console.log(`Image record deleted from database: ${item.id}`)
             }
 
             // 从服务器删除图片文件
             if (item.path) {
               await getFilesRemove({filePath: item.path})
-              console.log(`已从服务器删除图片文件: ${item.path}`)
+              console.log(`Image file deleted from server: ${item.path}`)
             }
           } catch (error) {
-            console.error(`删除图片失败: ${item.path}`, error)
+            console.error(`Delete operation failed: ${item.path}`, error)
           }
         }
 
-        // 3.2 执行添加操作
+        // 3.2 Execute add operations
         for (const item of operations.toAdd) {
           try {
             // 添加新图片到数据库
@@ -820,13 +820,13 @@ const handleSaveDefect = async (index: number, defect: any) => {
               imagePath: item.path
             }
             await postDefectImagesSave(imageData)
-            console.log(`已添加新图片: ${item.path}`)
+            console.log(`New image added to database: ${item.path}`)
           } catch (error) {
-            console.error(`添加新图片失败: ${item.path}`, error)
+            console.error(`Add operation failed: ${item.path}`, error)
           }
         }
 
-        // 3.3 执行更新操作
+        // 3.3 Execute update operations
         for (const item of operations.toUpdate) {
           try {
             // 更新现有图片
@@ -835,9 +835,9 @@ const handleSaveDefect = async (index: number, defect: any) => {
               defectId: defect.id,
               imagePath: item.path
             })
-            console.log(`已更新图片: ${item.id}`)
+            console.log(`Image updated in database: ${item.id}`)
           } catch (error) {
-            console.error(`更新图片失败: ${item.id}`, error)
+            console.error(`Update operation failed: ${item.id}`, error)
           }
         }
 
@@ -849,25 +849,25 @@ const handleSaveDefect = async (index: number, defect: any) => {
         }
       }
 
-      // 4. 清理临时上传的图片
+      // 4. Clean up temporary uploaded images
       if (tempUploadedImages.value[defectKey] && tempUploadedImages.value[defectKey].length > 0) {
-        // 清空该部分的临时图片记录
+        // Clear this part's temporary image records
         tempUploadedImages.value[defectKey] = []
       }
 
-      // 5. 更新本地数据
-      // 使用深拷贝确保数据独立
+      // 5. Update local data
+      // Use deep copy to ensure data independence
       if (formData.value.defectsDTO) {
         formData.value.defectsDTO[index] = JSON.parse(JSON.stringify(tempDefectDto))
       }
     }
 
-    // 6. 退出编辑模式
+    // 6. Exit edit mode
     editingSections.value = editingSections.value.filter(item => item !== defectKey)
-    ElMessage.success('保存成功')
+    ElMessage.success('Save successful')
   } catch (error) {
-    console.error('保存失败', error)
-    ElMessage.error('保存失败')
+    console.error('Save failed', error)
+    ElMessage.error('Save failed')
   } finally {
     loading.value = false
   }
@@ -876,57 +876,57 @@ const handleSaveDefect = async (index: number, defect: any) => {
 const handleCancelDefect = async (index: number) => {
   const defectKey = `defect-${index}`
 
-  // 检查是否有临时上传的缺陷图片需要删除
+  // Check for temporary uploaded defect images to delete
   if (tempFormData.value?.defectsDTO?.[index]) {
     const originalDefect = formData.value.defectsDTO?.[index]
     const tempDefect = tempFormData.value.defectsDTO[index]
 
-    // 获取原始图片路径
+    // Get original image paths
     const originalImagePaths = originalDefect?.defectImages?.map((img: DefectImages) => img.imagePath).filter(Boolean) || []
 
-    // 获取临时图片路径
+    // Get temporary image paths
     const tempImagePaths = tempDefect?.defectImages?.map((img: DefectImages) => img.imagePath).filter(Boolean) || []
 
-    // 找出临时添加的图片路径（在临时数据中存在但在原始数据中不存在）
+    // Find temporary added image paths (in temporary data but not in original data)
     const newImagePaths = tempImagePaths.filter((path: string) => !originalImagePaths.includes(path))
 
-    // 删除服务器上的临时图片文件
+    // Delete temporary image files from server
     if (newImagePaths.length > 0) {
-      console.log(`检测到取消编辑缺陷记录时需要删除的临时图片:`, newImagePaths)
+      console.log(`Temporary images to delete when canceling defect record edit:`, newImagePaths)
 
       for (const imagePath of newImagePaths) {
         try {
-          // 从服务器删除图片文件
+          // Delete image file from server
           if (imagePath && typeof imagePath === 'string' && imagePath.startsWith('http')) {
             await getFilesRemove({filePath: imagePath})
-            console.log(`已从服务器删除临时缺陷图片文件: ${imagePath}`)
+            console.log(`Temporary defect image file deleted from server: ${imagePath}`)
           }
         } catch (error) {
-          console.error(`删除服务器临时缺陷图片文件失败: ${imagePath}`, error)
+          console.error(`Failed to delete temporary defect image file from server: ${imagePath}`, error)
         }
       }
     }
 
-    // 检查临时存储的图片
+    // Check temporary stored images
     if (tempUploadedImages.value[defectKey] && tempUploadedImages.value[defectKey].length > 0) {
-      console.log(`取消编辑，删除${defectKey}部分记录的临时图片:`, tempUploadedImages.value[defectKey])
+      console.log(`Cancel edit, delete temporary images recorded in ${defectKey}:`, tempUploadedImages.value[defectKey])
 
-      // 删除所有记录的临时图片
+      // Delete all recorded temporary images
       for (const path of tempUploadedImages.value[defectKey]) {
         if (path && path.startsWith('http')) {
           try {
             await getFilesRemove({filePath: path})
-            console.log('已从服务器删除临时图片:', path)
+            console.log('Temporary image deleted from server:', path)
           } catch (error) {
-            console.error('从服务器删除临时图片失败:', error)
+            console.error('Failed to delete temporary image from server:', error)
           }
         }
 
-        // 清空该部分的临时图片记录
+        // Clear temporary image records for this section
         tempUploadedImages.value[defectKey] = []
       }
 
-      // 清空待执行操作
+      // Clear pending operations
       pendingOperations.value[defectKey] = {
         toDelete: [],
         toAdd: [],
@@ -935,7 +935,7 @@ const handleCancelDefect = async (index: number) => {
     }
   }
 
-  // 清空待执行操作
+  // Clear pending operations
   if (pendingOperations.value[defectKey]) {
     pendingOperations.value[defectKey] = {
       toDelete: [],
@@ -944,20 +944,20 @@ const handleCancelDefect = async (index: number) => {
     }
   }
 
-  // 恢复原始数据
+  // Restore original data
   if (formData.value?.defectsDTO?.[index] && tempFormData.value?.defectsDTO?.[index]) {
     tempFormData.value.defectsDTO[index] = JSON.parse(JSON.stringify(formData.value.defectsDTO[index]))
   }
 
-  // 移除编辑状态
+  // Remove edit state
   editingSections.value = editingSections.value.filter(item => item !== defectKey)
 }
 
 const handleDeleteDefect = async (index: number) => {
   try {
-    await ElMessageBox.confirm('确定要删除这条缺陷记录吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm('Are you sure you want to delete this defect record?', 'Confirm', {
+      confirmButtonText: 'Confirm',
+      cancelButtonText: 'Cancel',
       type: 'warning'
     })
 
@@ -965,36 +965,36 @@ const handleDeleteDefect = async (index: number) => {
     const defectId = defectDto?.defects?.id
 
     if (defectId) {
-      // 1. 先删除所有相关的图片文件
+      // 1. Delete all related image files first
       const defectImages = defectDto?.defectImages || []
       if (defectImages.length > 0) {
-        console.log(`删除缺陷记录 ${defectId} 的 ${defectImages.length} 张图片`)
+        console.log(`Deleting ${defectImages.length} images for defect record ${defectId}`)
 
-        // 删除每张图片
+        // Delete each image
         for (const img of defectImages) {
           if (img.imagePath) {
             try {
-              // 从服务器删除图片文件
+              // Delete image file from server
               await getFilesRemove({filePath: img.imagePath})
-              console.log(`已从服务器删除图片文件: ${img.imagePath}`)
+              console.log(`Image file deleted from server: ${img.imagePath}`)
             } catch (error) {
-              console.error(`删除服务器图片文件失败: ${img.imagePath}`, error)
+              console.error(`Failed to delete image file from server: ${img.imagePath}`, error)
             }
           }
         }
       }
 
-      // 2. 删除缺陷记录（数据库会级联删除相关的图片记录）
+      // 2. Delete defect record (database will cascade delete related image records)
       await deleteDefectsRemoveById({id: defectId})
 
-      // 3. 更新本地数据
+      // 3. Update local data
       formData.value.defectsDTO?.splice(index, 1)
-      ElMessage.success('删除成功')
+      ElMessage.success('Delete successful')
     }
   } catch (error) {
     if (error !== 'cancel') {
-      console.error('删除失败', error)
-      ElMessage.error('删除失败')
+      console.error('Delete failed', error)
+      ElMessage.error('Delete failed')
     }
   }
 }
@@ -1003,25 +1003,25 @@ const handleDefectImageUpdate = async (val: string | string[], defectId: string 
   if (!formData.value.defectsDTO?.[index]) return
   const defectKey = `defect-${index}`
 
-  console.log(`更新缺陷图片 - 索引: ${index}, 值:`, val)
+  console.log(`Updating defect image - Index: ${index}, Value:`, val)
 
-  // 确保tempFormData已初始化
+  // Ensure tempFormData is initialized
   if (!tempFormData.value) {
     tempFormData.value = JSON.parse(JSON.stringify(formData.value))
   }
 
-  // 确保tempFormData.defectsDTO[index]存在
+  // Ensure tempFormData.defectsDTO[index] exists
   if (!tempFormData.value.defectsDTO) {
     tempFormData.value.defectsDTO = []
   }
 
   if (!tempFormData.value.defectsDTO[index]) {
-    // 使用可选链操作符安全地访问 formData.value.defectsDTO
+    // Use optional chaining to safely access formData.value.defectsDTO
     const originalDefect = formData.value?.defectsDTO?.[index]
     if (originalDefect) {
       tempFormData.value.defectsDTO[index] = JSON.parse(JSON.stringify(originalDefect))
     } else {
-      // 如果原始数据不存在，创建一个空对象
+      // If original data doesn't exist, create an empty object
       tempFormData.value.defectsDTO[index] = {
         defects: {id: defectId},
         defectImages: []
@@ -1029,152 +1029,136 @@ const handleDefectImageUpdate = async (val: string | string[], defectId: string 
     }
   }
 
-  // 确保当前缺陷记录在编辑状态
+  // Ensure current defect record is in edit state
   if (!editingSections.value.includes(defectKey)) {
-    console.log(`缺陷记录 ${index} 不在编辑状态，添加到编辑状态`)
+    console.log(`Defect record ${index} is not in edit state, adding to edit state`)
     editingSections.value.push(defectKey)
   }
 
-  // 处理不同类型的输入值
+  // Handle different types of input values
   let imageArray: string[] = []
   if (Array.isArray(val)) {
-    // 如果是数组，直接使用
+    // If it's an array, use directly
     imageArray = val
   } else if (typeof val === 'string' && val) {
-    // 如果是非空字符串，包装为数组
+    // If it's a non-empty string, wrap it in an array
     imageArray = [val]
   }
 
-  // 确保defectImages已初始化
+  // Ensure defectImages is initialized
   if (!tempFormData.value.defectsDTO[index].defectImages) {
     tempFormData.value.defectsDTO[index].defectImages = []
   }
 
-  // 获取当前缺陷图片，用于检查是否有图片被删除
+  // Get current defect images, for checking if images are being deleted
   const currentImages = tempFormData.value.defectsDTO[index].defectImages || []
   const currentImagePaths = currentImages.map(img => img.imagePath).filter(Boolean)
 
-  // 初始化待执行操作
+  // Initialize pending operations
   initPendingOperations(defectKey)
 
-  // 找出被删除的图片路径
+  // Find deleted image paths
   const deletedImagePaths = currentImagePaths.filter(path => !imageArray.includes(path))
 
-  // 找出新增的图片路径
+  // Find new image paths
   const addedImagePaths = imageArray.filter(path => !currentImagePaths.includes(path))
 
-  // 处理被删除的图片
+  // Handle deleted images
   if (deletedImagePaths.length > 0) {
-    console.log(`检测到删除的缺陷图片:`, deletedImagePaths)
+    console.log(`Detected deleted defect images:`, deletedImagePaths)
 
-    // 初始化临时存储
+    // Initialize temporary storage
     if (!tempUploadedImages.value[defectKey]) {
       tempUploadedImages.value[defectKey] = []
     }
 
-    // 处理每个被删除的图片
+    // Handle each deleted image
     for (const imagePath of deletedImagePaths) {
       if (imagePath && imagePath.startsWith('http')) {
-        // 找到对应的图片对象
+        // Find corresponding image object
         const imageObj = currentImages.find(img => img.imagePath === imagePath)
 
         if (imageObj && imageObj.id) {
-          // 记录需要删除的图片
+          // Record image to delete
           pendingOperations.value[defectKey].toDelete.push({
             id: imageObj.id,
             path: imagePath
           })
-          console.log(`记录需要删除的图片: ID=${imageObj.id}, 路径=${imagePath}`)
+          console.log(`Recording image to delete: ID=${imageObj.id}, Path=${imagePath}`)
         } else {
-          // 如果没有ID（可能是新上传但未保存的图片），只记录路径
+          // If no ID (possibly new upload but not saved), just record path
           pendingOperations.value[defectKey].toDelete.push({
             path: imagePath
           })
-          console.log(`记录需要删除的图片: 路径=${imagePath}`)
+          console.log(`Recording image to delete: Path=${imagePath}`)
         }
       }
     }
   }
 
-  // 处理新增的图片
+  // Handle new images
   if (addedImagePaths.length > 0) {
-    console.log(`检测到新增的缺陷图片:`, addedImagePaths)
+    console.log(`Detected new defect images:`, addedImagePaths)
 
+    // Initialize temporary storage
+    if (!tempUploadedImages.value[defectKey]) {
+      tempUploadedImages.value[defectKey] = []
+    }
+
+    // Handle each new image
     for (const imagePath of addedImagePaths) {
       if (imagePath && imagePath.startsWith('http')) {
-        // 记录需要添加的图片
+        // Record new image
         pendingOperations.value[defectKey].toAdd.push({
           defectId,
           path: imagePath
         })
-        console.log(`记录需要添加的图片: 路径=${imagePath}`)
+        console.log(`Recording new image: DefectID=${defectId}, Path=${imagePath}`)
+
+        // Record to temporary storage
+        tempUploadedImages.value[defectKey].push(imagePath)
       }
     }
   }
 
-  // 更新临时数据中的图片路径
-  const images = imageArray.map(path => ({
-    id: getId(), // 使用getId()函数生成新的ID
-    defectId,
+  // Update temporary data
+  tempFormData.value.defectsDTO[index].defectImages = imageArray.map(path => ({
     imagePath: path
   }))
-
-  // 保留原有图片的ID，只更新保留下来的图片
-  if (tempFormData.value.defectsDTO[index].defectImages) {
-    tempFormData.value.defectsDTO[index].defectImages = images.map(img => {
-      // 查找是否有匹配的现有图片（保留ID）
-      const existingImage = currentImages.find(existing => existing.imagePath === img.imagePath)
-      return {
-        id: existingImage?.id || getId(), // 如果存在现有ID则使用，否则生成新ID
-        defectId: img.defectId,
-        imagePath: img.imagePath,
-        createdAt: existingImage?.createdAt,
-        updatedAt: existingImage?.updatedAt
-      }
-    })
-  } else {
-    // 如果defectImages不存在，则创建它
-    tempFormData.value.defectsDTO[index].defectImages = images
-  }
-
-  // 强制触发视图更新
-  tempFormData.value = JSON.parse(JSON.stringify(tempFormData.value))
-
-  console.log(`更新后的临时数据(完整):`, tempFormData.value.defectsDTO[index])
 }
 
 const handleDefectCustomUpload = async (params: {file: File}, defectId: string | undefined, index: number) => {
   const defectKey = `defect-${index}`
 
   try {
-    // 确保当前缺陷记录在编辑状态
+    // Ensure current defect record is in edit state
     if (!editingSections.value.includes(defectKey)) {
-      console.log(`缺陷记录 ${index} 不在编辑状态，添加到编辑状态`)
+      console.log(`Defect record ${index} is not in edit state, adding to edit state`)
       editingSections.value.push(defectKey)
     }
 
-    // 确保tempFormData已初始化
+    // Ensure tempFormData is initialized
     if (!tempFormData.value) {
       tempFormData.value = JSON.parse(JSON.stringify(formData.value))
     }
 
-    // 直接使用File对象
+    // Use File object directly
     const res = await postFilesUpload({file: params.file})
     const imagePath = res.data
 
-    // 初始化临时存储
+    // Initialize temporary storage
     if (!tempUploadedImages.value[defectKey]) {
       tempUploadedImages.value[defectKey] = []
     }
 
-    // 初始化待执行操作
+    // Initialize pending operations
     initPendingOperations(defectKey)
 
-    // 添加到临时上传图片列表
+    // Add to temporary upload image list
     tempUploadedImages.value[defectKey].push(imagePath)
-    console.log(`已添加临时图片: ${imagePath} 到 ${defectKey}`)
+    console.log(`Added temporary image: ${imagePath} to ${defectKey}`)
 
-    // 确保临时数据中的defectsDTO[index]已初始化
+    // Ensure tempFormData.defectsDTO[index] is initialized
     if (!tempFormData.value.defectsDTO) {
       tempFormData.value.defectsDTO = []
     }
@@ -1183,7 +1167,7 @@ const handleDefectCustomUpload = async (params: {file: File}, defectId: string |
       if (formData.value?.defectsDTO?.[index]) {
         tempFormData.value.defectsDTO[index] = JSON.parse(JSON.stringify(formData.value.defectsDTO[index]))
       } else {
-        // 如果原始数据不存在，创建一个空对象
+        // If original data doesn't exist, create an empty object
         tempFormData.value.defectsDTO[index] = {
           defects: {id: defectId},
           defectImages: []
@@ -1191,223 +1175,165 @@ const handleDefectCustomUpload = async (params: {file: File}, defectId: string |
       }
     }
 
-    // 确保临时数据中的defectImages已初始化
+    // Ensure tempFormData.defectsDTO[index].defectImages is initialized
     if (!tempFormData.value.defectsDTO[index].defectImages) {
       tempFormData.value.defectsDTO[index].defectImages = []
     }
 
-    // 检查图片是否已存在，避免重复添加
+    // Check if image already exists, avoid duplicate addition
     const existingImagePaths = tempFormData.value.defectsDTO[index].defectImages.map(img => img.imagePath)
     if (existingImagePaths.includes(imagePath)) {
-      console.log(`图片已存在，不重复添加: ${imagePath}`)
+      console.log(`Image already exists, not adding again: ${imagePath}`)
       return imagePath
     }
 
-    // 直接将新图片添加到临时数据中
+    // Directly add new image to tempFormData
     const newImage = {
       id: getId(),
       defectId,
       imagePath
     }
 
-    // 将新图片添加到临时数据中
+    // Add new image to tempFormData
     tempFormData.value.defectsDTO[index].defectImages.push(newImage)
 
-    // 记录需要添加的图片
+    // Record image to add
     pendingOperations.value[defectKey].toAdd.push({
       defectId,
       path: imagePath
     })
 
-    console.log(`直接添加新图片到临时数据: ${imagePath}`)
+    console.log(`Directly adding new image to tempFormData: ${imagePath}`)
 
-    // 强制更新视图
+    // Force view update
     tempFormData.value = JSON.parse(JSON.stringify(tempFormData.value))
-    console.log(`更新后的临时数据(完整):`, tempFormData.value.defectsDTO[index])
+    console.log(`Updated temporary data (complete):`, tempFormData.value.defectsDTO[index])
 
     return imagePath
   } catch (error) {
-    console.error('上传图片失败', error)
-    ElMessage.error('上传图片失败')
+    console.error('Image upload failed', error)
+    ElMessage.error('Image upload failed')
     return ''
   }
 }
 
-// 添加计算属性处理缺陷图片
-const getDefectImages = (defectDto: DefectsDto) => {
-  // 查找索引
-  const index = formData.value.defectsDTO?.findIndex(dto => dto.defects?.id === defectDto.defects?.id) || -1
-  const defectKey = `defect-${index}`
+// Get defect images
+const getDefectImages = (defectDto: DefectsDto): string[] => {
+  if (!defectDto?.defectImages) return []
 
-  console.log(`获取缺陷图片 - 索引: ${index}, 编辑状态: ${editingSections.value.includes(defectKey)}`)
+  // Get all image paths and filter out empty ones
+  const imagePaths = defectDto.defectImages.map(img => img.imagePath).filter(Boolean)
 
-  // 检查是否在编辑状态
-  if (editingSections.value.includes(defectKey) && tempFormData.value?.defectsDTO?.[index]) {
-    // 确保defectImages存在
-    if (tempFormData.value.defectsDTO[index].defectImages) {
-      // 编辑状态下从临时数据获取
-      const tempDefectImages = tempFormData.value.defectsDTO[index].defectImages || []
-      const imagePaths = tempDefectImages.map(img => img.imagePath).filter(Boolean)
-      console.log(`返回临时数据的图片路径:`, imagePaths)
-      return imagePaths
-    }
-  }
-
-  // 非编辑状态下使用原始数据
-  if (!defectDto.defectImages) return []
-
-  // 处理图片路径数组
-  const imagePaths: string[] = []
-
-  // 遍历缺陷图片
-  for (const img of defectDto.defectImages) {
-    if (img.imagePath && typeof img.imagePath === 'string') {
-      imagePaths.push(img.imagePath)
-    }
-  }
-
-  console.log(`返回原始数据的图片路径:`, imagePaths)
-  return imagePaths
+  // Remove duplicates
+  return [...new Set(imagePaths)]
 }
 
 const handleExport = async () => {
   exporting.value = true
   try {
-    // 添加超时计时器
-    const timeout = setTimeout(() => {
-      if (exporting.value) {
-        exporting.value = false
-        ElMessage.warning('导出超时，请重试或减少图片数量')
-      }
-    }, 60000) // 60秒超时
+    // Initialize AbortController
+    abortController.value = new AbortController()
+    const signal = abortController.value.signal
 
-    ElMessage.info('开始获取数据...')
-
-    // 从数据库获取最新数据
-    const res = await getQcReportsDtoGetById({id: route.params.id as string})
-
-    if (!res.data?.qcReports) {
-      ElMessage.error('没有可导出的数据')
-      clearTimeout(timeout)
+    // Check if cancelled
+    if (signal.aborted) {
       return
     }
 
-    ElMessage.info('数据获取成功，准备生成Excel文件...')
-
-    const qcReports = res.data.qcReports
-    const defects =
-      res.data.defectsDTO?.map((dto: DefectsDto) => ({
-        defectTitle: dto.defects?.defectTitle || '',
-        defectDescription: dto.defects?.defectDescription || '',
-        improvementSuggestion: dto.defects?.improvementSuggestion || '',
-        inspector: dto.defects?.inspector || '',
-        images: dto.defectImages?.map((img: DefectImages) => img.imagePath || '').filter(Boolean) || []
-      })) || []
-
-    // 构建导出数据
-    const exportData: QCReportData = {
-      modelCode: qcReports.modelCode || '',
-      factoryCode: qcReports.factoryCode || '',
-      supplier: qcReports.supplier || '',
-      client: qcReports.client || '',
-      poNumber: qcReports.poNumber || '',
-      inspectionDate: qcReports.inspectionDate || '',
-      orderQty: Number(qcReports.orderQty) || 0,
-      reportDate: qcReports.reportDate || new Date().toISOString().split('T')[0],
-      inspectQty: Number(qcReports.inspectQty) || 0,
-      qcOfficer: qcReports.qcOfficer || '',
-      passFail: (qcReports.passFail as 'Pass' | 'Fail') || 'Pass',
-      secondQCDate: qcReports.secondQcDate || '',
-      comments: qcReports.comments || '',
-
-      // 产品外观图片
-      stocksInWarehouse: qcReports.stocksInWarehouse,
-      samplingOfProductsQuantity: qcReports.samplingOfProductsQuantity,
-      shippingMarks: qcReports.shippingMarks,
-      barcode: qcReports.barcode,
-      packingOutside: qcReports.packingOutside,
-      packingInside: qcReports.packingInside,
-
-      // 椅子组件图片
-      chairComponentsPacked: qcReports.chairComponentsPacked,
-      chairComponentsUnpacked: qcReports.chairComponentsUnpacked,
-
-      // 配件包图片
-      fittingPackPacked: qcReports.fittingPackPacked,
-      fittingPackUnpacked: qcReports.fittingPackUnpacked,
-
-      // 标签和说明图片
-      productionLabel: qcReports.productionLabel,
-      assemblyInstructions: qcReports.assemblyInstructions,
-
-      // 组件图片
-      imageOfComponentsSeat: qcReports.imageOfComponentsSeat,
-      imageOfComponentsBack: qcReports.imageOfComponentsBack,
-      imageOfComponentsBase: qcReports.imageOfComponentsBase,
-      imageOfComponentsCastors: qcReports.imageOfComponentsCastors,
-      imageOfComponentsGasLiftCover: qcReports.imageOfComponentsGasLiftCover,
-      imageOfComponentsGasLiftStamp: qcReports.imageOfComponentsGasLiftStamp,
-      imageOfComponentsArmrest: qcReports.imageOfComponentsArmrest,
-      imageOfComponentMechanism: qcReports.imageOfComponentMechanism,
-      imageOfComponentsHeadrest: qcReports.imageOfComponentsHeadrest,
-
-      // 成品图片
-      imageOfProductBuiltFront: qcReports.imageOfProductBuiltFront,
-      imageOfProductBuiltSide: qcReports.imageOfProductBuiltSide,
-      imageOfProductBuiltBack: qcReports.imageOfProductBuiltBack,
-      imageOfProductBuilt45Degree: qcReports.imageOfProductBuilt45Degree,
-      frontImageOfProductBuiltCompare1: qcReports.frontImageOfProductBuiltCompare1,
-      frontImageOfProductBuiltCompare2: qcReports.frontImageOfProductBuiltCompare2,
-
-      // 功能检查图片
-      functionCheckSeatHeightExtension: qcReports.functionCheckSeatHeightExtension,
-      functionCheckMechanismAdjustment: qcReports.functionCheckMechanismAdjustment,
-      functionCheckArmrestAdjustment: qcReports.functionCheckArmrestAdjustment,
-      functionCheckHeadrestAdjustment: qcReports.functionCheckHeadrestAdjustment,
-      functionCheckOther1: qcReports.functionCheckOther1,
-      functionCheckOther2: qcReports.functionCheckOther2,
-
-      // 缺陷记录
-      defects,
-
-      // 其他必需字段
-      inspector: qcReports.qcOfficer || '',
-      inspectionLocation: '工厂',
-      sampleSize: Number(qcReports.inspectQty) || 0,
-      defectCount: defects.length
+    // Convert field names to underscore format
+    const exportData = {
+      supplier: formData.value.supplier || '',
+      supplier_item_code: formData.value.supplierItemCode || '',
+      specification_details: formData.value.specificationDetails || '',
+      sample_lead_time: formData.value.sampleLeadTime || '',
+      overall_dimensions_width: formData.value.overallDimensionsWidth || 0,
+      overall_dimensions_depth: formData.value.overallDimensionsDepth || 0,
+      overall_dimensions_height: formData.value.overallDimensionsHeight || 0,
+      box_dimensions_width: formData.value.boxDimensionsWidth || 0,
+      box_dimensions_depth: formData.value.boxDimensionsDepth || 0,
+      box_dimensions_height: formData.value.boxDimensionsHeight || 0,
+      box_weight_net_weighth: formData.value.boxWeightNetWeighth || 0,
+      net_weight_gross_weight: formData.value.netWeightGrossWeight || '0/0',
+      effective_vol: formData.value.effectiveVol || '0',
+      loading_qty: formData.value.loadingQty || 0,
+      moq: formData.value.moq || '0',
+      fob_price: formData.value.fobPrice || 0,
+      currency: formData.value.currency || 0,
+      bifma_tested: formData.value.bifmaTested || 0,
+      cad_block_available: formData.value.cadBlockAvailable || 0,
+      product_data_available: formData.value.productDataAvailable || 0,
+      product_images_available: formData.value.productImagesAvailable || 0,
+      sales_contacts: formData.value.salesContacts || '',
+      quote_date: formData.value.createTime || new Date().toISOString(),
+      valid_period: formData.value.validPeriod || '2024-12-31',
+      port: formData.value.port || 'Ningbo Port',
+      remark: formData.value.remark || '',
+      image: formData.value.image || ''
     }
 
-    ElMessage.info('正在生成Excel文件，请稍候...')
-
-    try {
-      // 调用导出函数获取 workbook
-      const workbook = await exportQCReport(exportData)
-
-      ElMessage.info('Excel生成成功，准备下载...')
-
-      // 生成文件名
-      const fileName = `质检报告_${qcReports.modelCode || '未知型号'}_${new Date().toISOString().slice(0, 10)}.xlsx`
-
-      // 转换为 buffer 并使用 saveAs 下载
-      const buffer = await workbook.xlsx.writeBuffer()
-      const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})
-      saveAs(blob, fileName)
-
-      ElMessage.success('导出成功')
-    } catch (exportError) {
-      console.error('Excel生成或下载失败', exportError)
-      ElMessage.error(`Excel生成失败: ${(exportError as Error).message}`)
+    // Check if cancelled
+    if (signal.aborted) {
+      return
     }
 
-    // 清除超时计时器
-    clearTimeout(timeout)
+    const buffer = await exportQuotation(exportData)
+
+    // Check if cancelled
+    if (signal.aborted) {
+      return
+    }
+
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+    const createDate = formData.value.createTime ? formData.value.createTime.split('T')[0].replace(/-/g, '') : new Date().toISOString().split('T')[0].replace(/-/g, '')
+    const fileName = `TC QUOTATION FORM ${exportData.supplier} ${createDate}.xlsx`
+    saveAs(blob, fileName)
+
+    // Check if cancelled
+    if (signal.aborted) {
+      return
+    }
+
+    ElMessage.success('Export successful')
   } catch (error) {
-    console.error('导出过程中出错', error)
-    ElMessage.error(`导出失败: ${(error as Error).message}`)
+    console.error('Export failed:', error)
+    if ((error as Error).message === 'User cancelled export') {
+      ElMessage.info('Export cancelled')
+    } else {
+      ElMessage.error(`Export failed: ${(error as Error).message}`)
+    }
   } finally {
     exporting.value = false
+    abortController.value = null
   }
 }
+
+// Handle temporary file
+const handleTempFile = (filePath: string) => {
+  if (!tempUploadedImages.value['newUploads']) {
+    tempUploadedImages.value['newUploads'] = []
+  }
+  tempUploadedImages.value['newUploads'].push(filePath)
+  console.log('New image recorded to newUploads:', filePath)
+  tempFiles.value.push(filePath)
+}
+
+// Initialize permissions
+const initPermissions = async () => {
+  // Check edit permission
+  canEdit.value = await checkPermission(ModuleType.QUOTE, PermissionAction.EDIT)
+}
+
+onMounted(async () => {
+  await initPermissions() // Initialize permissions
+  await fetchQuoteDetail() // Wait for data to be loaded
+  updateUploadDisplay()
+  // Check URL parameters, if edit=1, automatically enter edit mode (requires edit permission)
+  if (route.query.edit === '1' && canEdit.value) {
+    handleEdit('basic')
+  }
+})
 
 defineOptions({
   name: 'SpecInfo'

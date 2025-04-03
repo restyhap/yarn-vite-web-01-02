@@ -11,35 +11,35 @@
 
       <template #default>
         <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
-          <!-- 顶部操作栏 -->
+          <!-- Top action bar -->
           <div class="flex justify-between items-center py-3 px-6">
             <div class="flex-1">
-              <h2 class="text-lg font-semibold text-gray-800">质检报告详情</h2>
+              <h2 class="text-lg font-semibold text-gray-800">Quotation Details</h2>
             </div>
             <div class="flex gap-2">
               <template v-if="editingSections.includes('basic')">
                 <el-button type="success" @click="handleSave">
                   <el-icon><Check /></el-icon>
-                  保存
+                  Save
                 </el-button>
                 <el-button type="danger" @click="handleCancel">
                   <el-icon><Close /></el-icon>
-                  取消
+                  Cancel
                 </el-button>
               </template>
               <template v-else>
                 <el-button type="primary" @click="handleEdit('basic')" v-if="canEdit">
                   <el-icon><Edit /></el-icon>
-                  编辑
+                  Edit
                 </el-button>
               </template>
               <el-button type="primary" :loading="exporting" @click="handleExport" class="min-w-[120px]">
                 <el-icon><Document /></el-icon>
-                {{ exporting ? '导出中...' : '导出文档' }}
+                {{ exporting ? 'Exporting...' : 'Export Document' }}
               </el-button>
               <el-button @click="router.back()">
                 <el-icon><Back /></el-icon>
-                返回
+                Back
               </el-button>
             </div>
           </div>
@@ -47,11 +47,11 @@
 
         <div class="bg-white overflow-auto" style="height: calc(100vh - 64px); padding-bottom: 72px">
           <div class="p-6">
-            <!-- 基本信息 -->
+            <!-- Basic Information -->
             <div class="mb-8">
               <div class="flex items-center mb-4">
                 <h3 class="text-lg font-medium text-gray-800 w-full border-b pb-2 flex justify-between items-center">
-                  <span>基本信息</span>
+                  <span>Basic Information</span>
                 </h3>
               </div>
 
@@ -63,8 +63,8 @@
                         <template v-if="editingSections.includes('basic')">
                           <template v-if="key === 'currency'">
                             <el-select v-model="formData[key]" class="w-full !h-[38px]">
-                              <el-option label="人民币" :value="0" />
-                              <el-option label="美元" :value="1" />
+                              <el-option label="CNY" :value="0" />
+                              <el-option label="USD" :value="1" />
                             </el-select>
                           </template>
                           <template v-else-if="key === 'bifmaTested' || key === 'cadBlockAvailable' || key === 'productDataAvailable' || key === 'productImagesAvailable'">
@@ -74,10 +74,10 @@
                             <el-input-number v-model="formData[key]" :precision="2" :step="0.1" :min="0" class="w-full" />
                           </template>
                           <template v-else-if="key === 'sampleLeadTime' || key === 'createTime'">
-                            <el-date-picker v-model="formData[key]" type="datetime" placeholder="选择日期时间" class="w-full" />
+                            <el-date-picker v-model="formData[key]" type="datetime" placeholder="Select date and time" class="w-full" />
                           </template>
                           <template v-else-if="key === 'remark'">
-                            <el-input v-model="formData[key]" type="textarea" :rows="3" placeholder="请输入备注" />
+                            <el-input v-model="formData[key]" type="textarea" :rows="3" placeholder="Please enter remarks" />
                           </template>
                           <template v-else>
                             <el-input v-model="formData[key]" class="w-full !h-[38px]" />
@@ -93,10 +93,10 @@
                   </template>
                 </div>
 
-                <!-- 图片上传 -->
+                <!-- Image Upload -->
                 <div class="mt-4">
                   <div class="bg-gray-100 p-4 rounded">
-                    <div class="text-center text-sm text-gray-600 mb-2 font-medium">产品图片</div>
+                    <div class="text-center text-sm text-gray-600 mb-2 font-medium">Product Image</div>
                     <div class="w-full h-[240px] bg-white rounded-lg overflow-hidden">
                       <div class="w-full h-full flex items-center justify-center">
                         <ImageHandler
@@ -117,8 +117,8 @@
       </template>
     </el-skeleton>
 
-    <!-- 图片预览对话框 -->
-    <el-dialog v-model="dialogVisible" title="图片预览" width="800px" align-center>
+    <!-- Image Preview Dialog -->
+    <el-dialog v-model="dialogVisible" title="Image Preview" width="800px" align-center>
       <img :src="dialogImageUrl" style="width: 100%" />
     </el-dialog>
   </div>
@@ -238,32 +238,32 @@ const imageArray = computed({
 
 // 基本字段定义
 const basicFields = {
-  supplier: '供应商',
-  supplierItemCode: '供应商项目代码',
-  specificationDetails: '规格详细信息',
-  sampleLeadTime: '样品交付周期',
-  overallDimensionsWidth: '总体尺寸宽度',
-  overallDimensionsDepth: '总体尺寸深度',
-  overallDimensionsHeight: '总体尺寸高度',
-  boxDimensionsWidth: '箱体尺寸宽度',
-  boxDimensionsDepth: '箱体尺寸深度',
-  boxDimensionsHeight: '箱体尺寸高度',
-  boxWeightNetWeighth: '箱体重量净重',
-  netWeightGrossWeight: '箱体重量毛重',
-  effectiveVol: '有效体积',
-  loadingQty: '装载量',
-  moq: '最小订单量',
-  fobPrice: '供货商成本价',
-  currency: '货币单位',
-  bifmaTested: '测试标准',
-  cadBlockAvailable: '3D模块',
-  productDataAvailable: '产品数据',
-  productImagesAvailable: '产品图片',
-  salesContacts: '销售',
-  createTime: '创建时间',
-  validPeriod: '有效期',
-  port: '港口',
-  remark: '备注'
+  supplier: 'Supplier',
+  supplierItemCode: 'Supplier Item Code',
+  specificationDetails: 'Specification Details',
+  sampleLeadTime: 'Sample Lead Time',
+  overallDimensionsWidth: 'Overall Width',
+  overallDimensionsDepth: 'Overall Depth',
+  overallDimensionsHeight: 'Overall Height',
+  boxDimensionsWidth: 'Box Width',
+  boxDimensionsDepth: 'Box Depth',
+  boxDimensionsHeight: 'Box Height',
+  boxWeightNetWeighth: 'Net Weight',
+  netWeightGrossWeight: 'Gross Weight',
+  effectiveVol: 'Effective Volume',
+  loadingQty: 'Loading Quantity',
+  moq: 'Minimum Order Quantity',
+  fobPrice: 'FOB Price',
+  currency: 'Currency',
+  bifmaTested: 'BIFMA Tested',
+  cadBlockAvailable: 'CAD Block Available',
+  productDataAvailable: 'Product Data Available',
+  productImagesAvailable: 'Product Images Available',
+  salesContacts: 'Sales Contact',
+  createTime: 'Creation Time',
+  validPeriod: 'Valid Period',
+  port: 'Port',
+  remark: 'Remarks'
 }
 
 // 判断是否为图片字段
@@ -317,18 +317,18 @@ const fetchQuoteDetail = async () => {
     const response = await getQuotationGetInfoById({id})
 
     if (response.code !== '200') {
-      ElMessage.error(response.message || '获取详情失败')
+      ElMessage.error(response.message || 'Failed to get details')
       return
     }
 
     if (response.data) {
       formData.value = {...formData.value, ...response.data}
     } else {
-      ElMessage.error('获取详情失败：数据为空')
+      ElMessage.error('Failed to get details: data is empty')
     }
   } catch (error) {
-    console.error('获取详情失败:', error)
-    ElMessage.error('获取详情失败')
+    console.error('Failed to get details:', error)
+    ElMessage.error('Failed to get details')
   } finally {
     loading.value = false
   }
@@ -340,12 +340,12 @@ const formatFieldValue = (key: string, value: any): string => {
 
   switch (key) {
     case 'currency':
-      return value === 0 ? '人民币' : '美元'
+      return value === 0 ? 'CNY' : 'USD'
     case 'bifmaTested':
     case 'cadBlockAvailable':
     case 'productDataAvailable':
     case 'productImagesAvailable':
-      return value === 1 ? '是' : '否'
+      return value === 1 ? 'Yes' : 'No'
     case 'sampleLeadTime':
     case 'createTime':
       return value ? new Date(value).toLocaleString() : '-'
@@ -372,57 +372,69 @@ const handleSave = async () => {
   try {
     loading.value = true
 
-    // 如果有备份数据，且备份中有图片但当前没有，需要删除旧图片
+    // If there is backup data with image but current data has no image, delete old image
     if (tempFormData.value?.image && !formData.value.image) {
       try {
         await getFilesRemove({filePath: tempFormData.value.image})
-        console.log('已从服务器删除旧图片:', tempFormData.value.image)
+        console.log('Old image deleted from server:', tempFormData.value.image)
       } catch (error) {
-        console.error('删除旧图片失败:', error)
+        console.error('Failed to delete old image:', error)
       }
     }
 
-    // 调用更新接口
+    // Call update API
     await putQuotationUpdate(formData.value)
 
-    // 保存成功后，处理需要删除的图片
+    // After successful save, handle images that need to be deleted
     if (tempUploadedImages.value['basic'] && tempUploadedImages.value['basic'].length > 0) {
-      console.log('保存成功，开始删除记录的需要删除的图片:', tempUploadedImages.value['basic'])
+      console.log('Save successful, starting to delete recorded images:', tempUploadedImages.value['basic'])
 
-      // 删除所有记录的需要删除的图片
+      // Delete all recorded images
       for (const path of tempUploadedImages.value['basic']) {
         if (path && path.startsWith('http')) {
           try {
             await getFilesRemove({filePath: path})
-            console.log('已从服务器删除图片:', path)
+            console.log('Image deleted from server:', path)
           } catch (error) {
-            console.error('从服务器删除图片失败:', error)
+            console.error('Failed to delete image from server:', error)
           }
         }
       }
 
-      // 清空该部分的临时图片记录
+      // Clear temporary image records for this section
       tempUploadedImages.value['basic'] = []
     }
 
-    // 清理newUploads中的相关记录
-    if (tempUploadedImages.value['newUploads'] && tempUploadedImages.value['newUploads'].length > 0) {
-      // 找出使用的图片
-      const usedImages = [formData.value.image].filter(val => typeof val === 'string' && val.startsWith('http')) as string[]
+    // If it's image section, also clean up newUploads records
+    const newUploads = tempUploadedImages.value['newUploads'] || []
+    console.log('Save successful, cleaning up temporary uploads:', newUploads)
 
-      // 从newUploads中移除已保存的图片
-      tempUploadedImages.value['newUploads'] = tempUploadedImages.value['newUploads'].filter(path => !usedImages.includes(path))
-
-      console.log('保存后清理临时上传记录，剩余:', tempUploadedImages.value['newUploads'])
+    // Delete all temporary uploaded images
+    for (const path of newUploads) {
+      if (path && path.startsWith('http') && path !== tempFormData.value?.image) {
+        try {
+          await getFilesRemove({filePath: path})
+          console.log('Temporary uploaded image deleted:', path)
+        } catch (error) {
+          console.error('Failed to delete temporary uploaded image:', error)
+        }
+      }
     }
 
-    // 更新备份数据
-    tempFormData.value = JSON.parse(JSON.stringify(formData.value))
+    // Clear temporary upload list
+    tempUploadedImages.value['newUploads'] = []
+
+    // Clear temporary records if any
+    if (tempUploadedImages.value['basic']) {
+      tempUploadedImages.value['basic'] = []
+    }
+
     editingSections.value = []
-    ElMessage.success('保存成功')
+    tempFormData.value = null
+    ElMessage.success('Save successful')
   } catch (error) {
-    console.error('保存失败:', error)
-    ElMessage.error('保存失败')
+    console.error('Save failed:', error)
+    ElMessage.error('Save failed')
   } finally {
     loading.value = false
   }
@@ -431,53 +443,41 @@ const handleSave = async () => {
 // 处理取消
 const handleCancel = async () => {
   try {
-    console.log('取消编辑')
-
-    // 处理图片
-    // 如果当前图片与备份不同，需要删除临时上传的图片
-    if (formData.value.image && formData.value.image !== tempFormData.value?.image) {
-      try {
-        await getFilesRemove({filePath: formData.value.image})
-        console.log('已删除临时上传的图片:', formData.value.image)
-      } catch (error) {
-        console.error('删除临时图片失败:', error)
-      }
-    }
-
-    // 获取临时上传的图片列表
+    // If there are temporary uploaded images, delete them
     const newUploads = tempUploadedImages.value['newUploads'] || []
+    console.log('Cancel edit, delete temporary uploads:', newUploads)
 
-    // 删除所有临时上传的图片，确保没有遗漏
+    // Delete all temporary uploaded images
     for (const path of newUploads) {
       if (path && path.startsWith('http') && path !== tempFormData.value?.image) {
         try {
           await getFilesRemove({filePath: path})
-          console.log('已删除临时上传的图片:', path)
+          console.log('Temporary uploaded image deleted:', path)
         } catch (error) {
-          console.error('删除临时上传图片失败:', error)
+          console.error('Failed to delete temporary uploaded image:', error)
         }
       }
     }
 
-    // 清空临时上传列表
+    // Clear temporary upload list
     tempUploadedImages.value['newUploads'] = []
 
-    // 如果有临时记录，清空
+    // Clear temporary records if any
     if (tempUploadedImages.value['basic']) {
       tempUploadedImages.value['basic'] = []
     }
 
-    // 恢复到编辑前的状态
+    // Restore to pre-edit state
     if (tempFormData.value) {
       formData.value = JSON.parse(JSON.stringify(tempFormData.value))
     }
 
     editingSections.value = []
     tempFormData.value = null
-    ElMessage.success('已取消编辑')
+    ElMessage.success('Edit cancelled')
   } catch (error) {
-    console.error('取消编辑失败:', error)
-    ElMessage.error('取消编辑失败')
+    console.error('Failed to cancel edit:', error)
+    ElMessage.error('Failed to cancel edit')
   }
 }
 
@@ -485,16 +485,16 @@ const handleCancel = async () => {
 const handleExport = async () => {
   exporting.value = true
   try {
-    // 初始化AbortController
+    // Initialize AbortController
     abortController.value = new AbortController()
     const signal = abortController.value.signal
 
-    // 检查是否取消
+    // Check if cancelled
     if (signal.aborted) {
       return
     }
 
-    // 转换字段名为下划线格式
+    // Convert field names to underscore format
     const exportData = {
       supplier: formData.value.supplier || '',
       supplier_item_code: formData.value.supplierItemCode || '',
@@ -520,19 +520,19 @@ const handleExport = async () => {
       sales_contacts: formData.value.salesContacts || '',
       quote_date: formData.value.createTime || new Date().toISOString(),
       valid_period: formData.value.validPeriod || '2024-12-31',
-      port: formData.value.port || '宁波港',
+      port: formData.value.port || 'Ningbo Port',
       remark: formData.value.remark || '',
       image: formData.value.image || ''
     }
 
-    // 检查是否取消
+    // Check if cancelled
     if (signal.aborted) {
       return
     }
 
     const buffer = await exportQuotation(exportData)
 
-    // 检查是否取消
+    // Check if cancelled
     if (signal.aborted) {
       return
     }
@@ -544,7 +544,7 @@ const handleExport = async () => {
     const fileName = `TC QUOTATION FORM ${exportData.supplier} ${createDate}.xlsx`
     saveAs(blob, fileName)
 
-    // 检查是否取消
+    // Check if cancelled
     if (signal.aborted) {
       return
     }

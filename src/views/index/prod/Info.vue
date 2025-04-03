@@ -4,7 +4,7 @@
  * @LastEditors: resty restyhap@hotmail.com
  * @LastEditTime: 2025-04-02 10:00:52
  * @FilePath: /yarn-vite-web-01-02/src/views/index/prod/Info.vue
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @Description: Product Specification Details Page
 -->
 <template>
   <div dir="ltr" class="flex-1 ps-1 min-w-0 overflow-y h-screen">
@@ -19,23 +19,23 @@
 
       <template #default>
         <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
-          <!-- 顶部操作栏 -->
+          <!-- Top action bar -->
           <div class="flex justify-between items-center py-3 px-6">
             <div class="flex-1">
-              <h2 class="text-lg font-semibold text-gray-800">产品规格详情</h2>
+              <h2 class="text-lg font-semibold text-gray-800">Product Specification Details</h2>
             </div>
             <div class="flex gap-2">
               <el-button type="primary" :loading="exporting" @click="handleExport" class="min-w-[120px]">
                 <el-icon>
                   <Document />
                 </el-icon>
-                {{ exporting ? '导出中...' : '导出文档' }}
+                {{ exporting ? 'Exporting...' : 'Export Document' }}
               </el-button>
               <el-button @click="router.back()">
                 <el-icon>
                   <Back />
                 </el-icon>
-                返回
+                Back
               </el-button>
             </div>
           </div>
@@ -43,26 +43,26 @@
 
         <div class="bg-white overflow-auto" style="height: calc(100vh - 64px); padding-bottom: 72px">
           <div class="p-6">
-            <!-- 统一处理所有表格，包括基本信息 -->
+            <!-- Handle all tables, including basic information -->
             <div v-for="sectionKey in ['basic', ...Object.keys(specSections)]" :key="sectionKey" class="mb-8">
               <div class="flex items-center mb-4">
                 <h3 class="text-lg font-medium text-gray-800 w-full border-b pb-2 flex justify-between items-center">
-                  <span>{{ sectionKey === 'basic' ? '基本信息' : formatSectionTitle(sectionKey) }}</span>
+                  <span>{{ sectionKey === 'basic' ? 'Basic Information' : formatSectionTitle(sectionKey) }}</span>
                   <div class="flex gap-2 ml-auto">
                     <template v-if="editingSections.includes(sectionKey)">
                       <el-button type="success" @click="handleSave(sectionKey)">
                         <el-icon><Check /></el-icon>
-                        保存
+                        Save
                       </el-button>
                       <el-button type="danger" @click="handleCancel(sectionKey)">
                         <el-icon><Close /></el-icon>
-                        取消
+                        Cancel
                       </el-button>
                     </template>
                     <template v-else>
                       <el-button type="primary" @click="handleEdit(sectionKey)">
                         <el-icon><Edit /></el-icon>
-                        编辑
+                        Edit
                       </el-button>
                     </template>
                   </div>
@@ -92,8 +92,8 @@
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
                     <el-form-item v-for="(label, key) in sectionKey === 'basic' ? basicFields : specSections[sectionKey]" :key="key" :label="label" class="bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
                       <template v-if="editingSections.includes(sectionKey)">
-                        <el-input v-if="sectionKey === 'basic'" v-model="formData.products[key]" :placeholder="`请输入${label}`" class="w-full !h-[38px]" />
-                        <el-input v-else v-model="formData[sectionKey][key]" :placeholder="`请输入${label}`" class="w-full !h-[38px]" />
+                        <el-input v-if="sectionKey === 'basic'" v-model="formData.products[key]" :placeholder="`Enter ${label}`" class="w-full !h-[38px]" />
+                        <el-input v-else v-model="formData[sectionKey][key]" :placeholder="`Enter ${label}`" class="w-full !h-[38px]" />
                       </template>
                       <template v-else>
                         <div class="w-full text-gray-700 bg-gray-50 p-2 rounded h-[38px] leading-[22px]">
@@ -214,133 +214,133 @@ const formData = ref<FormData>({
 })
 const formDataBackup = ref<FormData>(JSON.parse(JSON.stringify(formData.value)))
 
-// 基本字段定义
+// Basic fields definition
 const basicFields: BasicField = {
-  tccode: '产品代码',
-  supplier: '供应商',
-  supplierCode: '供应商代码',
-  supplierName: '供应商名称',
-  fireStandard: '防火标准',
-  fob20ContainerPrice: '20尺柜FOB价格',
-  fob40ContainerPrice: '40尺柜FOB价格',
-  shippingPort: '发货港口'
+  tccode: 'Product Code',
+  supplier: 'Supplier',
+  supplierCode: 'Supplier Code',
+  supplierName: 'Supplier Name',
+  fireStandard: 'Fire Standard',
+  fob20ContainerPrice: '20ft Container FOB Price',
+  fob40ContainerPrice: '40ft Container FOB Price',
+  shippingPort: 'Shipping Port'
 } as const
 
-// 规格部分定义
+// Specification sections definition
 const specSections: SpecSections = {
   upholstery: {
-    fabricManufacturer: '面料制造商',
-    colourCode: '颜色代码',
-    leatherGrade: '皮革等级',
-    usagePerChair: '每把椅子用料'
+    fabricManufacturer: 'Fabric Manufacturer',
+    colourCode: 'Color Code',
+    leatherGrade: 'Leather Grade',
+    usagePerChair: 'Usage Per Chair'
   },
   packaging: {
-    width: '纸箱长度',
-    depth: '纸箱宽度',
-    height: '纸箱高度',
-    boardType: '纸板类型',
-    itemsPerCarton: '每箱数量',
-    cartonVolume: '箱体体积'
+    width: 'Carton Length',
+    depth: 'Carton Width',
+    height: 'Carton Height',
+    boardType: 'Board Type',
+    itemsPerCarton: 'Items Per Carton',
+    cartonVolume: 'Carton Volume'
   },
   logistics: {
-    productionTime: '生产周期',
-    effectiveVolume: '有效体积',
-    loadingQuantity20gp: '20尺柜装柜数',
-    loadingQuantity40hc: '40尺高柜装柜数',
-    netWeight: '净重',
-    grossWeight: '毛重'
+    productionTime: 'Production Time',
+    effectiveVolume: 'Effective Volume',
+    loadingQuantity20gp: '20ft Container Loading Qty',
+    loadingQuantity40hc: '40ft HQ Container Loading Qty',
+    netWeight: 'Net Weight',
+    grossWeight: 'Gross Weight'
   },
   dimensions: {
-    seatWidth: '座宽',
-    seatDepth: '座深',
-    seatHeightMin: '最低座高',
-    seatHeightMax: '最高座高',
-    backWidth: '背宽',
-    backHeight: '背高',
-    backHeightFromSeat: '靠背离座高度',
-    overallWidth: '整体宽度',
-    overallDepth: '整体深度',
-    overallHeightMin: '最低整体高度',
-    overallHeightMax: '最高整体高度'
+    seatWidth: 'Seat Width',
+    seatDepth: 'Seat Depth',
+    seatHeightMin: 'Min Seat Height',
+    seatHeightMax: 'Max Seat Height',
+    backWidth: 'Back Width',
+    backHeight: 'Back Height',
+    backHeightFromSeat: 'Back Height From Seat',
+    overallWidth: 'Overall Width',
+    overallDepth: 'Overall Depth',
+    overallHeightMin: 'Min Overall Height',
+    overallHeightMax: 'Max Overall Height'
   },
   seatInner: {
-    materialCode: '材料代码',
-    thickness: '厚度',
-    layersCount: '层数',
-    dimensions: '尺寸规格'
+    materialCode: 'Material Code',
+    thickness: 'Thickness',
+    layersCount: 'Layers Count',
+    dimensions: 'Dimensions'
   },
   backInner: {
-    materialCode: '材料代码',
-    thickness: '厚度',
-    layersCount: '层数',
-    dimensions: '尺寸规格'
-  },
-  backOuter: {
-    material: '材料',
-    dimensions: '尺寸',
-    manufacturerName: '制造商名称'
+    materialCode: 'Material Code',
+    thickness: 'Thickness',
+    layersCount: 'Layers Count',
+    dimensions: 'Dimensions'
   },
   seatOuter: {
-    material: '材料',
-    dimensions: '尺寸',
-    manufacturerName: '制造商名称'
+    material: 'Material',
+    dimensions: 'Dimensions',
+    manufacturerName: 'Manufacturer Name'
+  },
+  backOuter: {
+    material: 'Material',
+    dimensions: 'Dimensions',
+    manufacturerName: 'Manufacturer Name'
   },
   arms: {
-    material: '材料',
-    type: '类型',
-    manufacturer: '制造商',
-    description: '描述',
-    armHeightFromSeat: '扶手离座高度',
-    armHeightFromFloor: '扶手离地高度'
+    material: 'Material',
+    type: 'Type',
+    manufacturer: 'Manufacturer',
+    description: 'Description',
+    armHeightFromSeat: 'Arm Height From Seat',
+    armHeightFromFloor: 'Arm Height From Floor'
   },
   foam: {
-    description: '描述',
-    seatDensity: '座椅密度',
-    backDensity: '靠背密度',
-    seatThickness: '座椅厚度',
-    backThickness: '靠背厚度'
+    description: 'Description',
+    seatDensity: 'Seat Density',
+    backDensity: 'Back Density',
+    seatThickness: 'Seat Thickness',
+    backThickness: 'Back Thickness'
   },
   castors: {
-    description: '描述',
-    pinThickness: '销轴直径',
-    wheelDiameter: '轮子直径'
+    description: 'Description',
+    pinThickness: 'Pin Thickness',
+    wheelDiameter: 'Wheel Diameter'
   },
   base: {
-    description: '描述',
-    sizeDiameter: '底盘直径',
-    material: '材料',
-    type: '类型'
+    description: 'Description',
+    sizeDiameter: 'Base Diameter',
+    material: 'Material',
+    type: 'Type'
   },
   gasLift: {
-    description: '描述',
-    gasLiftClass: '气压等级',
-    casingLength: '外管长度',
-    extensionSize: '行程',
-    taper: '锥度'
+    description: 'Description',
+    gasLiftClass: 'Gas Lift Class',
+    casingLength: 'Casing Length',
+    extensionSize: 'Extension Size',
+    taper: 'Taper'
   },
   gasLiftCover: {
-    description: '描述',
-    material: '材料',
-    colour: '颜色'
+    description: 'Description',
+    material: 'Material',
+    colour: 'Color'
   },
   mechanism: {
-    description: '描述',
-    leversCount: '手柄数量',
-    lockingPositions: '锁定位置',
-    modelNo: '型号',
-    supplierName: '机构供应商'
+    description: 'Description',
+    leversCount: 'Levers Count',
+    lockingPositions: 'Locking Positions',
+    modelNo: 'Model No',
+    supplierName: 'Supplier Name'
   },
   fittings: {
-    fittingNumber: '配件编号',
-    description: '描述',
-    quantity: '数量',
-    material: '材料'
+    fittingNumber: 'Fitting Number',
+    description: 'Description',
+    quantity: 'Quantity',
+    material: 'Material'
   },
   images: {
-    frontImgPath: '正视图',
-    sideImgPath: '侧视图',
-    backImgPath: '背视图',
-    angleImgPath: '角视图'
+    frontImgPath: 'Front View',
+    sideImgPath: 'Side View',
+    backImgPath: 'Back View',
+    angleImgPath: 'Angle View'
   }
 } as const
 
@@ -1002,24 +1002,24 @@ const handleExport = async () => {
 
 // 格式化部分标题
 const formatSectionTitle = (key: string): string => {
-  const titles: Record<string, string> = {
-    upholstery: '面料信息',
-    packaging: '包装信息',
-    logistics: '物流信息',
-    dimensions: '产品尺寸',
-    seatInner: '座椅内部结构',
-    backInner: '背部内部结构',
-    backOuter: '背部外部结构',
-    seatOuter: '座椅外部结构',
-    arms: '扶手信息',
-    foam: '泡棉信息',
-    castors: '脚轮信息',
-    base: '底座信息',
-    gasLift: '气压棒信息',
-    gasLiftCover: '气压罩信息',
-    mechanism: '机构信息',
-    fittings: '配件信息',
-    images: '产品图片'
+  const titles: {[key: string]: string} = {
+    upholstery: 'Upholstery Information',
+    packaging: 'Packaging Information',
+    logistics: 'Production and Logistics',
+    dimensions: 'Product Dimensions',
+    seatInner: 'Seat Inner Structure',
+    backInner: 'Back Inner Structure',
+    seatOuter: 'Seat Outer Structure',
+    backOuter: 'Back Outer Structure',
+    arms: 'Armrest Information',
+    foam: 'Foam Information',
+    castors: 'Footrest Information',
+    base: 'Base Information',
+    gasLift: 'Gas Lift Information',
+    gasLiftCover: 'Gas Lift Cover',
+    mechanism: 'Mechanism Information',
+    fittings: 'Fitting Information',
+    images: 'Product Images'
   }
   return titles[key] || key
 }

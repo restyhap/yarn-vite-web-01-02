@@ -8,7 +8,7 @@
         <div class="sticky top-0 z-20 bg-white border-b border-gray-200">
           <div class="flex justify-between items-center py-2 px-6">
             <div class="flex-1">
-              <h2 class="text-xl font-bold text-gray-800">权限设置</h2>
+              <h2 class="text-xl font-bold text-gray-800">Permission Settings</h2>
             </div>
           </div>
         </div>
@@ -35,22 +35,22 @@
                 <div class="border-t pt-4">
                   <div class="flex items-center mb-2">
                     <el-checkbox v-model="role.allProdPermissions" :indeterminate="isIndeterminate(role, 'prod')" @change="val => handleModuleChange(val, role, 'prod')">
-                      <span class="font-medium">产品规格管理</span>
+                      <span class="font-medium">Product Specification Management</span>
                     </el-checkbox>
                   </div>
 
                   <div class="ml-6 grid grid-cols-4 gap-4">
                     <div>
-                      <el-checkbox v-model="role.permissions.prodView" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodView')">查看</el-checkbox>
+                      <el-checkbox v-model="role.permissions.prodView" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodView')">View</el-checkbox>
                     </div>
                     <div>
-                      <el-checkbox v-model="role.permissions.prodCreate" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodCreate')">创建</el-checkbox>
+                      <el-checkbox v-model="role.permissions.prodCreate" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodCreate')">Create</el-checkbox>
                     </div>
                     <div>
-                      <el-checkbox v-model="role.permissions.prodEdit" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodEdit')">编辑</el-checkbox>
+                      <el-checkbox v-model="role.permissions.prodEdit" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodEdit')">Edit</el-checkbox>
                     </div>
                     <div>
-                      <el-checkbox v-model="role.permissions.prodDelete" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodDelete')">删除</el-checkbox>
+                      <el-checkbox v-model="role.permissions.prodDelete" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'prod', 'prodDelete')">Delete</el-checkbox>
                     </div>
                   </div>
                 </div>
@@ -59,22 +59,22 @@
                 <div class="border-t pt-4">
                   <div class="flex items-center mb-2">
                     <el-checkbox v-model="role.allSpecPermissions" :indeterminate="isIndeterminate(role, 'spec')" @change="val => handleModuleChange(val, role, 'spec')">
-                      <span class="font-medium">质检报告管理</span>
+                      <span class="font-medium">QC Report Management</span>
                     </el-checkbox>
                   </div>
 
                   <div class="ml-6 grid grid-cols-4 gap-4">
                     <div>
-                      <el-checkbox v-model="role.permissions.specView" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specView')">查看</el-checkbox>
+                      <el-checkbox v-model="role.permissions.specView" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specView')">View</el-checkbox>
                     </div>
                     <div>
-                      <el-checkbox v-model="role.permissions.specCreate" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specCreate')">创建</el-checkbox>
+                      <el-checkbox v-model="role.permissions.specCreate" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specCreate')">Create</el-checkbox>
                     </div>
                     <div>
-                      <el-checkbox v-model="role.permissions.specEdit" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specEdit')">编辑</el-checkbox>
+                      <el-checkbox v-model="role.permissions.specEdit" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specEdit')">Edit</el-checkbox>
                     </div>
                     <div>
-                      <el-checkbox v-model="role.permissions.specDelete" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specDelete')">删除</el-checkbox>
+                      <el-checkbox v-model="role.permissions.specDelete" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'spec', 'specDelete')">Delete</el-checkbox>
                     </div>
                   </div>
                 </div>
@@ -83,22 +83,22 @@
                 <div class="border-t pt-4">
                   <div class="flex items-center mb-2">
                     <el-checkbox v-model="role.allQuotePermissions" :indeterminate="isIndeterminate(role, 'quote')" @change="val => handleModuleChange(val, role, 'quote')">
-                      <span class="font-medium">产品报价管理</span>
+                      <span class="font-medium">Product Quote Management</span>
                     </el-checkbox>
                   </div>
 
                   <div class="ml-6 grid grid-cols-4 gap-4">
                     <div>
-                      <el-checkbox v-model="role.permissions.quoteView" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteView')">查看</el-checkbox>
+                      <el-checkbox v-model="role.permissions.quoteView" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteView')">View</el-checkbox>
                     </div>
                     <div>
-                      <el-checkbox v-model="role.permissions.quoteCreate" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteCreate')">创建</el-checkbox>
+                      <el-checkbox v-model="role.permissions.quoteCreate" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteCreate')">Create</el-checkbox>
                     </div>
                     <div>
-                      <el-checkbox v-model="role.permissions.quoteEdit" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteEdit')">编辑</el-checkbox>
+                      <el-checkbox v-model="role.permissions.quoteEdit" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteEdit')">Edit</el-checkbox>
                     </div>
                     <div>
-                      <el-checkbox v-model="role.permissions.quoteDelete" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteDelete')">删除</el-checkbox>
+                      <el-checkbox v-model="role.permissions.quoteDelete" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'quote', 'quoteDelete')">Delete</el-checkbox>
                     </div>
                   </div>
                 </div>
@@ -107,16 +107,16 @@
                 <div class="border-t pt-4">
                   <div class="flex items-center mb-2">
                     <el-checkbox v-model="role.allSettingsPermissions" :indeterminate="isIndeterminate(role, 'settings')" @change="val => handleModuleChange(val, role, 'settings')">
-                      <span class="font-medium">系统设置</span>
+                      <span class="font-medium">System Settings</span>
                     </el-checkbox>
                   </div>
 
                   <div class="ml-6 grid grid-cols-4 gap-4">
                     <div>
-                      <el-checkbox v-model="role.permissions.settingsUsers" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'settings', 'settingsUsers')">用户管理</el-checkbox>
+                      <el-checkbox v-model="role.permissions.settingsUsers" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'settings', 'settingsUsers')">User Management</el-checkbox>
                     </div>
                     <div>
-                      <el-checkbox v-model="role.permissions.settingsPermissions" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'settings', 'settingsPermissions')">权限设置</el-checkbox>
+                      <el-checkbox v-model="role.permissions.settingsPermissions" :true-label="1" :false-label="0" @change="() => handlePermissionChange(role, 'settings', 'settingsPermissions')">Permission Settings</el-checkbox>
                     </div>
                   </div>
                 </div>
@@ -142,9 +142,9 @@ const loading = ref(true)
 
 // 用户角色类型枚举
 enum UserRoleType {
-  ADMIN = 0, // 管理员
-  SUPPLIER = 1, // 供应商
-  EMPLOYEE = 2 // 员工
+  ADMIN = 0, // Administrator
+  SUPPLIER = 1, // Supplier
+  EMPLOYEE = 2 // Employee
 }
 
 // 角色数据结构
@@ -185,8 +185,8 @@ const createDefaultPermissions = (roleType: UserRoleType): Permissions => {
 const roles = ref<RoleWithPermissions[]>([
   {
     id: UserRoleType.ADMIN,
-    name: '管理员',
-    description: '系统管理员，拥有所有权限',
+    name: 'Administrator',
+    description: 'System administrator with full permissions',
     permissions: createDefaultPermissions(UserRoleType.ADMIN),
     allProdPermissions: false,
     allSpecPermissions: false,
@@ -195,8 +195,8 @@ const roles = ref<RoleWithPermissions[]>([
   },
   {
     id: UserRoleType.SUPPLIER,
-    name: '供应商',
-    description: '供应商用户，可以创建和查看自己的数据',
+    name: 'Supplier',
+    description: 'Supplier user, can create and view their own data',
     permissions: createDefaultPermissions(UserRoleType.SUPPLIER),
     allProdPermissions: false,
     allSpecPermissions: false,
@@ -205,8 +205,8 @@ const roles = ref<RoleWithPermissions[]>([
   },
   {
     id: UserRoleType.EMPLOYEE,
-    name: '员工',
-    description: '员工用户，可以管理所有数据',
+    name: 'Employee',
+    description: 'Employee user, can manage all data',
     permissions: createDefaultPermissions(UserRoleType.EMPLOYEE),
     allProdPermissions: false,
     allSpecPermissions: false,
@@ -264,13 +264,13 @@ const updatePermission = async (role: RoleWithPermissions) => {
 
     // 显示轻量级提示
     ElMessage({
-      message: '权限已更新',
+      message: 'Permissions updated',
       type: 'success',
       duration: 1000
     })
   } catch (error) {
-    console.error('更新权限失败:', error)
-    ElMessage.error('更新权限失败')
+    console.error('Failed to update permissions:', error)
+    ElMessage.error('Failed to update permissions')
   }
 }
 
@@ -328,26 +328,26 @@ const handlePermissionChange = (role: RoleWithPermissions, moduleId: string, per
 
 // 更新全选状态
 const updateAllPermissionsState = (role: RoleWithPermissions) => {
-  // 产品规格管理
+  // Product specification management
   const prodPermissions = [Number(role.permissions.prodView) === 1, Number(role.permissions.prodCreate) === 1, Number(role.permissions.prodEdit) === 1, Number(role.permissions.prodDelete) === 1]
   role.allProdPermissions = prodPermissions.every(Boolean)
 
-  // 质检报告管理
+  // QC report management
   const specPermissions = [Number(role.permissions.specView) === 1, Number(role.permissions.specCreate) === 1, Number(role.permissions.specEdit) === 1, Number(role.permissions.specDelete) === 1]
   role.allSpecPermissions = specPermissions.every(Boolean)
 
-  // 产品报价管理
+  // Product quote management
   const quotePermissions = [Number(role.permissions.quoteView) === 1, Number(role.permissions.quoteCreate) === 1, Number(role.permissions.quoteEdit) === 1, Number(role.permissions.quoteDelete) === 1]
   role.allQuotePermissions = quotePermissions.every(Boolean)
 
-  // 系统设置
+  // System settings
   const settingsPermissions = [Number(role.permissions.settingsUsers) === 1, Number(role.permissions.settingsPermissions) === 1]
   role.allSettingsPermissions = settingsPermissions.every(Boolean)
 }
 
 // 初始化默认权限
 const initializeDefaultPermissions = async () => {
-  // 管理员默认拥有所有权限
+  // Administrator has all permissions by default
   const adminRole = roles.value.find(r => r.id === UserRoleType.ADMIN)
   if (adminRole) {
     Object.keys(adminRole.permissions).forEach(key => {
@@ -359,7 +359,7 @@ const initializeDefaultPermissions = async () => {
     await updatePermission(adminRole)
   }
 
-  // 供应商默认权限
+  // Default supplier permissions
   const supplierRole = roles.value.find(r => r.id === UserRoleType.SUPPLIER)
   if (supplierRole) {
     supplierRole.permissions.prodView = 1
@@ -370,10 +370,10 @@ const initializeDefaultPermissions = async () => {
     await updatePermission(supplierRole)
   }
 
-  // 员工默认权限
+  // Default employee permissions
   const employeeRole = roles.value.find(r => r.id === UserRoleType.EMPLOYEE)
   if (employeeRole) {
-    // 产品和质检报告的所有权限
+    // All permissions for products and QC reports
     employeeRole.permissions.prodView = 1
     employeeRole.permissions.prodCreate = 1
     employeeRole.permissions.prodEdit = 1
@@ -398,35 +398,35 @@ const loadPermissions = async () => {
     const res = await getPermissionsSearch()
     if (res.code === '200') {
       if (res.data && res.data.length > 0) {
-        // 将后端数据映射到前端角色
+        // Map backend data to frontend roles
         res.data.forEach((permission: Permissions) => {
           const roleIndex = roles.value.findIndex(r => r.id === permission.roleType)
           if (roleIndex !== -1) {
-            // 更新权限数据
+            // Update permission data
             roles.value[roleIndex].permissions = permission
 
-            // 更新全选状态
+            // Update all selection states
             updateAllPermissionsState(roles.value[roleIndex])
           }
         })
       } else {
-        // 如果后端没有数据，初始化默认权限
+        // If no data from backend, initialize default permissions
         initializeDefaultPermissions()
       }
     } else {
-      ElMessage.error(res.message || '获取权限数据失败')
+      ElMessage.error(res.message || 'Failed to get permission data')
     }
   } catch (error) {
-    console.error('获取权限数据失败:', error)
-    ElMessage.error('获取权限数据失败')
-    // 如果获取失败，初始化默认权限
+    console.error('Failed to get permission data:', error)
+    ElMessage.error('Failed to get permission data')
+    // If failed to get data, initialize default permissions
     initializeDefaultPermissions()
   } finally {
     loading.value = false
   }
 }
 
-// 初始化
+// Initialize
 onMounted(() => {
   loadPermissions()
 })
