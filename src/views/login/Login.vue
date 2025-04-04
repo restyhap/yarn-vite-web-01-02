@@ -36,7 +36,7 @@
 import {useUserStore} from '@/pinia/user'
 import {Lock, User as UserIcon} from '@element-plus/icons-vue'
 import {ElMessage} from 'element-plus'
-import {ref} from 'vue'
+import {ref, onMounted} from 'vue'
 import {useRouter} from 'vue-router'
 import {postUserLogin, User, ResultVo} from '@/api'
 
@@ -102,6 +102,33 @@ const rules = {
 
 const loginFormRef = ref()
 
+// 保存登录信息到本地存储
+const saveLoginInfo = (username: string, password: string, remember: boolean) => {
+  if (remember) {
+    localStorage.setItem(
+      'loginInfo',
+      JSON.stringify({
+        username,
+        password,
+        remember
+      })
+    )
+  } else {
+    localStorage.removeItem('loginInfo')
+  }
+}
+
+// 从本地存储读取登录信息
+const loadLoginInfo = () => {
+  const loginInfo = localStorage.getItem('loginInfo')
+  if (loginInfo) {
+    const {username, password, remember} = JSON.parse(loginInfo)
+    loginForm.value.username = username
+    loginForm.value.password = password
+    loginForm.value.remember = remember
+  }
+}
+
 const handleLogin = () => {
   loginFormRef.value?.validate(async (valid: boolean) => {
     if (valid) {
@@ -110,6 +137,8 @@ const handleLogin = () => {
         if (!user.id || !user.username || user.status !== 1) {
           throw new Error('User status is abnormal')
         }
+        // 保存登录信息
+        saveLoginInfo(loginForm.value.username, loginForm.value.password, loginForm.value.remember)
         // Set user information
         userStore.setUserInfo(user)
         // Set token
@@ -125,6 +154,11 @@ const handleLogin = () => {
     }
   })
 }
+
+// 组件挂载时加载保存的登录信息
+onMounted(() => {
+  loadLoginInfo()
+})
 </script>
 <style scoped>
 .el-input-number {
