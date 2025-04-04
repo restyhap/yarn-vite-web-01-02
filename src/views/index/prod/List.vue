@@ -10,7 +10,7 @@
         :exporting="exporting"
         :has-selected="selectedRows.length > 0"
         @search="handleSearch"
-        @clear="handleSearch"
+        @clear="handleClear"
         @batch-export="handleBatchExport"
         @batch-delete="handleBatchDelete"
       />
@@ -190,19 +190,18 @@ const handleSearch = async () => {
   try {
     const userStore = useUserStore()
     const searchParams: any = {
-      keyword: searchQuery.value,
       currentPage: pagination.value.pageNumber,
-      pageSize: pagination.value.pageSize
+      pageSize: pagination.value.pageSize,
+      keyword: searchQuery.value
     }
-    // Only add supplier parameter for non-admin users
-    console.log('userStore.userInfo?.roleType : ', userStore.userInfo?.roleType)
+    // 供应商只能查看自己的产品 , 供应商 roleType 是 1
     if (userStore.userInfo?.roleType === 1) {
       searchParams.supplier = userStore.userInfo?.username
     }
     const res = (await getProductsSearch({params: searchParams})) as unknown as SearchResponse
     if (res.data) {
-      tableData.value = res.data.list || []
-      total.value = res.data.total || 0
+      tableData.value = Array.isArray(res.data) ? res.data : []
+      total.value = tableData.value.length
     }
   } catch (error) {
     console.error('Search failed:', error)
@@ -210,6 +209,12 @@ const handleSearch = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// 清除搜索内容处理
+const handleClear = () => {
+  searchQuery.value = ''
+  fetchTableData()
 }
 
 // 分页处理
