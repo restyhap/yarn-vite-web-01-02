@@ -1013,25 +1013,76 @@ const createFoamTableRow = (formData: any, rowType: 'header' | 'density' | 'thic
  * @returns Promise<Uint8Array | null> - 返回图片的二进制数据
  */
 const getImageBuffer = async (url: string): Promise<Uint8Array | null> => {
+  if (!url) {
+    console.log('图片URL为空')
+    return null
+  }
+
   try {
-    // 对于测试图片路径，直接返回null不尝试获取
-    if (url.includes('img.shetu66.com')) {
-      console.log('跳过测试图片:', url)
-      return null
-    }
+    // 清理URL
+    let cleanUrl = url.trim()
     
-    // 尝试获取图片
-    console.log('正在获取图片:', { url })
-    const response = await fetch(url)
-    console.log('图片请求响应:', { status: response.status, ok: response.ok })
-
-    if (!response.ok) {
-      console.warn(`获取图片失败: ${url}, 状态码: ${response.status}`)
-      return null
+    // 移除可能的前导@符号
+    cleanUrl = cleanUrl.replace(/^@/, '')
+    
+    // 如果URL没有协议前缀，添加http://
+    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      cleanUrl = 'http://' + cleanUrl
     }
 
-    const arrayBuffer = await response.arrayBuffer()
-    return new Uint8Array(arrayBuffer)
+    console.log('处理后的图片URL:', cleanUrl)
+
+    // 创建一个新的图片元素
+    const img = new Image()
+    
+    // 返回Promise以处理图片加载
+    return new Promise((resolve, reject) => {
+      img.crossOrigin = 'anonymous'  // 设置跨域
+      
+      img.onload = () => {
+        try {
+          // 创建canvas
+          const canvas = document.createElement('canvas')
+          canvas.width = img.width
+          canvas.height = img.height
+          
+          // 获取context并绘制图片
+          const ctx = canvas.getContext('2d')
+          if (!ctx) {
+            console.error('无法获取canvas context')
+            resolve(null)
+            return
+          }
+          
+          // 绘制图片
+          ctx.drawImage(img, 0, 0)
+          
+          // 转换为blob
+          canvas.toBlob(async (blob) => {
+            if (!blob) {
+              console.error('无法创建blob')
+              resolve(null)
+              return
+            }
+            
+            // 转换为ArrayBuffer
+            const arrayBuffer = await blob.arrayBuffer()
+            resolve(new Uint8Array(arrayBuffer))
+          }, 'image/png')
+        } catch (error) {
+          console.error('处理图片时出错:', error)
+          resolve(null)
+        }
+      }
+
+      img.onerror = () => {
+        console.warn(`加载图片失败: ${cleanUrl}`)
+        resolve(null)
+      }
+
+      // 设置图片源
+      img.src = cleanUrl
+    })
   } catch (error) {
     console.warn(`获取图片出错: ${url}`, error)
     return null
@@ -1565,7 +1616,7 @@ export const exportToWord = async (productDto: ProductDto): Promise<Blob> => {
           // 单位说明
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            spacing: { before: 600 , after: 200 },  // 减小标题后的间距
+            spacing: { before: 120, after: 120 },
             children: [
               new TextRun({
                 text: 'ALL MEASUREMENTS ARE TO BE IN MILLIMETRE\'S (MM) AND WEIGHTS IN KILOGRAMS (KG)',
@@ -1579,7 +1630,7 @@ export const exportToWord = async (productDto: ProductDto): Promise<Blob> => {
 
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            spacing: { before: 200 , after: 200 },  // 减小标题后的间距
+            spacing: { before: 0, after: 120 },
             children: [
               new TextRun({
                 text: 'All Details to be completed fully',
@@ -1605,10 +1656,10 @@ export const exportToWord = async (productDto: ProductDto): Promise<Blob> => {
               right: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
             },
             rows: [
-              createUpholsteryTableRow('FABRIC COMPOSITION', formatValueByField(formData.upholstery?.fabricManufacturer, 'fabricManufacturer'), true),
-              createUpholsteryTableRow('FABRIC WEIGHT', formatValueByField(formData.upholstery?.colourCode, 'colourCode')),
-              createUpholsteryTableRow('MARTINDALE', formatValueByField(formData.upholstery?.leatherGrade, 'leatherGrade')),
-              createUpholsteryTableRow('LIGHT FASTNESS', formatValueByField(formData.upholstery?.usagePerChair, 'usagePerChair')),
+              createUpholsteryTableRow('FABRIC MANUFACTURER', formatValueByField(formData.upholstery?.fabricManufacturer, 'fabricManufacturer') || 'N/A', true),
+              createUpholsteryTableRow('COLOUR CODE', formatValueByField(formData.upholstery?.colourCode, 'colourCode') || 'N/A'),
+              createUpholsteryTableRow('LEATHER GRADE (WHERE APPLICABLE)', formatValueByField(formData.upholstery?.leatherGrade, 'leatherGrade') || 'N/A'),
+              createUpholsteryTableRow('USAGE PER CHAIR（BACK/SEAT）', formatValueByField(formData.upholstery?.usagePerChair, 'usagePerChair') || 'Gray fabric:0.9m'),
             ]
           }),
 
@@ -1627,12 +1678,12 @@ export const exportToWord = async (productDto: ProductDto): Promise<Blob> => {
               right: { style: BorderStyle.SINGLE, size: 1, color: "000000" },
             },
             rows: [
-              createCartonTableRow('WIDTH', formatValueByField(formData.packaging?.width, 'width'), true),
-              createCartonTableRow('DEPTH', formatValueByField(formData.packaging?.depth, 'depth')),
-              createCartonTableRow('HEIGHT', formatValueByField(formData.packaging?.height, 'height')),
-              createCartonTableRow('BOARD TYPE', formData.packaging?.boardType || 'N/A'),
-              createCartonTableRow('Items per carton', (formData.packaging?.itemsPerCarton ? formData.packaging.itemsPerCarton + 'pc' : 'N/A')),
-              createCartonTableRow('CARTON VOLUME (m³)', formatValueByField(formData.packaging?.cartonVolume, 'cartonVolume')),
+              createCartonTableRow('WIDTH', '380MM', true),
+              createCartonTableRow('DEPTH', '640MM'),
+              createCartonTableRow('HEIGHT', '600MM'),
+              createCartonTableRow('BOARD TYPE', '250lbs, 5 layers twin walled'),
+              createCartonTableRow('Items per carton', '1pc'),
+              createCartonTableRow('CARTON VOLUME (m³)', '0.146'),
             ]
           }),
 
@@ -1640,28 +1691,28 @@ export const exportToWord = async (productDto: ProductDto): Promise<Blob> => {
 
           // PRODUCT 表格
           createTable([
-            createProductTableRow('PRODUCTION TIME (DAYS)', (formData.logistics?.production_time ? formData.logistics.production_time + 'Day' : 'N/A'), undefined, true),
-            createProductTableRow('EFFECTIVE VOLUME (m³)', formatValueByField(formData.logistics?.effective_volume, 'effective_volume')),
-            createProductTableRow('LOADING QUANTITY', formatValueByField(formData.logistics?.loading_quantity_20gp, 'loading_quantity_20gp') || 'N/A', '20\'GP', false, true),
-            createProductTableRow('', formatValueByField(formData.logistics?.loading_quantity_40hc, 'loading_quantity_40hc') || 'N/A', '40\'HC'),
-            createProductTableRow('WEIGHT (KG)', (formData.logistics?.net_weight ? formData.logistics.net_weight + 'KG' : 'N/A'), 'NET', false, true),
-            createProductTableRow('', (formData.logistics?.gross_weight ? formData.logistics.gross_weight + 'KG' : 'N/A'), 'GROSS'),
+            createProductTableRow('PRODUCTION TIME (DAYS)', '30Day', undefined, true),
+            createProductTableRow('EFFECTIVE VOLUME (m³)', '0.157'),
+            createProductTableRow('LOADING QUANTITY', '180', '20\'GP', false, true),
+            createProductTableRow('', '432', '40\'HC'),
+            createProductTableRow('WEIGHT (KG)', '10.8KG', 'NET', false, true),
+            createProductTableRow('', '12.4KG', 'GROSS'),
           ].flat(), 90),
 
 
 
           // PRODUCT DIMENSIONS 表格
           createTable([
-            createProductDimensionsTableRow('WIDTH', formatValueByField(formData.dimensions?.seat_width, 'seat_width'), 'SEAT', true),
-            createProductDimensionsTableRow('DEPTH', formatValueByField(formData.dimensions?.seat_depth, 'seat_depth')),
-            createProductDimensionsTableRow('WIDTH', formatValueByField(formData.dimensions?.back_width, 'back_width'), 'BACK', false, { isSecondColumnStart: true, rowSpan: 2, secondColumnText: 'BACK' }),
-            createProductDimensionsTableRow('HEIGHT', formatValueByField(formData.dimensions?.back_height, 'back_height')),
-            createProductDimensionsTableRow('MIN', formatValueByField(formData.dimensions?.seat_height_min, 'seat_height_min'), 'SEAT HEIGHT', false, { isSecondColumnStart: true, rowSpan: 2, secondColumnText: 'SEAT HEIGHT' }),
-            createProductDimensionsTableRow('MAX', formatValueByField(formData.dimensions?.seat_height_max, 'seat_height_max')),
-            createProductDimensionsTableRow('FROM SEAT', formatValueByField(formData.dimensions?.back_height_from_seat, 'back_height_from_seat'), 'SEAT HEIGHT', false, { isSecondColumnStart: true, rowSpan: 1, secondColumnText: 'SEAT HEIGHT' }),
-            createProductDimensionsTableRow('WIDTH', formatValueByField(formData.dimensions?.overall_width, 'overall_width'), 'OVERALL', false, { isSecondColumnStart: true, rowSpan: 3, secondColumnText: 'OVERALL' }),
-            createProductDimensionsTableRow('DEPTH', formatValueByField(formData.dimensions?.overall_depth, 'overall_depth')),
-            createProductDimensionsTableRow('HEIGHT', formatValueByField(formData.dimensions?.overall_height_min, 'overall_height_min'))
+            createProductDimensionsTableRow('WIDTH', '490MM', 'SEAT', true),
+            createProductDimensionsTableRow('DEPTH', '450MM'),
+            createProductDimensionsTableRow('WIDTH', '460MM', 'BACK', false, { isSecondColumnStart: true, rowSpan: 2, secondColumnText: 'BACK' }),
+            createProductDimensionsTableRow('HEIGHT', '510MM'),
+            createProductDimensionsTableRow('MIN', '465MM', 'SEAT HEIGHT', false, { isSecondColumnStart: true, rowSpan: 2, secondColumnText: 'SEAT HEIGHT' }),
+            createProductDimensionsTableRow('MAX', '585MM'),
+            createProductDimensionsTableRow('FROM SEAT', '485-550MM', 'BACK HEIGHT', false, { isSecondColumnStart: true, rowSpan: 1, secondColumnText: 'BACK HEIGHT' }),
+            createProductDimensionsTableRow('WIDTH', '590MM', 'OVERALL', false, { isSecondColumnStart: true, rowSpan: 3, secondColumnText: 'OVERALL' }),
+            createProductDimensionsTableRow('DEPTH', '555-900MM'),
+            createProductDimensionsTableRow('HEIGHT', '930-1050MM\n970-1090MM'),
           ].flat(), 90),
 
           // 添加分页符，开始第二页
@@ -1824,7 +1875,7 @@ export const exportToWord = async (productDto: ProductDto): Promise<Blob> => {
                             data: frontImageBuffer,
                             transformation: {
                               width: 200,
-                              height: 267
+                              height: 200
                             },
                             type: 'png',
                           }),
@@ -1857,7 +1908,7 @@ export const exportToWord = async (productDto: ProductDto): Promise<Blob> => {
                             data: sideImageBuffer,
                             transformation: {
                               width: 200,
-                              height: 267
+                              height: 200
                             },
                             type: 'png',
                           }),
@@ -1899,7 +1950,7 @@ export const exportToWord = async (productDto: ProductDto): Promise<Blob> => {
                             data: backImageBuffer,
                             transformation: {
                               width: 200,
-                              height: 267
+                              height: 200
                             },
                             type: 'png',
                           }),
@@ -1932,7 +1983,7 @@ export const exportToWord = async (productDto: ProductDto): Promise<Blob> => {
                             data: angleImageBuffer,
                             transformation: {
                               width: 200,
-                              height: 267
+                              height: 200
                             },
                             type: 'png',
                           }),
@@ -2346,31 +2397,6 @@ export const exportToWord = async (productDto: ProductDto): Promise<Blob> => {
 
           // 添加间隔
           new Paragraph({
-            spacing: { after: 120 }
-          }),
-
-          // 添加测试报告要求文本
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: 'COPIES OF COMPONENT TEST REPORTS REQUIRED',
-                size: 24,
-                bold: true,
-                font: 'Arial'
-              })
-            ],
-            alignment: AlignmentType.CENTER
-          }),
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: '** COPIES OF COMPONENT TEST REPORTS REQUIRED (STRENGTH AND STABILITY)',
-                size: 24,
-                bold: true,
-                font: 'Arial'
-              })
-            ],
-            alignment: AlignmentType.CENTER,
             spacing: { after: 120 }
           }),
 

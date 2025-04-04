@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-01-15 11:34:14
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-04-04 09:46:25
+ * @LastEditTime: 2025-04-04 10:22:34
  * @FilePath: /yarn-vite-web-01-02/src/views/index/prod/Info.vue
  * @Description: Product Specification Details Page
 -->
@@ -143,6 +143,14 @@ import {ElMessage} from 'element-plus'
 import {onMounted, ref} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {exportToWord} from '../../../utils/exportToWord'
+
+// 添加用于导出的图片接口
+interface ImagesExport {
+  front_img_path: string
+  side_img_path: string
+  back_view_path: string
+  angle_view_path: string
+}
 
 interface FormData {
   products: Products & {[key: string]: any}
@@ -965,8 +973,13 @@ const handleExport = async () => {
       const params = {id: productId}
       const result = await getProductDtoGetById(params)
 
-      response = result
-      console.log('处理后的ProductDto数据:', response)
+      // 确保我们使用 response.data 作为实际数据
+      if (result && result.code === '200' && result.data) {
+        response = result.data
+        console.log('处理后的ProductDto数据:', response)
+      } else {
+        throw new Error('获取产品数据失败: ' + (result.message || '未知错误'))
+      }
     } catch (error) {
       console.error('获取产品数据出错:', error)
       throw new Error('获取产品数据失败')
@@ -977,14 +990,99 @@ const handleExport = async () => {
       return
     }
 
-    // 直接将ProductDto数据传递给exportToWord函数
-    console.log('开始生成Word文档...')
-    try {
-      await exportToWord(response)
-      ElMessage.success('导出成功')
-    } catch (error) {
-      console.error('生成Word文档出错:', error)
-      throw new Error('生成Word文档失败')
+    // 确保所有必要的数据都存在
+    if (!response) {
+      throw new Error('未获取到产品数据')
+    }
+
+    // 处理图片路径数据
+    if (response.productImages) {
+      // 确保 productImages 对象存在
+      console.log('原始图片数据:', response.productImages)
+
+      // 从 productImages 中提取图片路径，确保所有字段都有值
+      const productImages = {
+        id: response.productImages.id || '',
+        prodId: response.productImages.prodId || response.productImages.productId || '',
+        frontImgPath: response.productImages.frontImgPath?.trim() || '',
+        sideImgPath: response.productImages.sideImgPath?.trim() || '',
+        backImgPath: response.productImages.backImgPath?.trim() || '',
+        angleImgPath: response.productImages.angleImgPath?.trim() || ''
+      }
+
+      // 更新 response 对象中的 productImages，确保类型正确
+      response.productImages = productImages
+
+      // 为导出文档添加额外的图片信息（作为单独的对象传递给 exportToWord）
+      const imagesExport: ImagesExport = {
+        // 处理特殊字符，确保正确解析
+        front_img_path: cleanupImageUrl(productImages.frontImgPath),
+        side_img_path: cleanupImageUrl(productImages.sideImgPath),
+        back_view_path: cleanupImageUrl(productImages.backImgPath),
+        angle_view_path: cleanupImageUrl(productImages.angleImgPath)
+      }
+
+      // 辅助函数：清理和标准化图片 URL
+      function cleanupImageUrl(url: string): string {
+        if (!url) return ''
+
+        // 去除前后空格
+        let cleanUrl = url.trim()
+
+        // 移除可能的前导 '@' 符号
+        cleanUrl = cleanUrl.replace(/^@/, '')
+
+        // 如果URL没有协议前缀，且不是以/开头，添加协议
+        if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://') && !cleanUrl.startsWith('/')) {
+          cleanUrl = 'http://' + cleanUrl
+        }
+
+        console.log(`清理后的图片URL: ${cleanUrl}`)
+        return cleanUrl
+      }
+
+      console.log('处理后的图片数据:', response.productImages)
+      console.log('导出用图片数据:', imagesExport)
+
+      // 直接将ProductDto数据和图片数据传递给exportToWord函数
+      console.log('开始生成Word文档，传递的数据:', response)
+      try {
+        await exportToWord(response, {images: imagesExport})
+        ElMessage.success('导出成功')
+      } catch (error) {
+        console.error('生成Word文档出错:', error)
+        throw new Error('生成Word文档失败')
+      }
+    } else {
+      // 如果不存在 productImages，则创建空对象
+      response.productImages = {
+        id: '',
+        prodId: productId,
+        frontImgPath: '',
+        sideImgPath: '',
+        backImgPath: '',
+        angleImgPath: ''
+      }
+
+      // 为导出文档创建空的图片信息对象
+      const imagesExport: ImagesExport = {
+        front_img_path: '',
+        side_img_path: '',
+        back_view_path: '',
+        angle_view_path: ''
+      }
+
+      console.log('创建了空的图片数据对象')
+
+      // 直接将ProductDto数据和图片数据传递给exportToWord函数
+      console.log('开始生成Word文档，传递的数据:', response)
+      try {
+        await exportToWord(response, {images: imagesExport})
+        ElMessage.success('导出成功')
+      } catch (error) {
+        console.error('生成Word文档出错:', error)
+        throw new Error('生成Word文档失败')
+      }
     }
   } catch (error) {
     console.error('导出失败', error)
