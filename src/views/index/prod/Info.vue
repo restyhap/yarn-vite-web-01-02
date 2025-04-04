@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-01-15 11:34:14
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-04-02 10:00:52
+ * @LastEditTime: 2025-04-04 09:05:04
  * @FilePath: /yarn-vite-web-01-02/src/views/index/prod/Info.vue
  * @Description: Product Specification Details Page
 -->
@@ -368,9 +368,9 @@ const fetchData = async () => {
     console.log('正在获取产品数据，ID:', id)
     const response = await getProductDtoGetById({id})
     console.log('获取到的数据:', response)
-    if (response) {
+    if (response.data) {
       // 使用类型断言处理API返回的数据
-      const responseData = response as any
+      const responseData = response.data as any
 
       // 使用接口类型优化数据处理
       formData.value = {
