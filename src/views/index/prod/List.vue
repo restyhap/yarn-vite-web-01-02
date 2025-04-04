@@ -147,19 +147,6 @@ const queryParams = ref<IPageProducts>({
   endDate: ''
 })
 
-interface ProdData {
-  id: number
-  tccode?: string
-  supplier?: string
-  supplier_code?: string
-  supplier_name?: string
-  fire_standard?: string
-  fob_20_container_price?: number
-  fob_40_container_price?: number
-  shipping_port?: string
-  [key: string]: any
-}
-
 // 获取表格数据
 const fetchTableData = async () => {
   loading.value = true
@@ -237,134 +224,62 @@ const handleCurrentChange = (val: number) => {
   fetchTableData()
 }
 
-interface ProductData {
-  tccode: string
-  supplier: string
-  supplier_code: string
-  supplier_name: string
-  fire_standard: string
-  fob_20_container_price: number
-  fob_40_container_price: number
-  shipping_port: string
-  upholstery: {
-    fabric_manufacturer: string
-    colour_code: string
-    leather_grade: string
-    usage_per_chair: string
-  }
-  packaging: {
-    carton_length: string
-    carton_width: string
-    carton_height: string
-    board_type: string
-    items_per_carton: string
-    carton_volume: string
-  }
-  logistics: {
-    production_time: string
-    effective_volume: string
-    loading_quantity_20gp: string
-    loading_quantity_40hc: string
-    net_weight: string
-    gross_weight: string
-  }
-  dimensions: {
-    seat_width: string
-    seat_depth: string
-    seat_height_min: string
-    seat_height_max: string
-    back_width: string
-    back_height: string
-    back_height_from_seat: string
-    overall_width: string
-    overall_depth: string
-    overall_height_min: string
-    overall_height_max: string
-  }
-}
-
 // 批量导出
 const handleBatchExport = async () => {
-  exporting.value = true
   if (!selectedRows.value.length) {
-    ElMessage.warning('Please select records to export')
+    ElMessage.warning('请选择要导出的记录')
     return
   }
 
   try {
     loading.value = true
+    exporting.value = true
+
+    // 创建一个新的 JSZip 实例
     const zip = new JSZip()
 
-    const exportTasks = selectedRows.value.map(async (item: Products) => {
+    // 创建一个数组来存储所有的导出任务
+    const exportTasks = selectedRows.value.map(async item => {
       try {
         // 获取完整的产品数据
-        const productResponse = await getProductDtoGetById({id: item.id || ''})
-        if (!productResponse.data) {
-          throw new Error(`Failed to get data for product ${item.tccode}`)
+        const {data: productData} = await getProductDtoGetById({id: item.id || ''})
+        if (!productData) {
+          throw new Error(`获取产品数据失败: ${item.tccode}`)
         }
 
-        const productData = productResponse.data
+        // 生成 Word 文档
+        const doc = await exportToWord(productData, {is_batch_export: true})
 
-        // 处理图片路径数据
-        if (productData.productImages) {
-          // 从 productImages 中提取图片路径，确保所有字段都有值
-          const productImages = {
-            id: productData.productImages.id || '',
-            prodId: productData.productImages.prodId || '',
-            frontImgPath: productData.productImages.frontImgPath?.trim() || '',
-            sideImgPath: productData.productImages.sideImgPath?.trim() || '',
-            backImgPath: productData.productImages.backImgPath?.trim() || '',
-            angleImgPath: productData.productImages.angleImgPath?.trim() || ''
-          }
+        // 使用产品编号和ID作为文件名，确保唯一性
+        const fileName = `Master_Specification_Sheet---TC-${item.tccode}--ID-${item.id}.docx`
 
-          // 更新 response 对象中的 productImages
-          productData.productImages = productImages
-        } else {
-          // 如果不存在 productImages，则创建空对象
-          productData.productImages = {
-            id: '',
-            prodId: item.id || '',
-            frontImgPath: '',
-            sideImgPath: '',
-            backImgPath: '',
-            angleImgPath: ''
-          }
-        }
-
-        const doc = await exportToWord(productData)
-        const fileName = `Product_Spec_${item.tccode || 'Unknown'}.docx`
+        // 将文档添加到 zip 中
         return {fileName, doc}
       } catch (error) {
-        console.error(`Export failed: ${item.id}`, error)
-        ElMessage.error(`Failed to export ${item.tccode || 'Unknown Product'}`)
-        return null
+        console.error(`导出失败: ${item.tccode}`, error)
+        throw error
       }
     })
 
+    // 等待所有导出任务完成
     const results = await Promise.all(exportTasks)
-    const successfulResults = results.filter((result): result is {fileName: string; doc: Blob} => result !== null && result.doc instanceof Blob)
 
-    if (successfulResults.length === 0) {
-      ElMessage.error('All document exports failed')
-      return
-    }
-
-    successfulResults.forEach(result => {
-      zip.file(result.fileName, result.doc)
+    // 将所有文档添加到 zip 中
+    results.forEach(({fileName, doc}) => {
+      zip.file(fileName, doc)
     })
 
-    const zipContent = await zip.generateAsync({type: 'blob'})
-    const timestamp = new Date().getTime()
-    saveAs(zipContent, `Product_Specifications_${timestamp}.zip`)
+    // 生成 zip 文件
+    const zipBlob = await zip.generateAsync({type: 'blob'})
 
-    if (successfulResults.length < selectedRows.value.length) {
-      ElMessage.warning(`Partial export success: ${successfulResults.length}/${selectedRows.value.length} documents exported`)
-    } else {
-      ElMessage.success('Batch export successful')
-    }
+    // 下载 zip 文件
+    const timestamp = new Date().toISOString().slice(0, 10)
+    saveAs(zipBlob, `Product_Specifications_${timestamp}.zip`)
+
+    ElMessage.success('导出成功')
   } catch (error) {
-    console.error('Batch export failed:', error)
-    ElMessage.error('Batch export failed')
+    console.error('批量导出失败:', error)
+    ElMessage.error('批量导出失败')
   } finally {
     loading.value = false
     exporting.value = false
@@ -493,31 +408,5 @@ onMounted(() => {
 /* Button icon alignment */
 .el-button :deep(.el-icon) {
   margin-right: 4px;
-}
-
-/* Search button style */
-.el-input :deep(.el-input-group__append) {
-  padding: 0;
-}
-
-.el-input :deep(.el-input__wrapper) {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
-.el-input :deep(.el-input-group__append .el-button) {
-  border: none;
-  height: 100%;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
-/* Header background transition */
-.bg-gray-50 {
-  transition: background-color 0.2s ease;
-}
-
-.bg-gray-50:hover {
-  background-color: #f8fafc;
 }
 </style>

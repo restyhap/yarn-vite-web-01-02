@@ -1187,10 +1187,11 @@ const formatValueByField = (value: any, fieldName: string): string => {
 /**
  * 导出Word文档
  * @param productDto - 包含所有产品数据的ProductDto对象
+ * @param options - 导出选项
  * @returns Promise<Blob> - 返回文档的 Blob 对象
  * @throws 导出失败时抛出错误
  */
-export const exportToWord = async (productDto: ProductDto): Promise<Blob> => {
+export const exportToWord = async (productDto: ProductDto, options?: {is_batch_export?: boolean}): Promise<Blob> => {
   try {
     console.log('开始处理产品数据:', productDto)
 
@@ -1362,8 +1363,8 @@ export const exportToWord = async (productDto: ProductDto): Promise<Blob> => {
         usagePerChair: String(productDto.upholstery?.usagePerChair || '')
       },
 
-      // 添加一个标记，表示这不是批量导出
-      is_batch_export: false
+      // 添加一个标记，表示这是否是批量导出
+      is_batch_export: options?.is_batch_export || false
     }
 
     console.log('开始处理图片数据:', formData.images)
