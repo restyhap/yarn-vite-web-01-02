@@ -188,7 +188,14 @@ const handleFile = async (file: File) => {
 
       // 从API返回中获取URL
       // 根据规则，忽略linter错误，直接使用response作为URL
-      imageUrl = response as any
+      // 处理新的响应格式
+      const result = response as {code: string; message: string; data: string}
+      if (result.code === '200' && result.data) {
+        // 移除可能存在的前导 '@' 符号
+        imageUrl = result.data.replace(/^@/, '')
+      } else {
+        throw new Error('上传失败：' + result.message)
+      }
     }
 
     // 确保获取到了图片URL

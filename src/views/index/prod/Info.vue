@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-01-15 11:34:14
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-04-04 09:05:04
+ * @LastEditTime: 2025-04-04 09:46:25
  * @FilePath: /yarn-vite-web-01-02/src/views/index/prod/Info.vue
  * @Description: Product Specification Details Page
 -->
@@ -552,26 +552,25 @@ const handleSaveData = async (section: string) => {
           sectionData.prodId = id
           delete sectionData.productId
 
-          // 确保所有图片路径都有效
-          for (const key in sectionData) {
-            if (isImagePath(key) && (!sectionData[key] || sectionData[key] === '')) {
-              delete sectionData[key] // 删除空的图片路径，避免覆盖已有的值
-            } else if (isImagePath(key)) {
-              console.log(`保存图片路径 ${key}: ${sectionData[key]}`)
-
-              // 验证URL是否有效
-              if (typeof sectionData[key] === 'string' && !sectionData[key].startsWith('http')) {
-                console.warn(`发现无效的图片URL: ${key}=${sectionData[key]}，将删除此字段`)
-                delete sectionData[key]
-              }
+          // 确保所有图片路径字段都存在且有效
+          const imageFields = ['frontImgPath', 'sideImgPath', 'backImgPath', 'angleImgPath']
+          for (const key of imageFields) {
+            // 如果字段不存在，初始化为空字符串
+            if (!(key in sectionData)) {
+              sectionData[key] = ''
             }
+            // 如果存在但不是有效的URL，设置为空字符串
+            else if (typeof sectionData[key] === 'string' && !sectionData[key].startsWith('http')) {
+              console.warn(`发现无效的图片URL: ${key}=${sectionData[key]}，将设置为空字符串`)
+              sectionData[key] = ''
+            }
+            console.log(`保存图片路径 ${key}: ${sectionData[key]}`)
           }
 
           // 确保至少有一个有效的图片路径
-          const hasValidImage = Object.keys(sectionData).some(key => isImagePath(key) && sectionData[key] && typeof sectionData[key] === 'string')
-
+          const hasValidImage = imageFields.some(key => sectionData[key] && sectionData[key].startsWith('http'))
           if (!hasValidImage) {
-            console.warn('没有找到有效的图片路径，可能会保存失败')
+            console.warn('没有找到有效的图片路径，所有图片字段都将被设置为空字符串')
           }
           break
       }
