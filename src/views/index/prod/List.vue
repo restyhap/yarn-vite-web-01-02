@@ -72,7 +72,7 @@
 </template>
 
 <script lang="ts" setup>
-import {getProductsPage, PageProducts, Products, getProductsSearch, deleteProductDtoDeleteById} from '@/api'
+import {getProductsPage, PageProducts, Products, getProductsSearch, deleteProductDtoDeleteById, getProductDtoGetById} from '@/api'
 import {exportToWord} from '@/utils/exportToWord'
 import {Delete, Document, Edit, Search, View, Plus} from '@element-plus/icons-vue'
 import {ElMessage, ElMessageBox} from 'element-plus'
@@ -295,65 +295,44 @@ const handleBatchExport = async () => {
     loading.value = true
     const zip = new JSZip()
 
-    // Mock data generator
-    const getMockProdData = (item: Products): ProductData => {
-      return {
-        // Basic Information
-        tccode: item.tccode || '',
-        supplier: item.supplier || '',
-        supplier_code: item.supplierCode || '',
-        supplier_name: item.supplierName || '',
-        fire_standard: item.fireStandard || '',
-        fob_20_container_price: item.fob20ContainerPrice || 0,
-        fob_40_container_price: item.fob40ContainerPrice || 0,
-        shipping_port: item.shippingPort || '',
-        // Upholstery Information
-        upholstery: {
-          fabric_manufacturer: 'Sample Manufacturer',
-          colour_code: 'C001',
-          leather_grade: 'Grade A',
-          usage_per_chair: '2.5m'
-        },
-        // Packaging Information
-        packaging: {
-          carton_length: '120cm',
-          carton_width: '80cm',
-          carton_height: '100cm',
-          board_type: 'Double Wall Corrugated',
-          items_per_carton: '1',
-          carton_volume: '0.96m³'
-        },
-        // Logistics Information
-        logistics: {
-          production_time: '30 days',
-          effective_volume: '0.9m³',
-          loading_quantity_20gp: '20',
-          loading_quantity_40hc: '40',
-          net_weight: '15kg',
-          gross_weight: '18kg'
-        },
-        // Dimension Information
-        dimensions: {
-          seat_width: '50cm',
-          seat_depth: '45cm',
-          seat_height_min: '45cm',
-          seat_height_max: '55cm',
-          back_width: '48cm',
-          back_height: '60cm',
-          back_height_from_seat: '55cm',
-          overall_width: '55cm',
-          overall_depth: '50cm',
-          overall_height_min: '100cm',
-          overall_height_max: '110cm'
-        }
-      }
-    }
-
     const exportTasks = selectedRows.value.map(async (item: Products) => {
       try {
-        const formData = getMockProdData(item)
-        const doc = await exportToWord(formData as any)
-        const fileName = `Product_Spec_${formData.tccode || 'Unknown'}.docx`
+        // 获取完整的产品数据
+        const productResponse = await getProductDtoGetById({id: item.id || ''})
+        if (!productResponse.data) {
+          throw new Error(`Failed to get data for product ${item.tccode}`)
+        }
+
+        const productData = productResponse.data
+
+        // 处理图片路径数据
+        if (productData.productImages) {
+          // 从 productImages 中提取图片路径，确保所有字段都有值
+          const productImages = {
+            id: productData.productImages.id || '',
+            prodId: productData.productImages.prodId || '',
+            frontImgPath: productData.productImages.frontImgPath?.trim() || '',
+            sideImgPath: productData.productImages.sideImgPath?.trim() || '',
+            backImgPath: productData.productImages.backImgPath?.trim() || '',
+            angleImgPath: productData.productImages.angleImgPath?.trim() || ''
+          }
+
+          // 更新 response 对象中的 productImages
+          productData.productImages = productImages
+        } else {
+          // 如果不存在 productImages，则创建空对象
+          productData.productImages = {
+            id: '',
+            prodId: item.id || '',
+            frontImgPath: '',
+            sideImgPath: '',
+            backImgPath: '',
+            angleImgPath: ''
+          }
+        }
+
+        const doc = await exportToWord(productData)
+        const fileName = `Product_Spec_${item.tccode || 'Unknown'}.docx`
         return {fileName, doc}
       } catch (error) {
         console.error(`Export failed: ${item.id}`, error)
