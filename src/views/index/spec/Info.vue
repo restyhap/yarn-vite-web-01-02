@@ -290,6 +290,7 @@ import {putQcReportsUpdate, getQcReportsDtoGetById, getFilesRemove, postFilesUpl
 import ImageHandler from '@/components/ImageHandler.vue'
 import {getId} from '@/utils/idUtils'
 import DefectDialog from '@/components/DefectDialog.vue'
+import {ModuleType, PermissionAction, checkPermission} from '@/utils/permissionUtils'
 
 // 数据相关
 const route = useRoute()
@@ -298,6 +299,7 @@ const loading = ref(true)
 const editingSections = ref<string[]>([])
 const dialogImageUrl = ref('')
 const dialogVisible = ref(false)
+const canEdit = ref(false)
 
 // 添加调试模式开关
 const showDebugInfo = ref(false) // 可以根据需要设置为true或false
@@ -398,73 +400,28 @@ const exporting = ref(false)
 const abortController = ref<AbortController | null>(null)
 
 const getData = async () => {
-  console.log((' route.params.id as string ======== ' + route.params.id) as string)
+  console.log('route.params.id ======== ' + route.params.id)
   const res = await getQcReportsDtoGetById({id: route.params.id as string})
 
   // Print original data for debugging
   console.log('Original res.data ======== ' + JSON.stringify(res.data))
 
-  // Check defectsDTO data
-  if (res.data && Array.isArray(res.data.defectsDTO)) {
-    console.log('Number of defect records:', res.data.defectsDTO.length)
+  if (res.data) {
+    // 使用深拷贝初始化 formData
+    formData.value = JSON.parse(JSON.stringify(res.data))
 
-    // Print each record's ID to check for duplicates
-    res.data.defectsDTO.forEach((dto: DefectsDto, index: number) => {
-      console.log(`Defect record #${index + 1}:`, dto.defects?.id, dto.defects?.defectTitle, 'Number of images:', dto.defectImages?.length || 0)
-    })
-
-    // Ensure each defectsDTO object is independent (deep copy)
-    res.data.defectsDTO = res.data.defectsDTO.map((dto: DefectsDto) => {
-      // Use JSON serialization and deserialization for deep copy
-      return JSON.parse(JSON.stringify(dto))
-    })
-
-    // Use Map for deduplication to ensure no duplicate defectId
-    const uniqueMap = new Map()
-    const uniqueDefects: DefectsDto[] = []
-
-    for (const defectDto of res.data.defectsDTO) {
-      if (defectDto.defects) {
-        const defectId = defectDto.defects.id
-        // If this ID hasn't been added yet, add it to the result
-        if (!uniqueMap.has(defectId)) {
-          uniqueMap.set(defectId, true)
-          uniqueDefects.push(defectDto)
-        } else {
-          console.warn(`Duplicate defect record ID found: ${defectId}`)
-        }
-      }
+    // 如果是从列表页的编辑按钮进入，初始化 tempFormData 并进入编辑模式
+    if (route.query.edit === 'true' || route.query.edit === '1') {
+      tempFormData.value = JSON.parse(JSON.stringify(res.data))
+      nextTick(() => {
+        isEditing.value = true
+        editingSections.value.push('basic')
+      })
     }
-
-    // Replace original data with deduplicated data
-    res.data.defectsDTO = uniqueDefects
-
-    // Print processed data for verification
-    console.log('Number of defect records after processing:', res.data.defectsDTO.length)
-    res.data.defectsDTO.forEach((dto: DefectsDto, index: number) => {
-      console.log(`Processed defect record #${index + 1}:`, dto.defects?.id, dto.defects?.defectTitle)
-    })
   }
 
-  // Use deep copy to ensure formData won't be affected by subsequent operations
-  formData.value = JSON.parse(JSON.stringify(res.data))
   loading.value = false
 }
-
-// Add initialization
-onMounted(() => {
-  getData()
-
-  // Check URL query parameters, if edit=true, automatically enter edit mode
-  if (route.query.edit === 'true') {
-    // Ensure data is loaded
-    if (formData.value) {
-      handleEdit('basic')
-    } else {
-      ElMessage.warning('Failed to load data, cannot enter edit mode')
-    }
-  }
-})
 
 // Add missing variables and functions
 const addDefectDialogVisible = ref(false)
@@ -1332,14 +1289,44 @@ const initPermissions = async () => {
 }
 
 onMounted(async () => {
-  await initPermissions() // Initialize permissions
-  await fetchQuoteDetail() // Wait for data to be loaded
-  updateUploadDisplay()
-  // Check URL parameters, if edit=1, automatically enter edit mode (requires edit permission)
-  if (route.query.edit === '1' && canEdit.value) {
-    handleEdit('basic')
-  }
+  await initPermissions() // 初始化权限
+  await getData() // 加载数据
 })
+
+// 基本信息的保存处理
+const handleSave = async () => {
+  try {
+    loading.value = true
+
+    // 1. 更新基本信息
+    if (editingSections.value.includes('basic')) {
+      await putQcReportsUpdate(tempFormData.value.qcReports)
+
+      // 更新本地数据
+      formData.value.qcReports = JSON.parse(JSON.stringify(tempFormData.value.qcReports))
+    }
+
+    // 清除编辑状态
+    editingSections.value = []
+    isEditing.value = false
+    ElMessage.success('保存成功')
+  } catch (error) {
+    console.error('保存失败', error)
+    ElMessage.error('保存失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 基本信息的取消处理
+const handleCancel = () => {
+  // 恢复原始数据
+  tempFormData.value = JSON.parse(JSON.stringify(formData.value))
+
+  // 清除编辑状态
+  editingSections.value = []
+  isEditing.value = false
+}
 
 defineOptions({
   name: 'SpecInfo'
