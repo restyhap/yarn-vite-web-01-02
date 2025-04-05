@@ -699,24 +699,30 @@ const handleSaveNewDefect = async (defect: any) => {
     // Set report ID
     defect.reportId = formData.value.qcReports?.id
 
-    // 1. Save defect record first
+    // 1. Save defect record
     const saveDefectRes = await postDefectsSave(defect)
-    const defectId = saveDefectRes.data.id
-
-    if (!defectId) {
-      ElMessage.error('Failed to save defect record')
+    if (!saveDefectRes.data) {
+      ElMessage.error('保存缺陷记录失败')
       return
     }
+
+    // 从 defect 对象中获取 ID
+    const defectId = defect.id
 
     // 2. Save defect images
     const defectImages =
       defect.images?.map((img: any) => ({
+        id: getId(),
         defectId,
         imagePath: img.imagePath
       })) || []
 
     if (defectImages.length > 0) {
-      await postDefectImagesSave(defectImages)
+      console.log('-----------defectImages', defectImages)
+      // 一个一个保存图片
+      for (const image of defectImages) {
+        await postDefectImagesSave(image)
+      }
     }
 
     // 3. Update local data

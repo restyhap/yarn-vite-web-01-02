@@ -36,7 +36,7 @@
         <!-- 缺陷图片 -->
         <el-form-item label="缺陷图片" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
           <div class="w-full">
-            <ImageHandler v-model="imageUrls" :editable="true" :size="120" :limit="5" :custom-upload="customUpload" @preview="handlePreview" />
+            <ImageHandler v-model="imageUrls" :editable="true" :size="120" :limit="2" :multiple="true" :custom-upload="customUpload" @preview="handlePreview" />
           </div>
         </el-form-item>
       </div>
@@ -199,7 +199,6 @@ export default defineComponent({
       const saveData: DefectFormData = {
         ...formData.value,
         images: imageUrls.value.map(url => ({
-          id: getId(),
           defectId: formData.value.id,
           imagePath: url,
           createdAt: new Date().toISOString(),
