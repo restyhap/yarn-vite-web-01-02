@@ -261,8 +261,16 @@
                             :custom-upload="params => handleDefectCustomUpload(params, defectDto.defects?.id, index)"
                             :multiple="true"
                             :limit="2"
-                            class="!w-full !h-full [&_img]:w-auto [&_img]:h-auto [&_img]:max-w-full [&_img]:max-h-full [&_img]:object-contain [&_img]:m-auto [&_.el-upload]:w-full [&_.el-upload]:h-full [&_.el-upload]:flex [&_.el-upload]:items-center [&_.el-upload]:justify-center [&_.el-upload-dragger]:w-full [&_.el-upload-dragger]:h-full [&_.el-upload-dragger]:flex [&_.el-upload-dragger]:items-center [&_.el-upload-dragger]:justify-center [&_.el-upload-dragger]:border-2 [&_.el-upload-dragger]:border-dashed [&_.el-upload-dragger]:border-gray-300 hover:[&_.el-upload-dragger]:border-blue-500 [&_.el-upload__tip]:hidden"
-                          />
+                            class="!w-full !h-full [&_img]:w-auto [&_img]:h-auto [&_img]:max-w-full [&_img]:max-h-full [&_img]:object-contain [&_img]:m-auto [&_.el-upload]:w-full [&_.el-upload]:h-full [&_.el-upload]:flex [&_.el-upload]:items-center [&_.el-upload]:justify-center [&_.el-upload-dragger]:w-full [&_.el-upload-dragger]:h-full [&_.el-upload-dragger]:flex [&_.el-upload-dragger]:items-center [&_.el-upload-dragger]:justify-center [&_.el-upload-dragger]:border-2 [&_.el-upload-dragger]:border-dashed [&_.el-upload-dragger]:border-gray-300 hover:[&_.el-upload-dragger]:border-blue-500 [&_.el-upload__tip]:hidden [&_.el-image-viewer__wrapper]:!fixed"
+                          >
+                            <template #default="{images}">
+                              <div class="defect-images">
+                                <div v-for="(img, imgIndex) in images" :key="imgIndex" class="defect-image-wrapper">
+                                  <img :src="img" :alt="`Defect image ${imgIndex + 1}`" />
+                                </div>
+                              </div>
+                            </template>
+                          </ImageHandler>
                         </div>
                       </div>
                     </div>
@@ -427,44 +435,58 @@ const getData = async () => {
 const addDefectDialogVisible = ref(false)
 const isEditing = ref(false)
 
-// Get image value based on edit state
+// 修改 processImageUrl 函数
+const processImageUrl = (url: string | {data: string}): string => {
+  if (!url) return ''
+
+  try {
+    // 如果是 response 对象（从上传接口返回）
+    if (typeof url === 'object' && 'data' in url) {
+      return url.data
+    }
+
+    // 如果是字符串 URL
+    if (typeof url === 'string') {
+      // 如果是相对路径，添加域名
+      if (url.startsWith('/')) {
+        return `http://tcoffice.com.cn${url}`
+      }
+
+      // 如果是完整的 URL，确保使用 HTTP
+      if (url.startsWith('http')) {
+        // 将 HTTPS 转换为 HTTP，移除 :80 端口号
+        return url.replace('https://', 'http://').replace(':80', '')
+      }
+
+      // 其他情况，添加完整路径
+      return `http://tcoffice.com.cn/upload/${url}`
+    }
+
+    return ''
+  } catch (e) {
+    console.error('Error processing URL:', url, e)
+    return ''
+  }
+}
+
+// 修改 getImageValue 函数
 const getImageValue = (key: string) => {
   if (isEditing.value && tempFormData.value?.qcReports) {
-    // Get from temporary data in edit mode
     const value = tempFormData.value.qcReports[key as keyof typeof tempFormData.value.qcReports]
-
-    // Handle different types of values
     if (typeof value === 'string') {
-      // If it's a string and not empty, wrap it in an array
-      return value ? [value] : []
+      return value ? [processImageUrl(value)] : []
     } else if (Array.isArray(value)) {
-      // If it's already an array, return directly
-      return value
-    } else if (value === null || value === undefined) {
-      // If it's null or undefined, return empty array
-      return []
-    } else {
-      // For other types (like numbers), convert to string and wrap in array
-      return [String(value)]
+      return value.map(v => processImageUrl(v))
     }
+    return []
   } else if (formData.value?.qcReports) {
-    // Get from official data in non-edit mode
     const value = formData.value.qcReports[key as keyof typeof formData.value.qcReports]
-
-    // Handle different types of values
     if (typeof value === 'string') {
-      // If it's a string and not empty, wrap it in an array
-      return value ? [value] : []
+      return value ? [processImageUrl(value)] : []
     } else if (Array.isArray(value)) {
-      // If it's already an array, return directly
-      return value
-    } else if (value === null || value === undefined) {
-      // If it's null or undefined, return empty array
-      return []
-    } else {
-      // For other types (like numbers), convert to string and wrap in array
-      return [String(value)]
+      return value.map(v => processImageUrl(v))
     }
+    return []
   }
   return []
 }
@@ -590,19 +612,16 @@ const updateImageValue = async (key: string, val: string | string[]) => {
   }
 }
 
-// Custom image upload processing function
+// 修改 handleCustomUpload 函数
 const handleCustomUpload = async (params: {file: File}) => {
   try {
-    // 直接使用File对象
     const res = await postFilesUpload({file: params.file})
-    const imagePath = res.data
+    const imagePath = processImageUrl(res) // 直接传入 response
 
-    // Initialize temporary storage
     if (!tempUploadedImages.value['newDefect']) {
       tempUploadedImages.value['newDefect'] = []
     }
 
-    // Add to temporary upload image list
     tempUploadedImages.value['newDefect'].push(imagePath)
     console.log(`Added temporary image: ${imagePath} to newDefect`)
 
@@ -1090,38 +1109,39 @@ const handleDefectImageUpdate = async (val: string | string[], defectId: string 
   }))
 }
 
+// 修改 handleDefectCustomUpload 函数
 const handleDefectCustomUpload = async (params: {file: File}, defectId: string | undefined, index: number) => {
   const defectKey = `defect-${index}`
 
   try {
-    // Ensure current defect record is in edit state
+    // 上传文件并获取响应
+    const res = await postFilesUpload({file: params.file})
+    const imagePath = processImageUrl(res)
+
+    // 确保当前缺陷记录处于编辑状态
     if (!editingSections.value.includes(defectKey)) {
       console.log(`Defect record ${index} is not in edit state, adding to edit state`)
       editingSections.value.push(defectKey)
     }
 
-    // Ensure tempFormData is initialized
+    // 确保 tempFormData 已初始化
     if (!tempFormData.value) {
       tempFormData.value = JSON.parse(JSON.stringify(formData.value))
     }
 
-    // Use File object directly
-    const res = await postFilesUpload({file: params.file})
-    const imagePath = res.data
-
-    // Initialize temporary storage
+    // 初始化临时存储
     if (!tempUploadedImages.value[defectKey]) {
       tempUploadedImages.value[defectKey] = []
     }
 
-    // Initialize pending operations
+    // 初始化待处理操作
     initPendingOperations(defectKey)
 
-    // Add to temporary upload image list
+    // 添加到临时上传图片列表
     tempUploadedImages.value[defectKey].push(imagePath)
     console.log(`Added temporary image: ${imagePath} to ${defectKey}`)
 
-    // Ensure tempFormData.defectsDTO[index] is initialized
+    // 确保 tempFormData.defectsDTO[index] 已初始化
     if (!tempFormData.value.defectsDTO) {
       tempFormData.value.defectsDTO = []
     }
@@ -1130,7 +1150,7 @@ const handleDefectCustomUpload = async (params: {file: File}, defectId: string |
       if (formData.value?.defectsDTO?.[index]) {
         tempFormData.value.defectsDTO[index] = JSON.parse(JSON.stringify(formData.value.defectsDTO[index]))
       } else {
-        // If original data doesn't exist, create an empty object
+        // 如果原始数据不存在，创建空对象
         tempFormData.value.defectsDTO[index] = {
           defects: {id: defectId},
           defectImages: []
@@ -1138,29 +1158,29 @@ const handleDefectCustomUpload = async (params: {file: File}, defectId: string |
       }
     }
 
-    // Ensure tempFormData.defectsDTO[index].defectImages is initialized
+    // 确保 tempFormData.defectsDTO[index].defectImages 已初始化
     if (!tempFormData.value.defectsDTO[index].defectImages) {
       tempFormData.value.defectsDTO[index].defectImages = []
     }
 
-    // Check if image already exists, avoid duplicate addition
+    // 检查图片是否已存在，避免重复添加
     const existingImagePaths = tempFormData.value.defectsDTO[index].defectImages.map(img => img.imagePath)
     if (existingImagePaths.includes(imagePath)) {
       console.log(`Image already exists, not adding again: ${imagePath}`)
       return imagePath
     }
 
-    // Directly add new image to tempFormData
+    // 直接添加新图片到 tempFormData
     const newImage = {
       id: getId(),
       defectId,
       imagePath
     }
 
-    // Add new image to tempFormData
+    // 添加新图片到 tempFormData
     tempFormData.value.defectsDTO[index].defectImages.push(newImage)
 
-    // Record image to add
+    // 记录要添加的图片
     pendingOperations.value[defectKey].toAdd.push({
       defectId,
       path: imagePath
@@ -1168,7 +1188,7 @@ const handleDefectCustomUpload = async (params: {file: File}, defectId: string |
 
     console.log(`Directly adding new image to tempFormData: ${imagePath}`)
 
-    // Force view update
+    // 强制视图更新
     tempFormData.value = JSON.parse(JSON.stringify(tempFormData.value))
     console.log(`Updated temporary data (complete):`, tempFormData.value.defectsDTO[index])
 
@@ -1180,14 +1200,14 @@ const handleDefectCustomUpload = async (params: {file: File}, defectId: string |
   }
 }
 
-// Get defect images
+// 修改 getDefectImages 函数
 const getDefectImages = (defectDto: DefectsDto): string[] => {
   if (!defectDto?.defectImages) return []
 
-  // Get all image paths and filter out empty ones
-  const imagePaths = defectDto.defectImages.map(img => img.imagePath).filter(Boolean)
+  // 获取所有图片路径并过滤掉空值
+  const imagePaths = defectDto.defectImages.map(img => (img.imagePath ? processImageUrl(img.imagePath) : '')).filter(Boolean)
 
-  // Remove duplicates
+  // 移除重复项
   return [...new Set(imagePaths)]
 }
 
@@ -1203,54 +1223,94 @@ const handleExport = async () => {
       return
     }
 
-    // Convert field names to underscore format
+    // 构建导出数据
+    const qcReports = formData.value.qcReports || {}
+
     const exportData = {
-      supplier: formData.value.supplier || '',
-      supplier_item_code: formData.value.supplierItemCode || '',
-      specification_details: formData.value.specificationDetails || '',
-      sample_lead_time: formData.value.sampleLeadTime || '',
-      overall_dimensions_width: formData.value.overallDimensionsWidth || 0,
-      overall_dimensions_depth: formData.value.overallDimensionsDepth || 0,
-      overall_dimensions_height: formData.value.overallDimensionsHeight || 0,
-      box_dimensions_width: formData.value.boxDimensionsWidth || 0,
-      box_dimensions_depth: formData.value.boxDimensionsDepth || 0,
-      box_dimensions_height: formData.value.boxDimensionsHeight || 0,
-      box_weight_net_weighth: formData.value.boxWeightNetWeighth || 0,
-      net_weight_gross_weight: formData.value.netWeightGrossWeight || '0/0',
-      effective_vol: formData.value.effectiveVol || '0',
-      loading_qty: formData.value.loadingQty || 0,
-      moq: formData.value.moq || '0',
-      fob_price: formData.value.fobPrice || 0,
-      currency: formData.value.currency || 0,
-      bifma_tested: formData.value.bifmaTested || 0,
-      cad_block_available: formData.value.cadBlockAvailable || 0,
-      product_data_available: formData.value.productDataAvailable || 0,
-      product_images_available: formData.value.productImagesAvailable || 0,
-      sales_contacts: formData.value.salesContacts || '',
-      quote_date: formData.value.createTime || new Date().toISOString(),
-      valid_period: formData.value.validPeriod || '2024-12-31',
-      port: formData.value.port || 'Ningbo Port',
-      remark: formData.value.remark || '',
-      image: formData.value.image || ''
-    }
+      // 基本信息
+      modelCode: qcReports.modelCode || '',
+      factoryCode: qcReports.factoryCode || '',
+      supplier: qcReports.supplier || '',
+      client: qcReports.client || '',
+      poNumber: qcReports.poNumber || '',
+      inspectionDate: qcReports.inspectionDate || '',
+      orderQty: Number(qcReports.orderQty || 0),
+      reportDate: qcReports.reportDate || '',
+      inspectQty: Number(qcReports.inspectQty || 0),
+      qcOfficer: qcReports.qcOfficer || '',
+      passFail: qcReports.passFail || 'Pass',
+      secondQCDate: qcReports.secondQcDate || '',
+      comments: qcReports.comments || '',
+
+      // 添加必需的属性
+      inspector: qcReports.qcOfficer || '',
+      inspectionLocation: qcReports.factoryCode || '',
+      sampleSize: Number(qcReports.inspectQty || 0),
+      defectCount: formData.value.defectsDTO?.length || 0,
+
+      // 图片字段
+      stocksInWarehouse: qcReports.stocksInWarehouse || '',
+      samplingOfProductsQuantity: qcReports.samplingOfProductsQuantity || '',
+      shippingMarks: qcReports.shippingMarks || '',
+      barcode: qcReports.barcode || '',
+      packingOutside: qcReports.packingOutside || '',
+      packingInside: qcReports.packingInside || '',
+      chairComponentsPacked: qcReports.chairComponentsPacked || '',
+      chairComponentsUnpacked: qcReports.chairComponentsUnpacked || '',
+      fittingPackPacked: qcReports.fittingPackPacked || '',
+      fittingPackUnpacked: qcReports.fittingPackUnpacked || '',
+      productionLabel: qcReports.productionLabel || '',
+      assemblyInstructions: qcReports.assemblyInstructions || '',
+      imageOfComponentsSeat: qcReports.imageOfComponentsSeat || '',
+      imageOfComponentsBack: qcReports.imageOfComponentsBack || '',
+      imageOfComponentsBase: qcReports.imageOfComponentsBase || '',
+      imageOfComponentsCastors: qcReports.imageOfComponentsCastors || '',
+      imageOfComponentsGasLiftCover: qcReports.imageOfComponentsGasLiftCover || '',
+      imageOfComponentsGasLiftStamp: qcReports.imageOfComponentsGasLiftStamp || '',
+      imageOfComponentsArmrest: qcReports.imageOfComponentsArmrest || '',
+      imageOfComponentMechanism: qcReports.imageOfComponentMechanism || '',
+      imageOfComponentsHeadrest: qcReports.imageOfComponentsHeadrest || '',
+      imageOfProductBuiltFront: qcReports.imageOfProductBuiltFront || '',
+      imageOfProductBuiltSide: qcReports.imageOfProductBuiltSide || '',
+      imageOfProductBuiltBack: qcReports.imageOfProductBuiltBack || '',
+      imageOfProductBuilt45Degree: qcReports.imageOfProductBuilt45Degree || '',
+      frontImageOfProductBuiltCompare1: qcReports.frontImageOfProductBuiltCompare1 || '',
+      frontImageOfProductBuiltCompare2: qcReports.frontImageOfProductBuiltCompare2 || '',
+      functionCheckSeatHeightExtension: qcReports.functionCheckSeatHeightExtension || '',
+      functionCheckMechanismAdjustment: qcReports.functionCheckMechanismAdjustment || '',
+      functionCheckArmrestAdjustment: qcReports.functionCheckArmrestAdjustment || '',
+      functionCheckHeadrestAdjustment: qcReports.functionCheckHeadrestAdjustment || '',
+      functionCheckOther1: qcReports.functionCheckOther1 || '',
+      functionCheckOther2: qcReports.functionCheckOther2 || '',
+
+      // 缺陷记录
+      defects: (formData.value.defectsDTO || []).map(dto => ({
+        defectTitle: dto.defects?.defectTitle || '',
+        defectDescription: dto.defects?.defectDescription || '',
+        improvementSuggestion: dto.defects?.improvementSuggestion || '',
+        inspector: dto.defects?.inspector || '',
+        images: (dto.defectImages || []).map(img => img.imagePath).filter(Boolean)
+      }))
+    } satisfies QCReportData
 
     // Check if cancelled
     if (signal.aborted) {
       return
     }
 
-    const buffer = await exportQuotation(exportData)
+    // 生成 Excel 文件
+    const workbook = await exportQCReport(exportData)
 
     // Check if cancelled
     if (signal.aborted) {
       return
     }
 
+    const buffer = await workbook.xlsx.writeBuffer()
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     })
-    const createDate = formData.value.createTime ? formData.value.createTime.split('T')[0].replace(/-/g, '') : new Date().toISOString().split('T')[0].replace(/-/g, '')
-    const fileName = `TC QUOTATION FORM ${exportData.supplier} ${createDate}.xlsx`
+    const fileName = `QC Report_${exportData.modelCode || 'Unknown'}_${new Date().toISOString().split('T')[0]}.xlsx`
     saveAs(blob, fileName)
 
     // Check if cancelled
@@ -1332,3 +1392,103 @@ defineOptions({
   name: 'SpecInfo'
 })
 </script>
+
+<style scoped>
+.defect-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  max-height: 200px; /* 限制最大高度 */
+  border: 1px solid #ddd;
+}
+
+.defect-image-container {
+  width: 100%;
+  height: 200px; /* 固定容器高度 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.defect-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.defect-image-wrapper {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+.defect-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* 添加悬停效果 */
+.defect-image-wrapper:hover {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.defect-image-wrapper img:hover {
+  cursor: pointer;
+}
+
+/* 其他样式保持不变 */
+.defect-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin: 15px 0;
+  width: 100%;
+  height: 100%;
+}
+
+.defect-image-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.defect-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  max-height: 200px;
+}
+
+/* 图片预览样式 */
+:deep(.el-image-viewer__wrapper) {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+:deep(.el-image-viewer__btn) {
+  opacity: 0.8;
+}
+
+:deep(.el-image-viewer__mask) {
+  opacity: 0.9;
+}
+</style>

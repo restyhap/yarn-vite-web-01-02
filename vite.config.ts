@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2024-11-03 11:49:09
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-04-01 18:15:42
+ * @LastEditTime: 2025-04-05 23:00:07
  * @FilePath: /yarn-vite-web-01-02/vite.config.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -34,7 +34,7 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'https://localhost:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       },
