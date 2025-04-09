@@ -75,8 +75,8 @@
             <el-input v-model="formData.realName" placeholder="Please enter real name" class="w-full !h-[38px]" />
           </el-form-item>
 
-          <el-form-item v-if="dialogType === 'add'" label="Password" prop="password" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
-            <el-input v-model="formData.password" type="password" placeholder="Please enter password" class="w-full !h-[38px]" />
+          <el-form-item label="Password" prop="password" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
+            <el-input v-model="formData.password" type="password" :placeholder="dialogType === 'edit' ? 'Leave blank to keep current password' : 'Please enter password'" class="w-full !h-[38px]" />
           </el-form-item>
 
           <el-form-item label="Email" prop="email" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-1">
@@ -162,7 +162,7 @@ const rules = ref<FormRules>({
     {min: 3, max: 20, message: 'Length should be 3 to 20 characters', trigger: 'blur'}
   ],
   password: [
-    {required: true, message: 'Please enter password', trigger: 'blur'},
+    {required: form => dialogType.value === 'add', message: 'Please enter password', trigger: 'blur'},
     {min: 3, message: 'Password must be at least 6 characters', trigger: 'blur'}
   ],
   roleType: [{required: true, message: 'Please select role', trigger: 'change'}]
@@ -251,7 +251,7 @@ const handleEdit = (row: User) => {
   dialogType.value = 'edit'
   formData.value = {
     ...row,
-    password: '' // 编辑时不显示密码
+    password: '' // 编辑时密码字段置空
   }
   dialogVisible.value = true
 }
@@ -318,7 +318,8 @@ const handleSubmit = async () => {
             realName: formData.value.realName,
             email: formData.value.email,
             phone: formData.value.phone,
-            roleType: formData.value.roleType
+            roleType: formData.value.roleType,
+            password: formData.value.password || undefined // 只有当密码不为空时才发送
           })
           ElMessage.success('编辑成功')
         }
