@@ -22,6 +22,7 @@
     </div>
 
     <div class="flex items-center gap-3">
+      <slot name="actions"></slot>
       <el-button v-if="showExport" type="primary" :loading="exporting" :disabled="!hasSelected" @click="$emit('batch-export')" class="flex items-center">
         <el-icon class="mr-1"><Document /></el-icon>
         {{ exporting ? 'Exporting...' : 'Batch Export' }}

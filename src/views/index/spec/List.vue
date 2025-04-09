@@ -13,7 +13,15 @@
         @clear="handleClearSearch"
         @batch-export="handleBatchExport"
         @batch-delete="handleBatchDelete"
-      />
+      >
+        <!-- 添加创建按钮 -->
+        <template #actions>
+          <el-button type="primary" @click="handleCreate">
+            <el-icon class="mr-1"><Plus /></el-icon>
+            Create
+          </el-button>
+        </template>
+      </ListHeader>
 
       <!-- Table Area -->
       <div class="overflow-auto mt-4">
@@ -120,6 +128,7 @@ import {getQcReportsPage, getQcReportsSearch, deleteQcReportsRemoveById, getQcRe
 import type {QcReports, DefectsDto, DefectImages} from '@/api'
 import ImageHandler from '@/components/ImageHandler.vue'
 import ListHeader from '@/components/ListHeader.vue'
+import {Plus, View, Edit, Delete} from '@element-plus/icons-vue'
 
 const router = useRouter()
 const searchQuery = ref('')
@@ -157,10 +166,7 @@ interface PageResponse {
 interface SearchResponse {
   code: string
   message: string
-  data: {
-    list: QcReports[]
-    total: number
-  }
+  data: QcReports[]
 }
 
 // 获取表格数据
@@ -177,9 +183,20 @@ const fetchTableData = async (isSearch = false) => {
           pageSize: pageSize.value
         }
       })) as SearchResponse
+
+      console.log('Search Response:', response)
+
       if (response.data) {
-        tableData.value = response.data.list || []
-        total.value = response.data.total || 0
+        // API直接返回数组，而不是嵌套在list字段中
+        if (Array.isArray(response.data)) {
+          tableData.value = response.data
+          total.value = response.data.length
+        } else {
+          // 找不到数据则清空
+          tableData.value = []
+          total.value = 0
+          console.warn('Unexpected search response structure:', response)
+        }
       }
     } else {
       response = (await getQcReportsPage({
@@ -368,8 +385,6 @@ const handleBatchExport = async () => {
   }, 120000) // 2分钟超时
 
   try {
-    ElMessage.info(`Starting batch export of ${selectedRows.value.length} reports...`)
-
     // 创建一个新的 ZIP 包
     const zip = new JSZip()
 
@@ -388,8 +403,6 @@ const handleBatchExport = async () => {
       }
 
       try {
-        ElMessage.info(`Processing report ${i + 1}/${selectedRows.value.length}: ${row.modelCode || 'Unknown model'}`)
-
         // 从数据库获取完整数据
         const res = await getQcReportsDtoGetById({id: row.id as string})
 
@@ -483,7 +496,6 @@ const handleBatchExport = async () => {
         zip.file(fileName, buffer)
 
         successCount++
-        ElMessage.info(`Completed ${successCount}/${selectedRows.value.length} reports`)
       } catch (error) {
         failedCount++
         console.error(`Failed to process report: ${row.modelCode || 'Unknown model'}`, error)
@@ -497,8 +509,6 @@ const handleBatchExport = async () => {
 
       // 保存 ZIP 文件
       saveAs(zipContent, `QC_Reports_${timestamp}.zip`)
-
-      ElMessage.success(`Successfully exported ${successCount} reports, ${failedCount} failed`)
     } else {
       ElMessage.error('No reports were successfully exported')
     }
@@ -509,6 +519,11 @@ const handleBatchExport = async () => {
     clearTimeout(timeout)
     exporting.value = false
   }
+}
+
+// 处理创建按钮点击
+const handleCreate = () => {
+  router.push('/spec/info/new')
 }
 </script>
 

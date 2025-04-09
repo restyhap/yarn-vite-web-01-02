@@ -198,8 +198,8 @@ const formData = ref<FormData>({
 // 图片数组计算属性
 const imageArray = computed({
   get: () => {
-    // 如果 formData.image 存在且不为空，则将其作为数组的唯一元素返回
-    return formData.value.image ? [formData.value.image] : []
+    // 如果 formData.image 存在且不为空字符串，则将其作为数组的唯一元素返回
+    return formData.value.image && formData.value.image !== '' ? [formData.value.image] : []
   },
   set: (newValue: string[]) => {
     // 获取原始值
@@ -372,7 +372,12 @@ const handleSave = async () => {
   try {
     loading.value = true
 
-    // If there is backup data with image but current data has no image, delete old image
+    // 确保在没有图片时，将 image 字段设置为空字符串
+    if (!formData.value.image) {
+      formData.value.image = ''
+    }
+
+    // 如果有需要删除的图片（之前存在图片被删除的情况）
     if (tempFormData.value?.image && !formData.value.image) {
       try {
         await getFilesRemove({filePath: tempFormData.value.image})
@@ -385,52 +390,15 @@ const handleSave = async () => {
     // Call update API
     await putQuotationUpdate(formData.value)
 
-    // After successful save, handle images that need to be deleted
-    if (tempUploadedImages.value['basic'] && tempUploadedImages.value['basic'].length > 0) {
-      console.log('Save successful, starting to delete recorded images:', tempUploadedImages.value['basic'])
-
-      // Delete all recorded images
-      for (const path of tempUploadedImages.value['basic']) {
-        if (path && path.startsWith('http')) {
-          try {
-            await getFilesRemove({filePath: path})
-            console.log('Image deleted from server:', path)
-          } catch (error) {
-            console.error('Failed to delete image from server:', error)
-          }
-        }
-      }
-
-      // Clear temporary image records for this section
-      tempUploadedImages.value['basic'] = []
-    }
-
-    // If it's image section, also clean up newUploads records
-    const newUploads = tempUploadedImages.value['newUploads'] || []
-    console.log('Save successful, cleaning up temporary uploads:', newUploads)
-
-    // Delete all temporary uploaded images
-    for (const path of newUploads) {
-      if (path && path.startsWith('http') && path !== tempFormData.value?.image) {
-        try {
-          await getFilesRemove({filePath: path})
-          console.log('Temporary uploaded image deleted:', path)
-        } catch (error) {
-          console.error('Failed to delete temporary uploaded image:', error)
-        }
-      }
-    }
-
-    // Clear temporary upload list
-    tempUploadedImages.value['newUploads'] = []
-
-    // Clear temporary records if any
-    if (tempUploadedImages.value['basic']) {
-      tempUploadedImages.value['basic'] = []
-    }
-
+    // 清除编辑状态
     editingSections.value = []
     tempFormData.value = null
+
+    // 清除临时上传记录
+    tempUploadedImages.value = {
+      newUploads: []
+    }
+
     ElMessage.success('Save successful')
   } catch (error) {
     console.error('Save failed:', error)
@@ -443,11 +411,11 @@ const handleSave = async () => {
 // 处理取消
 const handleCancel = async () => {
   try {
-    // If there are temporary uploaded images, delete them
+    // 如果是新上传的图片，需要删除
     const newUploads = tempUploadedImages.value['newUploads'] || []
     console.log('Cancel edit, delete temporary uploads:', newUploads)
 
-    // Delete all temporary uploaded images
+    // 删除所有临时上传的图片
     for (const path of newUploads) {
       if (path && path.startsWith('http') && path !== tempFormData.value?.image) {
         try {
@@ -459,15 +427,12 @@ const handleCancel = async () => {
       }
     }
 
-    // Clear temporary upload list
-    tempUploadedImages.value['newUploads'] = []
-
-    // Clear temporary records if any
-    if (tempUploadedImages.value['basic']) {
-      tempUploadedImages.value['basic'] = []
+    // 清除临时上传列表
+    tempUploadedImages.value = {
+      newUploads: []
     }
 
-    // Restore to pre-edit state
+    // 恢复到编辑前的状态
     if (tempFormData.value) {
       formData.value = JSON.parse(JSON.stringify(tempFormData.value))
     }
