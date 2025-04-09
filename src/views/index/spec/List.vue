@@ -129,6 +129,7 @@ import type {QcReports, DefectsDto, DefectImages} from '@/api'
 import ImageHandler from '@/components/ImageHandler.vue'
 import ListHeader from '@/components/ListHeader.vue'
 import {Plus, View, Edit, Delete} from '@element-plus/icons-vue'
+import {useUserStore} from '@/pinia/user'
 
 const router = useRouter()
 const searchQuery = ref('')
@@ -166,55 +167,62 @@ interface PageResponse {
 interface SearchResponse {
   code: string
   message: string
-  data: QcReports[]
+  data: {
+    data: QcReports[]
+    total: number
+  }
 }
 
 // 获取表格数据
-const fetchTableData = async (isSearch = false) => {
+const fetchTableData = async () => {
   loading.value = true
   try {
-    // 根据是否搜索选择不同的 API
-    let response
-    if (isSearch) {
-      response = (await getQcReportsSearch({
-        params: {
-          keyword: searchQuery.value,
-          currentPage: currentPage.value,
-          pageSize: pageSize.value
-        }
-      })) as SearchResponse
+    const userStore = useUserStore()
+    const params: {
+      keyword?: string
+      currentPage: number
+      pageSize: number
+      supplier?: string
+    } = {
+      currentPage: currentPage.value,
+      pageSize: pageSize.value
+    }
 
-      console.log('Search Response:', response)
+    // 如果有搜索关键词，添加到参数中
+    if (searchQuery.value.trim()) {
+      params.keyword = searchQuery.value
+    }
 
-      if (response.data) {
-        // API直接返回数组，而不是嵌套在list字段中
-        if (Array.isArray(response.data)) {
-          tableData.value = response.data
-          total.value = response.data.length
-        } else {
-          // 找不到数据则清空
-          tableData.value = []
-          total.value = 0
-          console.warn('Unexpected search response structure:', response)
-        }
+    let res: PageResponse | SearchResponse
+    // 供应商用户始终使用 search 接口
+    if (userStore.userInfo?.roleType === 1) {
+      params.supplier = userStore.userInfo?.username
+      res = (await getQcReportsSearch({params})) as SearchResponse
+      if (res.data) {
+        tableData.value = res.data.data || []
+        total.value = res.data.total || 0
+      } else {
+        tableData.value = []
+        total.value = 0
       }
     } else {
-      response = (await getQcReportsPage({
+      // 非供应商用户使用 page 接口
+      res = (await getQcReportsPage({
         page: {
           pageNumber: currentPage.value,
           pageSize: pageSize.value
         }
       })) as PageResponse
-      if (response.data) {
-        tableData.value = response.data.records || []
-        total.value = response.data.totalRow || 0
-        currentPage.value = response.data.pageNumber
-        pageSize.value = response.data.pageSize
+      if (res.data) {
+        tableData.value = res.data.records || []
+        total.value = res.data.totalRow || 0
+        currentPage.value = res.data.pageNumber
+        pageSize.value = res.data.pageSize
       }
     }
 
-    console.log('API Response:', response)
-    console.log(`${isSearch ? 'Search' : 'Page'} data:`, {
+    console.log('API Response:', res)
+    console.log('Data:', {
       'Total Records': total.value,
       'Current Page': currentPage.value,
       'Page Size': pageSize.value,
@@ -246,14 +254,14 @@ const handleSearch = () => {
     return
   }
   currentPage.value = 1
-  fetchTableData(true) // 传入 true 表示使用搜索 API
+  fetchTableData()
 }
 
 // 清空搜索
 const handleClearSearch = () => {
   searchQuery.value = ''
   currentPage.value = 1
-  fetchTableData(false) // 传入 false 表示使用普通列表 API
+  fetchTableData()
 }
 
 // 分页处理

@@ -159,16 +159,24 @@ const fetchTableData = async () => {
         keyword: queryParams.value.tccode || ''
       }
     }
-    // Only add supplier parameter for non-admin users
-    if (userStore.userInfo?.roleType !== 1) {
+
+    // 供应商只能查看自己的产品 , 供应商 roleType 是 1
+    if (userStore.userInfo?.roleType === 1) {
       params.page.supplier = userStore.userInfo?.username
-    }
-    const res = (await getProductsPage(params)) as unknown as PageResponse
-    if (res.data) {
-      tableData.value = res.data.records || []
-      total.value = res.data.totalRow || 0
-      pagination.value.pageNumber = res.data.pageNumber
-      pagination.value.pageSize = res.data.pageSize
+      const res = (await getProductsSearch({params: params.page})) as unknown as SearchResponse
+      if (res.data) {
+        tableData.value = Array.isArray(res.data) ? res.data : []
+        total.value = tableData.value.length
+      }
+    } else {
+      // 非供应商用户使用 page 接口
+      const res = (await getProductsPage(params)) as unknown as PageResponse
+      if (res.data) {
+        tableData.value = res.data.records || []
+        total.value = res.data.totalRow || 0
+        pagination.value.pageNumber = res.data.pageNumber
+        pagination.value.pageSize = res.data.pageSize
+      }
     }
   } catch (error) {
     console.error('Failed to fetch data:', error)
@@ -199,6 +207,7 @@ const handleSearch = async () => {
       searchParams.supplier = userStore.userInfo?.username
     }
     const res = (await getProductsSearch({params: searchParams})) as unknown as SearchResponse
+
     if (res.data) {
       tableData.value = Array.isArray(res.data) ? res.data : []
       total.value = tableData.value.length
