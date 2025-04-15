@@ -315,6 +315,7 @@ const handleSubmit = async () => {
         } else {
           await putUserUpdate({
             id: formData.value.id,
+            username: formData.value.username,
             realName: formData.value.realName,
             email: formData.value.email,
             phone: formData.value.phone,
