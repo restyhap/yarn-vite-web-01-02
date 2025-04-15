@@ -127,12 +127,30 @@ const processImage = async (imageUrl: string, workbook: ExcelJS.Workbook, colSta
     const dimensions = await getImageDimensions(imageBuffer);
     console.log('图片原始尺寸:', dimensions);
 
-    // Excel单位换算关系
-    const INCH_TO_PIXEL = 96;       // 1英寸 = 96像素
-    const PIXELS_PER_COLUMN = 64;   // Excel 中每列的默认宽度（像素）
-    const PIXELS_PER_ROW = 20;      // Excel 中每行的默认高度（像素）
-    const CHAR_WIDTH_PIXELS = 8;    // 每个字符的像素宽度
-    const POINT_TO_PIXEL = 1.4;     // Excel中1点对应1.4像素（经过实际测试得出的最佳比例）
+    // 获取实际的设备 DPI
+    const getDPI = () => {
+      const div = document.createElement('div');
+      div.style.width = '1in';
+      div.style.height = '1in';
+      div.style.position = 'absolute';
+      div.style.left = '-100%';
+      div.style.top = '-100%';
+      document.body.appendChild(div);
+      const dpi = div.offsetWidth;
+      document.body.removeChild(div);
+      return dpi;
+    };
+
+    // 获取实际 DPI
+    const actualDPI = getDPI();
+    console.log('实际设备 DPI:', actualDPI);
+
+    // Excel单位换算关系（基于实际DPI）
+    const INCH_TO_PIXEL = actualDPI;       // 1英寸 = 实际DPI像素
+    const PIXELS_PER_COLUMN = Math.round(64 * (actualDPI / 96));   // 根据实际DPI调整列宽
+    const PIXELS_PER_ROW = Math.round(20 * (actualDPI / 96));      // 根据实际DPI调整行高
+    const CHAR_WIDTH_PIXELS = Math.round(8 * (actualDPI / 96));    // 根据实际DPI调整字符宽度
+    const POINT_TO_PIXEL = 1.4 * (actualDPI / 96);     // 根据实际DPI调整点到像素的转换
     
     // Excel的列宽和行高设置
     const EXCEL_COLUMN_WIDTH = 30;    // B列的字符宽度
@@ -165,7 +183,6 @@ const processImage = async (imageUrl: string, workbook: ExcelJS.Workbook, colSta
     }
 
     // 计算目标单元格B13的位置
-    // 注意：Excel的行号从1开始，列号从0开始
     const targetCol = 1;  // B列
     const targetRow = 12; // 第13行
 
@@ -188,6 +205,7 @@ const processImage = async (imageUrl: string, workbook: ExcelJS.Workbook, colSta
 
     console.log('图片位置计算:', {
       imageType: isSquare ? '正方图' : imageAspectRatio > 1 ? '宽图' : '竖图',
+      dpi: actualDPI,
       aspectRatio: imageAspectRatio,
       originalWidth: dimensions.width,
       originalHeight: dimensions.height,
