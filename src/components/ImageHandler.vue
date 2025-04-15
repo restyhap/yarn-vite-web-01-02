@@ -36,7 +36,7 @@
           <input ref="fileInput" type="file" class="hidden" accept="image/*" @change="handleFileChange" />
           <div class="flex flex-col items-center gap-2">
             <el-icon class="text-4xl"><Plus /></el-icon>
-            <span class="text-sm">点击上传</span>
+            <span class="text-sm">点击上传, 文件不能超过4M。</span>
           </div>
         </div>
       </div>

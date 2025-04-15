@@ -37,7 +37,7 @@
                 </el-form-item>
 
                 <el-form-item label="Sample Lead Time" prop="sampleLeadTime" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
-                  <el-date-picker v-model="formData.sampleLeadTime" type="datetime" placeholder="Select date and time" class="w-full !h-[38px]" />
+                  <el-input v-model="formData.sampleLeadTime" placeholder="Enter date and time" class="w-full !h-[38px]" />
                 </el-form-item>
 
                 <el-form-item label="Create Time" prop="createTime" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
@@ -45,7 +45,7 @@
                 </el-form-item>
 
                 <el-form-item label="Valid Period" prop="validPeriod" class="bg-gray-100 p-2 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2">
-                  <el-input v-model="formData.validPeriod" placeholder="e.g. 2024-12-31" class="w-full !h-[38px]" />
+                  <el-date-picker v-model="formData.validPeriod" type="datetime" placeholder="e.g." class="w-full !h-[38px]" />
                 </el-form-item>
               </div>
             </div>
