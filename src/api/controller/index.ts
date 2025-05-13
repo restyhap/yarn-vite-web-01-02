@@ -25,3 +25,4 @@ export * from "./arms-controller";
 export * from "./qc-reports-dto-controller";
 export * from "./product-dto-controller";
 export * from "./file-upload-controller";
+export * from "./pdf-export-controller";

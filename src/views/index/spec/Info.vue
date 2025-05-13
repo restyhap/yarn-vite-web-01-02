@@ -1223,95 +1223,33 @@ const handleExport = async () => {
       return
     }
 
-    // 构建导出数据
-    const qcReports = formData.value.qcReports || {}
-
-    const exportData = {
-      // 基本信息
-      modelCode: qcReports.modelCode || '',
-      factoryCode: qcReports.factoryCode || '',
-      supplier: qcReports.supplier || '',
-      client: qcReports.client || '',
-      poNumber: qcReports.poNumber || '',
-      inspectionDate: qcReports.inspectionDate || '',
-      orderQty: Number(qcReports.orderQty || 0),
-      reportDate: qcReports.reportDate || '',
-      inspectQty: Number(qcReports.inspectQty || 0),
-      qcOfficer: qcReports.qcOfficer || '',
-      passFail: qcReports.passFail || 'Pass',
-      secondQCDate: qcReports.secondQcDate || '',
-      comments: qcReports.comments || '',
-
-      // 添加必需的属性
-      inspector: qcReports.qcOfficer || '',
-      inspectionLocation: qcReports.factoryCode || '',
-      sampleSize: Number(qcReports.inspectQty || 0),
-      defectCount: formData.value.defectsDTO?.length || 0,
-
-      // 图片字段
-      stocksInWarehouse: qcReports.stocksInWarehouse || '',
-      samplingOfProductsQuantity: qcReports.samplingOfProductsQuantity || '',
-      shippingMarks: qcReports.shippingMarks || '',
-      barcode: qcReports.barcode || '',
-      packingOutside: qcReports.packingOutside || '',
-      packingInside: qcReports.packingInside || '',
-      chairComponentsPacked: qcReports.chairComponentsPacked || '',
-      chairComponentsUnpacked: qcReports.chairComponentsUnpacked || '',
-      fittingPackPacked: qcReports.fittingPackPacked || '',
-      fittingPackUnpacked: qcReports.fittingPackUnpacked || '',
-      productionLabel: qcReports.productionLabel || '',
-      assemblyInstructions: qcReports.assemblyInstructions || '',
-      imageOfComponentsSeat: qcReports.imageOfComponentsSeat || '',
-      imageOfComponentsBack: qcReports.imageOfComponentsBack || '',
-      imageOfComponentsBase: qcReports.imageOfComponentsBase || '',
-      imageOfComponentsCastors: qcReports.imageOfComponentsCastors || '',
-      imageOfComponentsGasLiftCover: qcReports.imageOfComponentsGasLiftCover || '',
-      imageOfComponentsGasLiftStamp: qcReports.imageOfComponentsGasLiftStamp || '',
-      imageOfComponentsArmrest: qcReports.imageOfComponentsArmrest || '',
-      imageOfComponentMechanism: qcReports.imageOfComponentMechanism || '',
-      imageOfComponentsHeadrest: qcReports.imageOfComponentsHeadrest || '',
-      imageOfProductBuiltFront: qcReports.imageOfProductBuiltFront || '',
-      imageOfProductBuiltSide: qcReports.imageOfProductBuiltSide || '',
-      imageOfProductBuiltBack: qcReports.imageOfProductBuiltBack || '',
-      imageOfProductBuilt45Degree: qcReports.imageOfProductBuilt45Degree || '',
-      frontImageOfProductBuiltCompare1: qcReports.frontImageOfProductBuiltCompare1 || '',
-      frontImageOfProductBuiltCompare2: qcReports.frontImageOfProductBuiltCompare2 || '',
-      functionCheckSeatHeightExtension: qcReports.functionCheckSeatHeightExtension || '',
-      functionCheckMechanismAdjustment: qcReports.functionCheckMechanismAdjustment || '',
-      functionCheckArmrestAdjustment: qcReports.functionCheckArmrestAdjustment || '',
-      functionCheckHeadrestAdjustment: qcReports.functionCheckHeadrestAdjustment || '',
-      functionCheckOther1: qcReports.functionCheckOther1 || '',
-      functionCheckOther2: qcReports.functionCheckOther2 || '',
-
-      // 缺陷记录
-      defects: (formData.value.defectsDTO || []).map(dto => ({
-        defectTitle: dto.defects?.defectTitle || '',
-        defectDescription: dto.defects?.defectDescription || '',
-        improvementSuggestion: dto.defects?.improvementSuggestion || '',
-        inspector: dto.defects?.inspector || '',
-        images: (dto.defectImages || []).map(img => img.imagePath).filter(Boolean)
-      }))
-    } satisfies QCReportData
+    // 获取QC报告ID
+    const qcReportId = formData.value.qcReports?.id
+    if (!qcReportId) {
+      ElMessage.error('QC Report ID not found')
+      return
+    }
 
     // Check if cancelled
     if (signal.aborted) {
       return
     }
 
-    // 生成 Excel 文件
-    const workbook = await exportQCReport(exportData)
+    // 调用后端PDF导出API
+    const pdfBlob = await getPdfExportQcReport(qcReportId)
 
     // Check if cancelled
     if (signal.aborted) {
       return
     }
 
-    const buffer = await workbook.xlsx.writeBuffer()
-    const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    })
-    const fileName = `QC Report_${exportData.modelCode || 'Unknown'}_${new Date().toISOString().split('T')[0]}.xlsx`
-    saveAs(blob, fileName)
+    // 生成文件名
+    const modelCode = formData.value.qcReports?.modelCode || 'Unknown'
+    const currentDate = new Date().toISOString().split('T')[0]
+    const fileName = `QC_Report_${modelCode}_${currentDate}.pdf`
+    
+    // 下载PDF文件
+    saveAs(pdfBlob, fileName)
 
     // Check if cancelled
     if (signal.aborted) {
