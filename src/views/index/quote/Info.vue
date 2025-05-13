@@ -131,7 +131,7 @@ import {Check, Back, Plus, Edit, Close, Document, Picture, CircleClose} from '@e
 import type {UploadFile} from 'element-plus'
 import {ElMessage} from 'element-plus'
 import {getQuotationGetInfoById, putQuotationUpdate, getFilesRemove, postFilesUpload} from '@/api'
-import {exportQuotation} from '@/utils/exportQuotation'
+import {getPdfExportQuotation} from '@/api/controller/pdf-export-controller/getPdfExportQuotation'
 import {saveAs} from 'file-saver'
 import ImageHandler from '@/components/ImageHandler.vue'
 import request from '@/api/request'
@@ -459,35 +459,11 @@ const handleExport = async () => {
       return
     }
 
-    // Convert field names to underscore format
-    const exportData = {
-      supplier: formData.value.supplier || '',
-      supplier_item_code: formData.value.supplierItemCode || '',
-      specification_details: formData.value.specificationDetails || '',
-      sample_lead_time: formData.value.sampleLeadTime || '',
-      overall_dimensions_width: formData.value.overallDimensionsWidth || 0,
-      overall_dimensions_depth: formData.value.overallDimensionsDepth || 0,
-      overall_dimensions_height: formData.value.overallDimensionsHeight || 0,
-      box_dimensions_width: formData.value.boxDimensionsWidth || 0,
-      box_dimensions_depth: formData.value.boxDimensionsDepth || 0,
-      box_dimensions_height: formData.value.boxDimensionsHeight || 0,
-      box_weight_net_weighth: formData.value.boxWeightNetWeighth || 0,
-      net_weight_gross_weight: formData.value.netWeightGrossWeight || '0/0',
-      effective_vol: formData.value.effectiveVol || '0',
-      loading_qty: formData.value.loadingQty || 0,
-      moq: formData.value.moq || '0',
-      fob_price: formData.value.fobPrice || 0,
-      currency: formData.value.currency || 0,
-      bifma_tested: formData.value.bifmaTested || 0,
-      cad_block_available: formData.value.cadBlockAvailable || 0,
-      product_data_available: formData.value.productDataAvailable || 0,
-      product_images_available: formData.value.productImagesAvailable || 0,
-      sales_contacts: formData.value.salesContacts || '',
-      quote_date: formData.value.createTime || new Date().toISOString(),
-      valid_period: formData.value.validPeriod || '2024-12-31',
-      port: formData.value.port || 'Ningbo Port',
-      remark: formData.value.remark || '',
-      image: formData.value.image || ''
+    // 获取报价单ID
+    const quotationId = formData.value.id
+    if (!quotationId) {
+      ElMessage.error('Quotation ID not found')
+      return
     }
 
     // Check if cancelled
@@ -495,19 +471,23 @@ const handleExport = async () => {
       return
     }
 
-    const buffer = await exportQuotation(exportData)
+    // 调用后端PDF导出API
+    const pdfBlob = await getPdfExportQuotation(quotationId)
 
     // Check if cancelled
     if (signal.aborted) {
       return
     }
 
-    const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    })
-    const createDate = formData.value.createTime ? formData.value.createTime.split('T')[0].replace(/-/g, '') : new Date().toISOString().split('T')[0].replace(/-/g, '')
-    const fileName = `TC QUOTATION FORM ${exportData.supplier} ${createDate}.xlsx`
-    saveAs(blob, fileName)
+    // 生成文件名
+    const supplier = formData.value.supplier || 'Unknown'
+    const createDate = formData.value.createTime 
+      ? formData.value.createTime.split('T')[0].replace(/-/g, '') 
+      : new Date().toISOString().split('T')[0].replace(/-/g, '')
+    const fileName = `TC_QUOTATION_FORM_${supplier}_${createDate}.pdf`
+    
+    // 下载PDF文件
+    saveAs(pdfBlob, fileName)
 
     // Check if cancelled
     if (signal.aborted) {
