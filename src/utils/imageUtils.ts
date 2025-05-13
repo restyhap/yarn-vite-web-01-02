@@ -2,7 +2,7 @@
  * @Author: resty restyhap@hotmail.com
  * @Date: 2025-02-06 23:39:20
  * @LastEditors: resty restyhap@hotmail.com
- * @LastEditTime: 2025-04-09 00:32:31
+ * @LastEditTime: 2025-04-28 15:59:29
  * @FilePath: /yarn-vite-web-01-02/src/utils/imageUtils.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -42,4 +42,13 @@ export const getImageDimensions = async (imageUrl: string): Promise<{ width: num
     img.onerror = reject
     img.src = imageUrl
   })
+}
+
+/**
+ * 获取图片的Base64
+ */
+export const getImageBase64 = async (imageUrl: string): Promise<string> => {
+  const imageBuffer = await getImageBuffer(imageUrl)
+  const base64 = Buffer.from(imageBuffer).toString('base64')
+  return base64
 } 

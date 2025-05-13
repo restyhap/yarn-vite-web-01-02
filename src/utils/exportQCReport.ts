@@ -83,15 +83,30 @@ export interface QCReportData {
   defectCount: number
 }
 
-// 将 base64 字符串转换为 Uint8Array
-const base64ToUint8Array = (base64: string): Uint8Array => {
-  const base64String = base64.split(',')[1]
-  const binaryString = window.atob(base64String)
-  const bytes = new Uint8Array(binaryString.length)
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i)
+// 新增工具函数：Uint8Array 转 base64
+function uint8ArrayToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
   }
-  return bytes
+  return window.btoa(binary);
+}
+
+// 新增工具函数：图片URL转base64
+async function getImageBase64(imageUrl: string): Promise<string | null> {
+  try {
+    const response = await fetch(imageUrl)
+    if (!response.ok) return null
+    const blob = await response.blob()
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -303,49 +318,56 @@ const addDefectSection = async (
   if (defect.images && defect.images.length > 0) {
     for (let i = 0; i < Math.min(2, defect.images.length); i++) {
       const imageUrl = 'https://img.shetu66.com/2023/04/25/1682391094827084.png'
-      const imageBuffer = await getImageBuffer(imageUrl)
-      
-      if (imageBuffer) {
+      const base64 = await getImageBase64(imageUrl)
+      if (base64) {
         try {
           const imageId = workbook.addImage({
-            buffer: imageBuffer,
+            base64,
             extension: 'jpeg'
           })
 
           // 获取图片尺寸
+          const response = await fetch(imageUrl)
+          const arrayBuffer = await response.arrayBuffer()
+          const imageBuffer = new Uint8Array(arrayBuffer)
           const dimensions = await getImageDimensions(imageBuffer)
           
-          // 计算可用空间
-          const cellWidth = (4 - 3 + 1) * 64  // 每列64像素
-          const cellHeight = 5 * 20  // 5行高度,每行20像素
+          // 单位转换常量
+          const INCH_TO_PIXEL = 96        // 1英寸 = 96像素
+          const PIXELS_PER_COLUMN = 64    // Excel 中每列的默认宽度（像素）
+          const PIXELS_PER_ROW = 20       // Excel 中每行的默认高度（像素）
+          const MAX_SIZE_INCHES = 2.92    // 最大尺寸2.92英寸
+          const FRAME_WIDTH_INCHES = 2.98  // 图片框宽度2.98英寸
+          const FRAME_HEIGHT_INCHES = 3.04 // 图片框高度3.04英寸
 
-          // 计算最佳缩放比例
-          const maxScale = 0.98  // 最大缩放比例
-          const minScale = 0.85  // 最小缩放比例
-          const scaleWidth = (cellWidth * maxScale) / dimensions.width
-          const scaleHeight = (cellHeight * maxScale) / dimensions.height
-          let scale = Math.min(scaleWidth, scaleHeight)
+          // 计算图片的宽高比
+          const imageAspectRatio = dimensions.width / dimensions.height
 
-          // 如果缩放后的尺寸仍然太大，进一步缩小
-          if (scale > minScale) {
-            scale = minScale
+          // 计算最终尺寸（考虑最大值限制）
+          let finalWidth: number
+          let finalHeight: number
+
+          if (imageAspectRatio > 1) {
+            // 宽图：以宽度为基准
+            finalWidth = MAX_SIZE_INCHES * INCH_TO_PIXEL
+            finalHeight = finalWidth / imageAspectRatio
+          } else {
+            // 高图：以高度为基准
+            finalHeight = MAX_SIZE_INCHES * INCH_TO_PIXEL
+            finalWidth = finalHeight * imageAspectRatio
           }
-
-          // 计算最终尺寸
-          const finalWidth = dimensions.width * scale
-          const finalHeight = dimensions.height * scale
 
           // 计算图片框的总宽度（以像素为单位）
           const frameWidthColumns = 4 - 3 + 1  // 总列数
-          const frameWidthPixels = frameWidthColumns * 64
+          const frameWidthPixels = frameWidthColumns * PIXELS_PER_COLUMN
 
           // 计算水平居中的偏移量
-          const horizontalOffset = (frameWidthPixels - finalWidth) / (2 * 64)
+          const horizontalOffset = (frameWidthPixels - finalWidth) / (2 * PIXELS_PER_COLUMN)
 
           // 计算垂直居中的偏移量（转换为Excel行单位）
-          const frameHeightPixels = 3.04 * 96
+          const frameHeightPixels = FRAME_HEIGHT_INCHES * INCH_TO_PIXEL
           const verticalOffsetPixels = (frameHeightPixels - finalHeight) / 2
-          const verticalOffset = verticalOffsetPixels / 20
+          const verticalOffset = verticalOffsetPixels / PIXELS_PER_ROW
 
           worksheet.addImage(imageId, {
             tl: { col: 3 + horizontalOffset, row: imageAreaRow.number - 0.95 },
@@ -496,9 +518,8 @@ export const exportQCReport = async (data: QCReportData) => {
     logoRow.height = 20
 
     // 添加 Logo 图片
-    const logoImageBuffer = base64ToUint8Array(LOGO)
     const logoImageId = workbook.addImage({
-      buffer: logoImageBuffer,
+      base64: LOGO,
       extension: 'jpeg',
     })
 
@@ -608,9 +629,8 @@ export const exportQCReport = async (data: QCReportData) => {
     }
 
     // 添加警告图标
-    const alertImageBuffer = base64ToUint8Array(ALERT_ICON)
     const alertImageId = workbook.addImage({
-      buffer: alertImageBuffer,
+      base64: ALERT_ICON,
       extension: 'png',
     })
 
@@ -1418,16 +1438,18 @@ export const exportQCReport = async (data: QCReportData) => {
 
 // 修改图片处理函数，使每个图片正确定位在其对应的图片框内
 const processImage = async (imageUrl: string, workbook: ExcelJS.Workbook, colStart: number, colEnd: number, imageRow: number) => {
-  const imageBuffer = await getImageBuffer(imageUrl)
-  if (!imageBuffer) return null
-
+  const base64 = await getImageBase64(imageUrl)
+  if (!base64) return null
   try {
     const imageId = workbook.addImage({
-      buffer: imageBuffer,
+      base64,
       extension: 'jpeg'
     })
 
     // 获取图片实际尺寸
+    const response = await fetch(imageUrl)
+    const arrayBuffer = await response.arrayBuffer()
+    const imageBuffer = new Uint8Array(arrayBuffer)
     const dimensions = await getImageDimensions(imageBuffer)
     
     // 单位转换常量
@@ -1467,6 +1489,8 @@ const processImage = async (imageUrl: string, workbook: ExcelJS.Workbook, colSta
     const verticalOffsetPixels = (frameHeightPixels - finalHeight) / 2
     const verticalOffset = verticalOffsetPixels / PIXELS_PER_ROW
 
+    
+
     // 返回图片配置
     return {
       imageId,
@@ -1486,3 +1510,4 @@ const processImage = async (imageUrl: string, workbook: ExcelJS.Workbook, colSta
     return null
   }
 } 
+
