@@ -294,7 +294,7 @@ import {exportQCReport} from '@/utils/exportQCReport'
 import type {QCReportData} from '@/utils/exportQCReport'
 import {saveAs} from 'file-saver'
 import {QcReports, QcReportsDto, DefectImages, Defects, DefectsDto} from '@/api'
-import {putQcReportsUpdate, getQcReportsDtoGetById, getFilesRemove, postFilesUpload, postDefectImagesSave, deleteDefectImagesRemoveById, deleteDefectsRemoveById, putDefectsUpdate, putDefectImagesUpdate, postDefectsSave} from '@/api'
+import {putQcReportsUpdate, getQcReportsDtoGetById, getFilesRemove, postFilesUpload, postDefectImagesSave, deleteDefectImagesRemoveById, deleteDefectsRemoveById, putDefectsUpdate, putDefectImagesUpdate, postDefectsSave , getPdfExportQcReport} from '@/api'
 import ImageHandler from '@/components/ImageHandler.vue'
 import {getId} from '@/utils/idUtils'
 import DefectDialog from '@/components/DefectDialog.vue'
@@ -455,7 +455,7 @@ const processImageUrl = (url: string | {data: string}): string => {
       // 如果是完整的 URL，确保使用 HTTP
       if (url.startsWith('http')) {
         // 将 HTTPS 转换为 HTTP，移除 :80 端口号
-        return url.replace('https://', 'http://').replace(':80', '')
+        return url.replace('https://', 'http://')
       }
 
       // 其他情况，添加完整路径

@@ -124,7 +124,7 @@ import {exportQCReport} from '@/utils/exportQCReport'
 import type {QCReportData} from '@/utils/exportQCReport'
 import JSZip from 'jszip'
 import {saveAs} from 'file-saver'
-import {getQcReportsPage, getQcReportsSearch, deleteQcReportsRemoveById, getQcReportsDtoGetById} from '@/api'
+import {getQcReportsPage, getQcReportsSearch, deleteQcReportsRemoveById, getQcReportsDtoGetById , getPdfExportQcReport} from '@/api'
 import type {QcReports, DefectsDto, DefectImages} from '@/api'
 import ImageHandler from '@/components/ImageHandler.vue'
 import ListHeader from '@/components/ListHeader.vue'
@@ -404,116 +404,38 @@ const handleBatchExport = async () => {
     for (let i = 0; i < selectedRows.value.length; i++) {
       const row = selectedRows.value[i]
 
-      if (!row.id) {
+      // 确保 row.id 存在且为有效值
+      if (!row.id || typeof row.id !== 'string') {
         failedCount++
-        console.error(`Report missing ID: ${row.modelCode || 'Unknown model'}`)
+        console.error(`Invalid or missing ID for row: ${JSON.stringify(row)}`)
         continue
       }
 
       try {
         // 从数据库获取完整数据
-        const res = await getQcReportsDtoGetById({id: row.id as string})
+        // const res = await getQcReportsDtoGetById({ id: row.id as string })
 
-        if (!res.data?.qcReports) {
-          failedCount++
-          console.error(`Unable to fetch report data: ${row.modelCode || 'Unknown model'}`)
-          continue
-        }
 
-        const qcReports = res.data.qcReports
-        const defects =
-          res.data.defectsDTO?.map((dto: DefectsDto) => ({
-            defectTitle: dto.defects?.defectTitle || '',
-            defectDescription: dto.defects?.defectDescription || '',
-            improvementSuggestion: dto.defects?.improvementSuggestion || '',
-            inspector: dto.defects?.inspector || '',
-            images: dto.defectImages?.map((img: DefectImages) => img.imagePath || '').filter(Boolean) || []
-          })) || []
-
-        // 构建导出数据
-        const exportData: QCReportData = {
-          modelCode: qcReports.modelCode || '',
-          factoryCode: qcReports.factoryCode || '',
-          supplier: qcReports.supplier || '',
-          client: qcReports.client || '',
-          poNumber: qcReports.poNumber || '',
-          inspectionDate: qcReports.inspectionDate || '',
-          orderQty: Number(qcReports.orderQty) || 0,
-          reportDate: qcReports.reportDate || new Date().toISOString().split('T')[0],
-          inspectQty: Number(qcReports.inspectQty) || 0,
-          qcOfficer: qcReports.qcOfficer || '',
-          passFail: (qcReports.passFail as 'Pass' | 'Fail') || 'Pass',
-          secondQCDate: qcReports.secondQcDate || '',
-          comments: qcReports.comments || '',
-
-          // 图片相关字段
-          stocksInWarehouse: qcReports.stocksInWarehouse,
-          samplingOfProductsQuantity: qcReports.samplingOfProductsQuantity,
-          shippingMarks: qcReports.shippingMarks,
-          barcode: qcReports.barcode,
-          packingOutside: qcReports.packingOutside,
-          packingInside: qcReports.packingInside,
-          chairComponentsPacked: qcReports.chairComponentsPacked,
-          chairComponentsUnpacked: qcReports.chairComponentsUnpacked,
-          fittingPackPacked: qcReports.fittingPackPacked,
-          fittingPackUnpacked: qcReports.fittingPackUnpacked,
-          productionLabel: qcReports.productionLabel,
-          assemblyInstructions: qcReports.assemblyInstructions,
-          imageOfComponentsSeat: qcReports.imageOfComponentsSeat,
-          imageOfComponentsBack: qcReports.imageOfComponentsBack,
-          imageOfComponentsBase: qcReports.imageOfComponentsBase,
-          imageOfComponentsCastors: qcReports.imageOfComponentsCastors,
-          imageOfComponentsGasLiftCover: qcReports.imageOfComponentsGasLiftCover,
-          imageOfComponentsGasLiftStamp: qcReports.imageOfComponentsGasLiftStamp,
-          imageOfComponentsArmrest: qcReports.imageOfComponentsArmrest,
-          imageOfComponentMechanism: qcReports.imageOfComponentMechanism,
-          imageOfComponentsHeadrest: qcReports.imageOfComponentsHeadrest,
-          imageOfProductBuiltFront: qcReports.imageOfProductBuiltFront,
-          imageOfProductBuiltSide: qcReports.imageOfProductBuiltSide,
-          imageOfProductBuiltBack: qcReports.imageOfProductBuiltBack,
-          imageOfProductBuilt45Degree: qcReports.imageOfProductBuilt45Degree,
-          frontImageOfProductBuiltCompare1: qcReports.frontImageOfProductBuiltCompare1,
-          frontImageOfProductBuiltCompare2: qcReports.frontImageOfProductBuiltCompare2,
-          functionCheckSeatHeightExtension: qcReports.functionCheckSeatHeightExtension,
-          functionCheckMechanismAdjustment: qcReports.functionCheckMechanismAdjustment,
-          functionCheckArmrestAdjustment: qcReports.functionCheckArmrestAdjustment,
-          functionCheckHeadrestAdjustment: qcReports.functionCheckHeadrestAdjustment,
-          functionCheckOther1: qcReports.functionCheckOther1,
-          functionCheckOther2: qcReports.functionCheckOther2,
-
-          // 缺陷记录
-          defects,
-
-          // 其他必需字段
-          inspector: qcReports.qcOfficer || '',
-          inspectionLocation: 'Factory',
-          sampleSize: Number(qcReports.inspectQty) || 0,
-          defectCount: defects.length
-        }
-
-        // 调用导出函数生成工作簿
-        const workbook = await exportQCReport(exportData)
+        // 调用导出 PDF 函数
+        const pdfBlob = await getPdfExportQcReport(row.id) // 假设有一个 exportToPDF 函数
 
         // 生成文件名
-        const fileName = `QC_Report_${qcReports.modelCode || 'Unknown'}_${new Date().toISOString().slice(0, 10)}.xlsx`
+        const fileName = `QC_Report_${row.modelCode || 'Unknown'}_${new Date().toISOString().slice(0, 10)}.pdf`
 
-        // 将 Excel 文件转换为 buffer
-        const buffer = await workbook.xlsx.writeBuffer()
-
-        // 将 buffer 添加到 ZIP 包中
-        zip.file(fileName, buffer)
+        // 将 PDF 文件添加到 ZIP 包中
+        zip.file(fileName, pdfBlob)
 
         successCount++
       } catch (error) {
         failedCount++
-        console.error(`Failed to process report: ${row.modelCode || 'Unknown model'}`, error)
+        console.error(`Failed to process report for ID: ${row.id}`, error)
       }
     }
 
     if (successCount > 0) {
       // 生成 ZIP 文件
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
-      const zipContent = await zip.generateAsync({type: 'blob'})
+      const zipContent = await zip.generateAsync({ type: 'blob' })
 
       // 保存 ZIP 文件
       saveAs(zipContent, `QC_Reports_${timestamp}.zip`)

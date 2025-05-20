@@ -59,7 +59,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
                   <template v-for="(field, key) in basicFields" :key="key">
                     <template v-if="!isImageField(key)">
-                      <el-form-item :label="field" class="bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2" label-position="left">
+                      <el-form-item :label="field" class="bg-gray-100 p-1 rounded flex flex-col sm:flex-row items-start sm:items-center !mb-2 " label-position="left">
                         <template v-if="editingSections.includes('basic')">
                           <template v-if="key === 'currency'">
                             <el-select v-model="formData[key]" class="w-full !h-[38px]">

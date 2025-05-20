@@ -96,16 +96,16 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, onMounted, watch, computed} from 'vue'
-import {Search, Delete, View, Edit, Download, Message, Document} from '@element-plus/icons-vue'
-import {ElMessageBox, ElMessage} from 'element-plus'
-import {useRouter, useRoute} from 'vue-router'
-import {exportQuotation} from '@/utils/exportQuotation'
+import { ref, onMounted, watch, computed } from 'vue'
+import { Search, Delete, View, Edit, Download, Message, Document } from '@element-plus/icons-vue'
+import { ElMessageBox, ElMessage } from 'element-plus'
+import { useRouter, useRoute } from 'vue-router'
+import { exportQuotation } from '@/utils/exportQuotation'
 import JSZip from 'jszip'
-import {saveAs} from 'file-saver'
-import {deleteQuotationRemoveById, getQuotationSearch} from '@/api'
-import {useUserStore} from '@/pinia/user'
-import {ModuleType, PermissionAction, checkPermission} from '@/utils/permissionUtils'
+import { saveAs } from 'file-saver'
+import { deleteQuotationRemoveById, getQuotationSearch , getPdfExportQuotation} from '@/api'
+import { useUserStore } from '@/pinia/user'
+import { ModuleType, PermissionAction, checkPermission } from '@/utils/permissionUtils'
 import ListHeader from '@/components/ListHeader.vue'
 
 interface QuoteData {
@@ -353,7 +353,7 @@ const handleDelete = async (row: QuoteData) => {
     }
 
     const id = String(row.id)
-    const response = await deleteQuotationRemoveById({id})
+    const response = await deleteQuotationRemoveById({ id })
 
     if (response.code !== '200') {
       ElMessage.error(response.message || 'Delete failed')
@@ -392,7 +392,7 @@ const handleBatchDelete = async () => {
     // 并行处理所有删除请求
     const deletePromises = validRows.map(row => {
       const id = String(row.id)
-      return deleteQuotationRemoveById({id})
+      return deleteQuotationRemoveById({ id })
     })
 
     const results = await Promise.all(deletePromises)
@@ -408,110 +408,29 @@ const handleBatchDelete = async () => {
 
 // 批量导出
 const handleBatchExport = async () => {
-  if (selectedRows.value.length === 0) {
-    ElMessage.warning('Please select data to export')
-    return
-  }
-
-  exporting.value = true
-  const zip = new JSZip()
-  const usedFileNames = new Set()
-
   try {
-    // 处理重复文件名的函数
-    const getUniqueFileName = (baseFileName: string): string => {
-      if (!usedFileNames.has(baseFileName)) {
-        usedFileNames.add(baseFileName)
-        return baseFileName
-      }
-      let counter = 1
-      let newFileName = ''
-      do {
-        const nameParts = baseFileName.split('.')
-        const ext = nameParts.pop()
-        newFileName = `${nameParts.join('.')}(${counter}).${ext}`
-        counter++
-      } while (usedFileNames.has(newFileName))
-
-      usedFileNames.add(newFileName)
-      return newFileName
-    }
-
-    // 并行处理所有导出任务
-    const exportTasks = selectedRows.value.map(async (row: QuoteData) => {
-      try {
-        // 准备导出数据
-        const exportData = {
-          supplier: row.supplier || '',
-          supplier_item_code: row.supplierItemCode || '',
-          specification_details: row.specificationDetails || '',
-          sample_lead_time: row.sampleLeadTime || '',
-          overall_dimensions_width: row.overallDimensionsWidth || 0,
-          overall_dimensions_depth: row.overallDimensionsDepth || 0,
-          overall_dimensions_height: row.overallDimensionsHeight || 0,
-          box_dimensions_width: row.boxDimensionsWidth || 0,
-          box_dimensions_depth: row.boxDimensionsDepth || 0,
-          box_dimensions_height: row.boxDimensionsHeight || 0,
-          box_weight_net_weighth: row.boxWeightNetWeighth || 0,
-          net_weight_gross_weight: row.netWeightGrossWeight || '0/0',
-          effective_vol: row.effectiveVol || '0',
-          loading_qty: row.loadingQty || 0,
-          moq: row.moq || '0',
-          fob_price: row.fobPrice || 0,
-          currency: row.currency || 0,
-          bifma_tested: row.bifmaTested || 0,
-          cad_block_available: row.cadBlockAvailable || 0,
-          product_data_available: row.productDataAvailable || 0,
-          product_images_available: row.productImagesAvailable || 0,
-          sales_contacts: row.salesContacts || '',
-          quote_date: row.createTime?.split(' ')[0] || new Date().toISOString().split('T')[0],
-          valid_period: row.validPeriod || '2024-12-31',
-          port: row.port || 'Ningbo Port',
-          remark: row.remark || 'Batch Export',
-          image: row.image || ''
-        }
-
-        // 获取Excel文件buffer
-        const buffer = await exportQuotation(exportData)
-
-        // 生成文件名并添加到zip
-        const createDate = row.createTime ? row.createTime.split('T')[0].replace(/-/g, '') : new Date().toISOString().split('T')[0].replace(/-/g, '')
-        const baseFileName = `TC QUOTATION FORM ${exportData.supplier} ${createDate}.xlsx`
-        const uniqueFileName = getUniqueFileName(baseFileName)
-        zip.file(uniqueFileName, buffer)
-        return {success: true, fileName: uniqueFileName}
-      } catch (error) {
-        return {success: false, fileName: row.supplierItemCode}
-      }
-    })
-
-    // 等待所有导出任务完成
-    const results = await Promise.all(exportTasks)
-
-    // 统计成功和失败的数量
-    const successCount = results.filter(result => result.success).length
-    const failCount = results.length - successCount
-
-    if (successCount === 0) {
-      ElMessage.error('All quotation exports failed')
+    const selectedIds = selectedRows.value.map(row => row.id)
+    if (selectedIds.length === 0) {
+      ElMessage.warning('Please select at least one item to export')
       return
     }
 
-    // 生成并下载zip文件
-    const zipContent = await zip.generateAsync({type: 'blob'})
-    const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '')
-    const zipFileName = `TC QUOTATION ${currentDate}.zip`
-    saveAs(zipContent, zipFileName)
+    const zip = new JSZip()
+    const promises = selectedIds.map(async (id, index) => {
+      const pdfBlob = await getPdfExportQuotation(id)
+      const fileName = `TC_QUOTATION_FORM_${index + 1}.pdf`
+      zip.file(fileName, pdfBlob)
+    })
 
-    if (failCount > 0) {
-      ElMessage.warning(`Some quotations failed to export. Successfully exported ${successCount}/${results.length} quotations`)
-    } else {
-      ElMessage.success('Batch export successful')
-    }
+    await Promise.all(promises)
+
+    const content = await zip.generateAsync({ type: 'blob' })
+    saveAs(content, 'batch_export.zip')
+
+    ElMessage.success('Batch export successful')
   } catch (error) {
+    console.error('Batch export failed:', error)
     ElMessage.error('Batch export failed')
-  } finally {
-    exporting.value = false
   }
 }
 

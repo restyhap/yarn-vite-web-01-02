@@ -287,6 +287,11 @@ const handleFile = async (file: File) => {
 
 // 处理预览
 const handlePreview = (url: string) => {
+  if (!url) {
+    console.error('预览失败：图片URL为空')
+    ElMessage.error('无法预览图片，请检查图片URL')
+    return
+  }
   previewUrl.value = url
   previewVisible.value = true
 }
