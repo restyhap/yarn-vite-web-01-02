@@ -55,9 +55,9 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, computed, onMounted, onUnmounted, watch} from 'vue'
+import {ref, computed, onMounted, onUnmounted, } from 'vue'
 import {Plus, ZoomIn, Delete, Close} from '@element-plus/icons-vue'
-import {postFilesUpload, getFilesRemove} from '@/api'
+import {postFilesUpload, } from '@/api'
 import {ElMessage} from 'element-plus'
 
 // 添加组件名称
@@ -120,8 +120,7 @@ const actualLimit = computed(() => {
 
 // 计算是否显示上传区域
 const showUploadArea = computed(() => {
-  const shouldShow = props.editable && normalizedModelValue.value.length < actualLimit.value
-  return shouldShow
+  return props.editable && normalizedModelValue.value.length < actualLimit.value
 })
 
 // 规范化modelValue，确保它始终是一个数组
